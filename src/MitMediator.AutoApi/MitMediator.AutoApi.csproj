@@ -34,12 +34,12 @@ Init version for tests</PackageReleaseNotes>
     <ItemGroup>
         <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
     </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\MitMediator.AutoApi.Abstractions\MitMediator.AutoApi.Abstractions.csproj" />
-    </ItemGroup>
     
     <ItemGroup>
         <InternalsVisibleTo Include="MitMediator.AutoApi.Tests" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <PackageReference Include="MitMediator.AutoApi.Abstractions" Version="7.0.0-alfa" />
     </ItemGroup>
 </Project>
