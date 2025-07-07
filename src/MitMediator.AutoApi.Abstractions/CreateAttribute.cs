@@ -9,3 +9,14 @@ public class CreateAttribute : BaseActionAttribute
     {
     }
 }
+
+public class CreateByKeyAttribute :
+    BaseActionAttribute
+{
+    public CreateByKeyAttribute(string tag,
+        string? version = null,
+        string? description = null,
+        string? customPattern = null) : base(tag, version, description, customPattern)
+    {
+    }
+}

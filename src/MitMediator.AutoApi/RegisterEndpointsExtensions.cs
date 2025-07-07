@@ -1,5 +1,4 @@
 using System.Reflection;
-using Microsoft.AspNetCore.Mvc;
 using MitMediator.AutoApi.Abstractions;
 
 namespace MitMediator.AutoApi;
@@ -8,106 +7,95 @@ public static class RegisterEndpointsExtensions
 {
     public static IEndpointRouteBuilder UseAutoApi(this IEndpointRouteBuilder app)
     {
-        var createRequests = GetTypesWithAttribute<CreateAttribute>();
+        var createRequests = Helpers.GetTypesWithAttribute<CreateAttribute>();
         foreach (var request in createRequests)
         {
             app.MapRequestCreate(request);
         }
         
-        var postRequests = GetTypesWithAttribute<PostAttribute>();
+        var createByKeyRequests = Helpers.GetTypesWithAttribute<CreateByKeyAttribute>();
+        foreach (var request in createByKeyRequests)
+        {
+            app.MapRequestCreateByKey(request);
+        }
+
+        var postRequests = Helpers.GetTypesWithAttribute<PostAttribute>();
         foreach (var request in postRequests)
         {
             app.MapRequestPost(request);
         }
         
-        var updateByKeyRequests = GetTypesWithAttribute<UpdateByKeyAttribute>();
-        foreach (var request in updateByKeyRequests)
+        var postByKeyRequests = Helpers.GetTypesWithAttribute<PostByKeyAttribute>();
+        foreach (var request in postByKeyRequests)
         {
-            app.MapRequestUpdateByKey(request);
+            app.MapRequestPostByKey(request);
         }
-        
-        var updateRequests = GetTypesWithAttribute<UpdateAttribute>();
+
+        var updateRequests = Helpers.GetTypesWithAttribute<UpdateAttribute>();
         foreach (var request in updateRequests)
         {
             app.MapRequestUpdate(request);
         }
         
-        var deleteByKeyRequests = GetTypesWithAttribute<DeleteByKeyAttribute>();
-        foreach (var request in deleteByKeyRequests)
+        var updateByKeyRequests = Helpers.GetTypesWithAttribute<UpdateByKeyAttribute>();
+        foreach (var request in updateByKeyRequests)
         {
-            app.MapRequestDeleteByKey(request);
+            app.MapRequestUpdateByKey(request);
         }
-        
-        var deleteRequests = GetTypesWithAttribute<DeleteAttribute>();
+
+        var deleteRequests = Helpers.GetTypesWithAttribute<DeleteAttribute>();
         foreach (var request in deleteRequests)
         {
             app.MapRequestDelete(request);
         }
         
-        var getByKeyRequests = GetTypesWithAttribute<GetByKeyAttribute>();
-        foreach (var getByKeyRequest in getByKeyRequests)
+        var deleteByKeyRequests = Helpers.GetTypesWithAttribute<DeleteByKeyAttribute>();
+        foreach (var request in deleteByKeyRequests)
         {
-            app.MapRequestGetByKey(getByKeyRequest);
+            app.MapRequestDeleteByKey(request);
         }
-        
-        var getRequests = GetTypesWithAttribute<GetAttribute>();
+
+        var getRequests = Helpers.GetTypesWithAttribute<GetAttribute>();
         foreach (var getRequest in getRequests)
         {
             app.MapRequestGet(getRequest);
+        }
+        
+        var getByKeyRequests = Helpers.GetTypesWithAttribute<GetByKeyAttribute>();
+        foreach (var getByKeyRequest in getByKeyRequests)
+        {
+            app.MapRequestGetByKey(getByKeyRequest);
         }
 
         return app;
     }
 
-    #region UpdateByKey
-
     private static void MapRequestUpdateByKey(this IEndpointRouteBuilder app, Type requestType)
     {
         var createAttribute = requestType.GetCustomAttribute<UpdateByKeyAttribute>()!;
-        var pattern = GetKeyPattern(createAttribute);
-        var responseType = GetResponseType(requestType);
-        
-        var methodInfo = typeof(RegisterEndpointsExtensions)
-            .GetMethod(nameof(BuildPutByKeyEndpoint), BindingFlags.Static | BindingFlags.NonPublic)!
-            .MakeGenericMethod(requestType, responseType, GetKeyType(requestType));
+        var pattern = KeysRequestHelper.GetKeyPattern(createAttribute, requestType);
+        var responseType = Helpers.GetResponseType(requestType);
 
-        var requestDelegate = (Delegate)methodInfo.Invoke(null, Array.Empty<object>())!;
+        var requestDelegate = GetDelegateEndpointWithBodyAndKeys(requestType, responseType);
 
         var routeHandlerBuilder = app.MapPut(pattern, requestDelegate)
             .WithTags(createAttribute.Tag)
             .Produces(StatusCodes.Status200OK, responseType);
-        
+
         if (!string.IsNullOrWhiteSpace(createAttribute.Version))
         {
             routeHandlerBuilder.WithGroupName(createAttribute.Version);
         }
     }
-    
-    private static Delegate BuildPutByKeyEndpoint<TRequest, TResponse, TKey>()
-        where TRequest : IRequest<TResponse>, IKeyRequest<TKey>
-    {
-        return (Func<TRequest, TKey, HttpContext, CancellationToken, ValueTask<IResult>>)(
-            async ([FromBody] request, [FromRoute] key, ctx, ct) =>
-            {
-                var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request.SetKey(key);
-                var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
-                return result is Unit ? Results.Ok() : Results.Ok(result);
-            });
-    }
-
-    #endregion
-    
-    #region Update
 
     private static void MapRequestUpdate(this IEndpointRouteBuilder app, Type requestType)
     {
         var createAttribute = requestType.GetCustomAttribute<UpdateAttribute>()!;
-        var pattern = GetBasePattern(createAttribute);
-        var responseType = GetResponseType(requestType);
-        
-        var methodInfo = typeof(RegisterEndpointsExtensions)
-            .GetMethod(nameof(BuildPutEndpoint), BindingFlags.Static | BindingFlags.NonPublic)!
+        var pattern = Helpers.GetBasePattern(createAttribute);
+        var responseType = Helpers.GetResponseType(requestType);
+
+        var methodInfo = typeof(BuildEndpointsMethods)
+            .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithBody), BindingFlags.Static | BindingFlags.NonPublic)!
             .MakeGenericMethod(requestType, responseType);
 
         var requestDelegate = (Delegate)methodInfo.Invoke(null, Array.Empty<object>())!;
@@ -115,37 +103,22 @@ public static class RegisterEndpointsExtensions
         var routeHandlerBuilder = app.MapPut(pattern, requestDelegate)
             .WithTags(createAttribute.Tag)
             .Produces(StatusCodes.Status200OK, responseType);
-        
+
         if (!string.IsNullOrWhiteSpace(createAttribute.Version))
         {
             routeHandlerBuilder.WithGroupName(createAttribute.Version);
         }
     }
-    
-    private static Delegate BuildPutEndpoint<TRequest, TResponse>()
-        where TRequest : IRequest<TResponse>
-    {
-        return (Func<TRequest,  HttpContext, CancellationToken, ValueTask<IResult>>)(
-            async ([FromBody] request, ctx, ct) =>
-            {
-                var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
-                return result is Unit ? Results.Ok() : Results.Ok(result);
-            });
-    }
-
-    #endregion
-
-    #region Create
 
     private static void MapRequestCreate(this IEndpointRouteBuilder app, Type requestType)
     {
         var createAttribute = requestType.GetCustomAttribute<CreateAttribute>()!;
-        var pattern = GetBasePattern(createAttribute);
-        var responseType = GetResponseType(requestType);
-        
-        var methodInfo = typeof(RegisterEndpointsExtensions)
-            .GetMethod(nameof(BuildPostCreateEndpoint), BindingFlags.Static | BindingFlags.NonPublic)!
+        var pattern = Helpers.GetBasePattern(createAttribute);
+        var responseType = Helpers.GetResponseType(requestType);
+
+        var methodInfo = typeof(BuildEndpointsMethods)
+            .GetMethod(nameof(BuildEndpointsMethods.BuildCreateEndpoint),
+                BindingFlags.Static | BindingFlags.NonPublic)!
             .MakeGenericMethod(requestType, responseType);
 
         var requestDelegate = (Delegate)methodInfo.Invoke(null, Array.Empty<object>())!;
@@ -153,115 +126,97 @@ public static class RegisterEndpointsExtensions
         var routeHandlerBuilder = app.MapPost(pattern, requestDelegate)
             .WithTags(createAttribute.Tag)
             .Produces(StatusCodes.Status201Created, responseType);
-        
+
         if (!string.IsNullOrWhiteSpace(createAttribute.Version))
         {
             routeHandlerBuilder.WithGroupName(createAttribute.Version);
         }
     }
     
-    private static Delegate BuildPostCreateEndpoint<TRequest, TResponse>()
-        where TRequest : IRequest<TResponse>
+    private static void MapRequestCreateByKey(this IEndpointRouteBuilder app, Type requestType)
     {
-        return (Func<TRequest, HttpContext, CancellationToken, ValueTask<IResult>>)(
-            async ([FromBody] request, ctx, ct) =>
-            {
-                var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
-                var keyPattern = GetKeyPattern(typeof(TRequest).GetCustomAttribute<CreateAttribute>()!);
-                return Results.Created(keyPattern, result);
-            });
-    }
+        var postAttribute = requestType.GetCustomAttribute<CreateByKeyAttribute>()!;
+        var pattern = KeysRequestHelper.GetKeyPattern(postAttribute, requestType);
+        var responseType = Helpers.GetResponseType(requestType);
 
-    #endregion
-    
-    #region Create
+        var requestDelegate = GetCreateDelegateEndpointWithBodyAndKeys(requestType, responseType);
+        
+        var routeHandlerBuilder = app.MapPost(pattern, requestDelegate)
+            .WithTags(postAttribute.Tag)
+            .Produces(StatusCodes.Status201Created, responseType);
+
+        if (!string.IsNullOrWhiteSpace(postAttribute.Version))
+        {
+            routeHandlerBuilder.WithGroupName(postAttribute.Version);
+        }
+    }
 
     private static void MapRequestPost(this IEndpointRouteBuilder app, Type requestType)
     {
         var postAttribute = requestType.GetCustomAttribute<PostAttribute>()!;
-        var pattern = GetBasePattern(postAttribute);
-        var responseType = GetResponseType(requestType);
-        
-        var methodInfo = typeof(RegisterEndpointsExtensions)
-            .GetMethod(nameof(BuildPostEndpoint), BindingFlags.Static | BindingFlags.NonPublic)!
+        var pattern = Helpers.GetBasePattern(postAttribute);
+        var responseType = Helpers.GetResponseType(requestType);
+
+        var methodInfo = typeof(BuildEndpointsMethods)
+            .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithBody), BindingFlags.Static | BindingFlags.NonPublic)!
             .MakeGenericMethod(requestType, responseType);
 
         var requestDelegate = (Delegate)methodInfo.Invoke(null, Array.Empty<object>())!;
 
         var routeHandlerBuilder = app.MapPost(pattern, requestDelegate)
             .WithTags(postAttribute.Tag)
-            .Produces(StatusCodes.Status201Created, responseType);
-        
+            .Produces(StatusCodes.Status200OK, responseType);
+
         if (!string.IsNullOrWhiteSpace(postAttribute.Version))
         {
             routeHandlerBuilder.WithGroupName(postAttribute.Version);
         }
     }
     
-    private static Delegate BuildPostEndpoint<TRequest, TResponse>()
-        where TRequest : IRequest<TResponse>
+    private static void MapRequestPostByKey(this IEndpointRouteBuilder app, Type requestType)
     {
-        return (Func<TRequest, HttpContext, CancellationToken, ValueTask<IResult>>)(
-            async ([FromBody] request, ctx, ct) =>
-            {
-                var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
-                return result is Unit ? Results.Ok() : Results.Ok(result);
-            });
-    }
+        var postAttribute = requestType.GetCustomAttribute<PostByKeyAttribute>()!;
+        var pattern = KeysRequestHelper.GetKeyPattern(postAttribute, requestType);
+        var responseType = Helpers.GetResponseType(requestType);
 
-    #endregion
-    
-    #region DeleteByKey
+        var requestDelegate = GetDelegateEndpointWithBodyAndKeys(requestType, responseType);
+        
+        var routeHandlerBuilder = app.MapPost(pattern, requestDelegate)
+            .WithTags(postAttribute.Tag)
+            .Produces(StatusCodes.Status201Created, responseType);
+
+        if (!string.IsNullOrWhiteSpace(postAttribute.Version))
+        {
+            routeHandlerBuilder.WithGroupName(postAttribute.Version);
+        }
+    }
 
     private static void MapRequestDeleteByKey(this IEndpointRouteBuilder app, Type requestType)
     {
         var createAttribute = requestType.GetCustomAttribute<DeleteByKeyAttribute>()!;
-        var pattern = GetKeyPattern(createAttribute);
-        var responseType = GetResponseType(requestType);
-        
-        var methodInfo = typeof(RegisterEndpointsExtensions)
-            .GetMethod(nameof(BuildDeleteByKeyEndpoint), BindingFlags.Static | BindingFlags.NonPublic)!
-            .MakeGenericMethod(requestType, responseType, GetKeyType(requestType));
+        var pattern = KeysRequestHelper.GetKeyPattern(createAttribute, requestType);
+        var responseType = Helpers.GetResponseType(requestType);
 
-        var requestDelegate = (Delegate)methodInfo.Invoke(null, Array.Empty<object>())!;
+        var requestDelegate = GetDelegateEndpointWithBodyAndKeys(requestType, responseType);
 
         var routeHandlerBuilder = app.MapDelete(pattern, requestDelegate)
             .WithTags(createAttribute.Tag)
             .Produces(StatusCodes.Status200OK);
-        
+
         if (!string.IsNullOrWhiteSpace(createAttribute.Version))
         {
             routeHandlerBuilder.WithGroupName(createAttribute.Version);
         }
     }
-    
-    private static Delegate BuildDeleteByKeyEndpoint<TRequest, TResponse, TKey>()
-        where TRequest : IRequest<TResponse>, IKeyRequest<TKey>
-    {
-        return (Func<TRequest, TKey, HttpContext, CancellationToken, ValueTask<IResult>>)(
-            async ([FromBody] request, [FromRoute] key, ctx, ct) =>
-            {
-                var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request.SetKey(key);
-                var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
-                return result is Unit ? Results.Ok() : Results.Ok(result);
-            });
-    }
-
-    #endregion
-    
-    #region Delete
 
     private static void MapRequestDelete(this IEndpointRouteBuilder app, Type requestType)
     {
         var createAttribute = requestType.GetCustomAttribute<DeleteAttribute>()!;
-        var pattern = GetBasePattern(createAttribute);
-        var responseType = GetResponseType(requestType);
-        
-        var methodInfo = typeof(RegisterEndpointsExtensions)
-            .GetMethod(nameof(BuildDeleteEndpoint), BindingFlags.Static | BindingFlags.NonPublic)!
+        var pattern = Helpers.GetBasePattern(createAttribute);
+        var responseType = Helpers.GetResponseType(requestType);
+
+        var methodInfo = typeof(BuildEndpointsMethods)
+            .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithBody), BindingFlags.Static | BindingFlags.NonPublic)!
             .MakeGenericMethod(requestType, responseType);
 
         var requestDelegate = (Delegate)methodInfo.Invoke(null, Array.Empty<object>())!;
@@ -269,76 +224,39 @@ public static class RegisterEndpointsExtensions
         var routeHandlerBuilder = app.MapDelete(pattern, requestDelegate)
             .WithTags(createAttribute.Tag)
             .Produces(StatusCodes.Status200OK);
-        
+
         if (!string.IsNullOrWhiteSpace(createAttribute.Version))
         {
             routeHandlerBuilder.WithGroupName(createAttribute.Version);
         }
     }
     
-    private static Delegate BuildDeleteEndpoint<TRequest, TResponse>()
-        where TRequest : IRequest<TResponse>
-    {
-        return (Func<TRequest, HttpContext, CancellationToken, ValueTask<IResult>>)(
-            async ([FromBody] request, ctx, ct) =>
-            {
-                var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
-                return result is Unit ? Results.Ok() : Results.Ok(result);
-            });
-    }
-
-    #endregion
-
-    #region GetByKey
-
     private static void MapRequestGetByKey(this IEndpointRouteBuilder app, Type requestType)
     {
         var arrt = requestType.GetCustomAttribute<GetByKeyAttribute>();
-        var pattern = GetKeyPattern(arrt);
-        var responseType = GetResponseType(requestType);
-        
-        var methodInfo = typeof(RegisterEndpointsExtensions)
-            .GetMethod(nameof(BuildGetByKeyEndpoint), BindingFlags.Static | BindingFlags.NonPublic)!
-            .MakeGenericMethod(requestType, responseType, GetKeyType(requestType));
+        var pattern = KeysRequestHelper.GetKeyPattern(arrt, requestType);
+        var responseType = Helpers.GetResponseType(requestType);
 
-        var requestDelegate = (Delegate)methodInfo.Invoke(null, Array.Empty<object>())!;
+        var requestDelegate = GetDelegateEndpointWithGetParamsAndKeys(requestType, responseType);
 
         var routeHandlerBuilder = app.MapGet(pattern, requestDelegate)
             .WithTags(arrt.Tag)
             .Produces(StatusCodes.Status200OK, responseType);
-        
+
         if (!string.IsNullOrWhiteSpace(arrt.Version))
         {
             routeHandlerBuilder.WithGroupName(arrt.Version);
         }
     }
 
-    private static Delegate BuildGetByKeyEndpoint<TRequest, TResponse, TKey>()
-        where TRequest : IRequest<TResponse>, IKeyRequest<TKey>
-    {
-        return (Func<TRequest, TKey, HttpContext, CancellationToken, ValueTask<IResult>>)(
-            async ([AsParameters] request, [FromRoute] key, ctx, ct) =>
-            {
-                var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request.SetKey(key);
-                var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
-                return result is Unit ? Results.Ok() : Results.Ok(result);
-            });
-    }
-
-    #endregion
-    
-    #region Get
-
     private static void MapRequestGet(this IEndpointRouteBuilder app, Type requestType)
     {
         var attribute = requestType.GetCustomAttribute<GetAttribute>()!;
-        var pattern = GetBasePattern(attribute);
-        var responseType = GetResponseType(requestType);
-        
-        var methodInfo = typeof(RegisterEndpointsExtensions)
-            .GetMethod(nameof(BuildGetEndpoint), BindingFlags.Static | BindingFlags.NonPublic)!
+        var pattern = Helpers.GetBasePattern(attribute);
+        var responseType = Helpers.GetResponseType(requestType);
+
+        var methodInfo = typeof(BuildEndpointsMethods)
+            .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithGetParams), BindingFlags.Static | BindingFlags.NonPublic)!
             .MakeGenericMethod(requestType, responseType);
 
         var requestDelegate = (Delegate)methodInfo.Invoke(null, Array.Empty<object>())!;
@@ -346,95 +264,191 @@ public static class RegisterEndpointsExtensions
         var routeHandlerBuilder = app.MapGet(pattern, requestDelegate)
             .WithTags(attribute.Tag)
             .Produces(StatusCodes.Status200OK, responseType);
-        
+
         if (!string.IsNullOrWhiteSpace(attribute.Version))
         {
             routeHandlerBuilder.WithGroupName(attribute.Version);
         }
     }
-
-    private static Delegate BuildGetEndpoint<TRequest, TResponse>()
-        where TRequest : IRequest<TResponse>
+    
+    internal static Delegate GetDelegateEndpointWithGetParamsAndKeys(Type requestType, Type responseType)
     {
-        return (Func<TRequest, HttpContext, CancellationToken, ValueTask<IResult>>)(
-            async ([AsParameters] request, ctx, ct) =>
-            {
-                var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
-                return result is Unit ? Results.Ok() : Results.Ok(result);
-            });
-    }
-
-    #endregion
-
-    private static Type GetKeyType(Type queryType)
-    {
-        var requestKeyInterface = queryType
-            .GetInterfaces()
-            .FirstOrDefault(i =>
-                i.IsGenericType &&
-                i.GetGenericTypeDefinition() == typeof(IKeyRequest<>));
-
-        if (requestKeyInterface == null)
+        MethodInfo methodInfo = null;
+        var keysCount = KeysRequestHelper.GetKeysCount(requestType);
+        switch (keysCount)
         {
-            throw new Exception($"{queryType.Name} must implement IKeyRequest<> interface.");
+            case 1:
+                methodInfo = typeof(BuildEndpointsMethods)
+                    .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithGetParamsAnd1KeyEndpoint),
+                        BindingFlags.Static | BindingFlags.NonPublic)!
+                    .MakeGenericMethod(requestType, responseType, KeysRequestHelper.GetKeyType(requestType));
+                break;
+            case 2:
+                var keys2 = KeysRequestHelper.GetKey2Type(requestType);
+                methodInfo = typeof(BuildEndpointsMethods)
+                    .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithGetParamsAnd2KeysEndpoint),
+                        BindingFlags.Static | BindingFlags.NonPublic)!
+                    .MakeGenericMethod(requestType, responseType, keys2.Item1, keys2.Item2);
+                break;
+            case 3:
+                var keys3 = KeysRequestHelper.GetKey3Type(requestType);
+                methodInfo = typeof(BuildEndpointsMethods)
+                    .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithGetParamsAnd3KeysEndpoint),
+                        BindingFlags.Static | BindingFlags.NonPublic)!
+                    .MakeGenericMethod(requestType, responseType, keys3.Item1, keys3.Item2, keys3.Item3);
+                break;
+            case 4:
+                var keys4 = KeysRequestHelper.GetKey4Type(requestType);
+                methodInfo = typeof(BuildEndpointsMethods)
+                    .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithGetParamsAnd4KeysEndpoint),
+                        BindingFlags.Static | BindingFlags.NonPublic)!
+                    .MakeGenericMethod(requestType, responseType, keys4.Item1, keys4.Item2, keys4.Item3, keys4.Item4);
+                break;
+            case 5:
+                var keys5 = KeysRequestHelper.GetKey5Type(requestType);
+                methodInfo = typeof(BuildEndpointsMethods)
+                    .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithGetParamsAnd5KeysEndpoint),
+                        BindingFlags.Static | BindingFlags.NonPublic)!
+                    .MakeGenericMethod(requestType, responseType, keys5.Item1, keys5.Item2, keys5.Item3, keys5.Item4,
+                        keys5.Item5);
+                break;
+            case 6:
+                var keys6 = KeysRequestHelper.GetKey6Type(requestType);
+                methodInfo = typeof(BuildEndpointsMethods)
+                    .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithGetParamsAnd6KeysEndpoint),
+                        BindingFlags.Static | BindingFlags.NonPublic)!
+                    .MakeGenericMethod(requestType, responseType, keys6.Item1, keys6.Item2, keys6.Item3, keys6.Item4,
+                        keys6.Item5, keys6.Item6);
+                break;
+            case 7:
+                var keys7 = KeysRequestHelper.GetKey7Type(requestType);
+                methodInfo = typeof(BuildEndpointsMethods)
+                    .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithGetParamsAnd7KeysEndpoint),
+                        BindingFlags.Static | BindingFlags.NonPublic)!
+                    .MakeGenericMethod(requestType, responseType, keys7.Item1, keys7.Item2, keys7.Item3, keys7.Item4,
+                        keys7.Item5, keys7.Item6, keys7.Item7);
+                break;
         }
 
-        return requestKeyInterface!.GetGenericArguments()[0];
+        var requestDelegate = (Delegate)methodInfo.Invoke(null, Array.Empty<object>())!;
+        return requestDelegate;
     }
-
-    private static Type GetResponseType(Type queryType)
+    
+    internal static Delegate GetDelegateEndpointWithBodyAndKeys(Type requestType, Type responseType)
     {
-        var requestInterface = queryType
-            .GetInterfaces()
-            .FirstOrDefault(i =>
-                i.IsGenericType &&
-                i.GetGenericTypeDefinition() == typeof(IRequest<>));
-
-        return requestInterface!.GetGenericArguments()[0];
-    }
-
-    private static IEnumerable<Type> GetTypesWithAttribute<TAttribute>()
-        where TAttribute : Attribute
-    {
-        return AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(assembly =>
-            {
-                try
-                {
-                    return assembly.GetTypes();
-                }
-                catch (ReflectionTypeLoadException ex)
-                {
-                    return ex.Types.Where(t => t != null)!;
-                }
-            })
-            .Where(type => type.GetCustomAttributes(typeof(TAttribute), inherit: true).Any());
-    }
-
-    private static string GetKeyPattern(BaseActionAttribute arrt)
-    {
-        if (arrt.CustomPattern is not null)
+        MethodInfo methodInfo = null;
+        var keysCount = KeysRequestHelper.GetKeysCount(requestType);
+        switch (keysCount)
         {
-            if (!arrt.CustomPattern.Contains("{key}"))
-            {
-                throw new Exception("Custom pattern must contain '{key}'.");
-            }
-            return arrt.CustomPattern;
+            case 1:
+                methodInfo = typeof(BuildEndpointsMethods)
+                    .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithBodyAnd1Key),
+                        BindingFlags.Static | BindingFlags.NonPublic)!
+                    .MakeGenericMethod(requestType, responseType, KeysRequestHelper.GetKeyType(requestType));
+                break;
+            case 2:
+                var keys2 = KeysRequestHelper.GetKey2Type(requestType);
+                methodInfo = typeof(BuildEndpointsMethods)
+                    .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithBodyAnd2Keys),
+                        BindingFlags.Static | BindingFlags.NonPublic)!
+                    .MakeGenericMethod(requestType, responseType, keys2.Item1, keys2.Item2);
+                break;
+            case 3:
+                var keys3 = KeysRequestHelper.GetKey3Type(requestType);
+                methodInfo = typeof(BuildEndpointsMethods)
+                    .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithBodyAnd3Keys),
+                        BindingFlags.Static | BindingFlags.NonPublic)!
+                    .MakeGenericMethod(requestType, responseType, keys3.Item1, keys3.Item2, keys3.Item3);
+                break;
+            case 4:
+                var keys4 = KeysRequestHelper.GetKey4Type(requestType);
+                methodInfo = typeof(BuildEndpointsMethods)
+                    .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithBodyAnd4Keys),
+                        BindingFlags.Static | BindingFlags.NonPublic)!
+                    .MakeGenericMethod(requestType, responseType, keys4.Item1, keys4.Item2, keys4.Item3, keys4.Item4);
+                break;
+            case 5:
+                var keys5 = KeysRequestHelper.GetKey5Type(requestType);
+                methodInfo = typeof(BuildEndpointsMethods)
+                    .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithBodyAnd5Keys),
+                        BindingFlags.Static | BindingFlags.NonPublic)!
+                    .MakeGenericMethod(requestType, responseType, keys5.Item1, keys5.Item2, keys5.Item3, keys5.Item4,
+                        keys5.Item5);
+                break;
+            case 6:
+                var keys6 = KeysRequestHelper.GetKey6Type(requestType);
+                methodInfo = typeof(BuildEndpointsMethods)
+                    .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithBodyAnd6Keys),
+                        BindingFlags.Static | BindingFlags.NonPublic)!
+                    .MakeGenericMethod(requestType, responseType, keys6.Item1, keys6.Item2, keys6.Item3, keys6.Item4,
+                        keys6.Item5, keys6.Item6);
+                break;
+            case 7:
+                var keys7 = KeysRequestHelper.GetKey7Type(requestType);
+                methodInfo = typeof(BuildEndpointsMethods)
+                    .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithBodyAnd7Keys),
+                        BindingFlags.Static | BindingFlags.NonPublic)!
+                    .MakeGenericMethod(requestType, responseType, keys7.Item1, keys7.Item2, keys7.Item3, keys7.Item4,
+                        keys7.Item5, keys7.Item6, keys7.Item7);
+                break;
         }
-        var pattern = GetBasePattern(arrt);
-        return string.Concat(pattern, "/{key}");
+
+        var requestDelegate = (Delegate)methodInfo.Invoke(null, Array.Empty<object>())!;
+        return requestDelegate;
     }
-
-    private static string GetBasePattern(BaseActionAttribute arrt)
+    
+    internal static Delegate GetCreateDelegateEndpointWithBodyAndKeys(Type requestType, Type responseType)
     {
-        if (arrt.CustomPattern is not null)
+        MethodInfo methodInfo = null;
+        var keysCount = KeysRequestHelper.GetKeysCount(requestType);
+        switch (keysCount)
         {
-            return arrt.CustomPattern;
+            case 1:
+                methodInfo = typeof(BuildEndpointsMethods)
+                    .GetMethod(nameof(BuildEndpointsMethods.BuildCreateEndpointWithBodyAnd1Key),
+                        BindingFlags.Static | BindingFlags.NonPublic)!
+                    .MakeGenericMethod(requestType, responseType, KeysRequestHelper.GetKeyType(requestType));
+                break;
+            case 2:
+                var keys2 = KeysRequestHelper.GetKey2Type(requestType);
+                methodInfo = typeof(BuildEndpointsMethods)
+                    .GetMethod(nameof(BuildEndpointsMethods.BuildCreateEndpointWithBodyAnd2Keys),
+                        BindingFlags.Static | BindingFlags.NonPublic)!
+                    .MakeGenericMethod(requestType, responseType, keys2.Item1, keys2.Item2);
+                break;
+            case 3:
+                var keys3 = KeysRequestHelper.GetKey3Type(requestType);
+                methodInfo = typeof(BuildEndpointsMethods)
+                    .GetMethod(nameof(BuildEndpointsMethods.BuildCreateEndpointWithBodyAnd3Keys),
+                        BindingFlags.Static | BindingFlags.NonPublic)!
+                    .MakeGenericMethod(requestType, responseType, keys3.Item1, keys3.Item2, keys3.Item3);
+                break;
+            case 4:
+                var keys4 = KeysRequestHelper.GetKey4Type(requestType);
+                methodInfo = typeof(BuildEndpointsMethods)
+                    .GetMethod(nameof(BuildEndpointsMethods.BuildCreateEndpointWithBodyAnd4Keys),
+                        BindingFlags.Static | BindingFlags.NonPublic)!
+                    .MakeGenericMethod(requestType, responseType, keys4.Item1, keys4.Item2, keys4.Item3, keys4.Item4);
+                break;
+            case 5:
+                var keys5 = KeysRequestHelper.GetKey5Type(requestType);
+                methodInfo = typeof(BuildEndpointsMethods)
+                    .GetMethod(nameof(BuildEndpointsMethods.BuildCreateEndpointWithBodyAnd5Keys),
+                        BindingFlags.Static | BindingFlags.NonPublic)!
+                    .MakeGenericMethod(requestType, responseType, keys5.Item1, keys5.Item2, keys5.Item3, keys5.Item4,
+                        keys5.Item5);
+                break;
+            case 6:
+                var keys6 = KeysRequestHelper.GetKey6Type(requestType);
+                methodInfo = typeof(BuildEndpointsMethods)
+                    .GetMethod(nameof(BuildEndpointsMethods.BuildCreateEndpointWithBodyAnd6Keys),
+                        BindingFlags.Static | BindingFlags.NonPublic)!
+                    .MakeGenericMethod(requestType, responseType, keys6.Item1, keys6.Item2, keys6.Item3, keys6.Item4,
+                        keys6.Item5, keys6.Item6);
+                break;
         }
 
-        var tag = arrt.Tag.ToLower();
-        var version = arrt.Version;
-        return !string.IsNullOrWhiteSpace(arrt.Version) ? string.Concat(version, "/", tag) : tag;
+        var requestDelegate = (Delegate)methodInfo.Invoke(null, Array.Empty<object>())!;
+        return requestDelegate;
     }
 }

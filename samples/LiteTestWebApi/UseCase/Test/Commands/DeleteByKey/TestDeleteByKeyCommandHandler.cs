@@ -6,7 +6,7 @@ public class TestDeleteByKeyCommandHandler : IRequestHandler<TestDeleteByKeyComm
 {
     public ValueTask<Unit> HandleAsync(TestDeleteByKeyCommand request, CancellationToken cancellationToken)
     {
-        Console.WriteLine($"Result from {nameof(TestDeleteByKeyCommand)}, TestData: {request.TestData}, Key: {request.Key}");
+        Console.WriteLine($"Result from {nameof(TestDeleteByKeyCommandHandler)}, TestData: {request.TestData}, Key: {request.Key}");
         return ValueTask.FromResult(Unit.Value);
     }
 }

@@ -9,3 +9,14 @@ public class PostAttribute : BaseActionAttribute
     {
     }
 }
+
+public class PostByKeyAttribute :
+    BaseActionAttribute
+{
+    public PostByKeyAttribute(string tag,
+        string? version = null,
+        string? description = null,
+        string? customPattern = null) : base(tag, version, description, customPattern)
+    {
+    }
+}
