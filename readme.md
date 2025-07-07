@@ -1,3 +1,6 @@
+[![Build and Test](https://github.com/dzmprt/MitMediator/actions/workflows/dotnet.yml/badge.svg)](https://github.com/dzmprt/MitMediator/actions/workflows/dotnet.yml)
+![NuGet](https://img.shields.io/nuget/v/MitMediator.AutoApi)
+![License](https://img.shields.io/github/license/dzmprt/MitMediator.AutoApi)
 # MitMediator.AutoApi
 
 ## Attribute-driven Minimal API registration for MitMediator
