@@ -5,41 +5,62 @@ namespace MitMediator.AutoApi;
 
 public static class RegisterEndpointsExtensions
 {
+    internal static void ThrowIfIsNotRequestType(Type type)
+    {
+        var interfaces = type.GetInterfaces();
+        foreach (var iface in interfaces)
+        {
+            if (iface.IsGenericType &&
+                iface.GetGenericTypeDefinition() == typeof(IRequest<>))
+            {
+                return;
+            }
+        }
+
+        throw new Exception("The type " + type.FullName + " is not a IRequest or IRequest<>");
+    }
+
     public static IEndpointRouteBuilder UseAutoApi(this IEndpointRouteBuilder app)
     {
         var createRequests = Helpers.GetTypesWithAttribute<CreateAttribute>();
         foreach (var request in createRequests)
         {
+            ThrowIfIsNotRequestType(request);
             app.MapRequestCreate(request);
         }
-        
+
         var createByKeyRequests = Helpers.GetTypesWithAttribute<CreateByKeyAttribute>();
         foreach (var request in createByKeyRequests)
         {
+            ThrowIfIsNotRequestType(request);
             app.MapRequestCreateByKey(request);
         }
 
         var postRequests = Helpers.GetTypesWithAttribute<PostAttribute>();
         foreach (var request in postRequests)
         {
+            ThrowIfIsNotRequestType(request);
             app.MapRequestPost(request);
         }
-        
+
         var postByKeyRequests = Helpers.GetTypesWithAttribute<PostByKeyAttribute>();
         foreach (var request in postByKeyRequests)
         {
+            ThrowIfIsNotRequestType(request);
             app.MapRequestPostByKey(request);
         }
 
         var updateRequests = Helpers.GetTypesWithAttribute<UpdateAttribute>();
         foreach (var request in updateRequests)
         {
+            ThrowIfIsNotRequestType(request);
             app.MapRequestUpdate(request);
         }
-        
+
         var updateByKeyRequests = Helpers.GetTypesWithAttribute<UpdateByKeyAttribute>();
         foreach (var request in updateByKeyRequests)
         {
+            ThrowIfIsNotRequestType(request);
             app.MapRequestUpdateByKey(request);
         }
 
@@ -48,23 +69,26 @@ public static class RegisterEndpointsExtensions
         {
             app.MapRequestDelete(request);
         }
-        
+
         var deleteByKeyRequests = Helpers.GetTypesWithAttribute<DeleteByKeyAttribute>();
         foreach (var request in deleteByKeyRequests)
         {
+            ThrowIfIsNotRequestType(request);
             app.MapRequestDeleteByKey(request);
         }
 
         var getRequests = Helpers.GetTypesWithAttribute<GetAttribute>();
-        foreach (var getRequest in getRequests)
+        foreach (var request in getRequests)
         {
-            app.MapRequestGet(getRequest);
+            ThrowIfIsNotRequestType(request);
+            app.MapRequestGet(request);
         }
-        
+
         var getByKeyRequests = Helpers.GetTypesWithAttribute<GetByKeyAttribute>();
-        foreach (var getByKeyRequest in getByKeyRequests)
+        foreach (var request in getByKeyRequests)
         {
-            app.MapRequestGetByKey(getByKeyRequest);
+            ThrowIfIsNotRequestType(request);
+            app.MapRequestGetByKey(request);
         }
 
         return app;
@@ -95,7 +119,8 @@ public static class RegisterEndpointsExtensions
         var responseType = Helpers.GetResponseType(requestType);
 
         var methodInfo = typeof(BuildEndpointsMethods)
-            .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithBody), BindingFlags.Static | BindingFlags.NonPublic)!
+            .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithBody),
+                BindingFlags.Static | BindingFlags.NonPublic)!
             .MakeGenericMethod(requestType, responseType);
 
         var requestDelegate = (Delegate)methodInfo.Invoke(null, Array.Empty<object>())!;
@@ -132,7 +157,7 @@ public static class RegisterEndpointsExtensions
             routeHandlerBuilder.WithGroupName(createAttribute.Version);
         }
     }
-    
+
     private static void MapRequestCreateByKey(this IEndpointRouteBuilder app, Type requestType)
     {
         var postAttribute = requestType.GetCustomAttribute<CreateByKeyAttribute>()!;
@@ -140,7 +165,7 @@ public static class RegisterEndpointsExtensions
         var responseType = Helpers.GetResponseType(requestType);
 
         var requestDelegate = GetCreateDelegateEndpointWithBodyAndKeys(requestType, responseType);
-        
+
         var routeHandlerBuilder = app.MapPost(pattern, requestDelegate)
             .WithTags(postAttribute.Tag)
             .Produces(StatusCodes.Status201Created, responseType);
@@ -158,7 +183,8 @@ public static class RegisterEndpointsExtensions
         var responseType = Helpers.GetResponseType(requestType);
 
         var methodInfo = typeof(BuildEndpointsMethods)
-            .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithBody), BindingFlags.Static | BindingFlags.NonPublic)!
+            .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithBody),
+                BindingFlags.Static | BindingFlags.NonPublic)!
             .MakeGenericMethod(requestType, responseType);
 
         var requestDelegate = (Delegate)methodInfo.Invoke(null, Array.Empty<object>())!;
@@ -172,7 +198,7 @@ public static class RegisterEndpointsExtensions
             routeHandlerBuilder.WithGroupName(postAttribute.Version);
         }
     }
-    
+
     private static void MapRequestPostByKey(this IEndpointRouteBuilder app, Type requestType)
     {
         var postAttribute = requestType.GetCustomAttribute<PostByKeyAttribute>()!;
@@ -180,7 +206,7 @@ public static class RegisterEndpointsExtensions
         var responseType = Helpers.GetResponseType(requestType);
 
         var requestDelegate = GetDelegateEndpointWithBodyAndKeys(requestType, responseType);
-        
+
         var routeHandlerBuilder = app.MapPost(pattern, requestDelegate)
             .WithTags(postAttribute.Tag)
             .Produces(StatusCodes.Status201Created, responseType);
@@ -216,7 +242,8 @@ public static class RegisterEndpointsExtensions
         var responseType = Helpers.GetResponseType(requestType);
 
         var methodInfo = typeof(BuildEndpointsMethods)
-            .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithBody), BindingFlags.Static | BindingFlags.NonPublic)!
+            .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithBody),
+                BindingFlags.Static | BindingFlags.NonPublic)!
             .MakeGenericMethod(requestType, responseType);
 
         var requestDelegate = (Delegate)methodInfo.Invoke(null, Array.Empty<object>())!;
@@ -230,7 +257,7 @@ public static class RegisterEndpointsExtensions
             routeHandlerBuilder.WithGroupName(createAttribute.Version);
         }
     }
-    
+
     private static void MapRequestGetByKey(this IEndpointRouteBuilder app, Type requestType)
     {
         var arrt = requestType.GetCustomAttribute<GetByKeyAttribute>();
@@ -256,7 +283,8 @@ public static class RegisterEndpointsExtensions
         var responseType = Helpers.GetResponseType(requestType);
 
         var methodInfo = typeof(BuildEndpointsMethods)
-            .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithGetParams), BindingFlags.Static | BindingFlags.NonPublic)!
+            .GetMethod(nameof(BuildEndpointsMethods.BuildEndpointWithGetParams),
+                BindingFlags.Static | BindingFlags.NonPublic)!
             .MakeGenericMethod(requestType, responseType);
 
         var requestDelegate = (Delegate)methodInfo.Invoke(null, Array.Empty<object>())!;
@@ -270,7 +298,7 @@ public static class RegisterEndpointsExtensions
             routeHandlerBuilder.WithGroupName(attribute.Version);
         }
     }
-    
+
     internal static Delegate GetDelegateEndpointWithGetParamsAndKeys(Type requestType, Type responseType)
     {
         MethodInfo methodInfo = null;
@@ -333,7 +361,7 @@ public static class RegisterEndpointsExtensions
         var requestDelegate = (Delegate)methodInfo.Invoke(null, Array.Empty<object>())!;
         return requestDelegate;
     }
-    
+
     internal static Delegate GetDelegateEndpointWithBodyAndKeys(Type requestType, Type responseType)
     {
         MethodInfo methodInfo = null;
@@ -396,7 +424,7 @@ public static class RegisterEndpointsExtensions
         var requestDelegate = (Delegate)methodInfo.Invoke(null, Array.Empty<object>())!;
         return requestDelegate;
     }
-    
+
     internal static Delegate GetCreateDelegateEndpointWithBodyAndKeys(Type requestType, Type responseType)
     {
         MethodInfo methodInfo = null;

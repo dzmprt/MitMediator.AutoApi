@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <ExcludeFromCodeCoverage>true</ExcludeFromCodeCoverage>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\src\MitMediator.AutoApi.Abstractions\MitMediator.AutoApi.Abstractions.csproj" />
+    </ItemGroup>
+
+</Project>

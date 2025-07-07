@@ -4,8 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using MitMediator.AutoApi.Abstractions;
-using MitMediator.AutoApi.Tests.RequestsForTests;
+using RequestsForTests;
 
 namespace MitMediator.AutoApi.Tests;
 
@@ -71,5 +70,21 @@ public class EndpointsRegistrationsTests
                re.RoutePattern.RawText == pattern &&
                re.Metadata.OfType<HttpMethodMetadata>()
                    .Any(m => m.HttpMethods.Contains(verb));
+    }
+
+    [Fact]
+    public void ThrowIfIsNotRequestType_TestThrows()
+    {
+        // Arrange
+        var type = typeof(string);
+        var method = typeof(RegisterEndpointsExtensions)
+            .GetMethod(nameof(RegisterEndpointsExtensions.ThrowIfIsNotRequestType), BindingFlags.NonPublic | BindingFlags.Static)!;
+        
+        // Act & Assert
+        var ex = Assert.Throws<TargetInvocationException>(() =>
+            method.Invoke(null, new object[] { type }));
+        
+        Assert.NotNull(ex.InnerException);
+        Assert.Equal($"The type " + type.FullName + " is not a IRequest or IRequest<>", ex.InnerException.Message);
     }
 }
