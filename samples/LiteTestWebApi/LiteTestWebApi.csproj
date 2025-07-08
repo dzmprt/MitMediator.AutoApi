@@ -16,13 +16,15 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.20"/>
-        <PackageReference Include="MitMediator" Version="6.0.0-rc-2" />
-        <PackageReference Include="MitMediator.AutoApi" Version="7.0.0-alfa" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
     </ItemGroup>
 
     <ItemGroup>
       <Folder Include="UseCase\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\MitMediator.AutoApi\MitMediator.AutoApi.csproj" />
     </ItemGroup>
 
     <PropertyGroup>

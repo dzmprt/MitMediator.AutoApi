@@ -17,9 +17,8 @@ builder.Services.AddSwaggerGen(options =>
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
 
-
 var app = builder.Build();
-app.UseAutoApi();
+app.UseAutoApi("api");
 
 // Configure the HTTP request pipeline.
 app.UseSwagger(c => { c.RouteTemplate = "swagger/{documentname}/swagger.json"; })

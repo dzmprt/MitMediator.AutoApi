@@ -40,6 +40,6 @@ Init version for tests</PackageReleaseNotes>
     </ItemGroup>
     
     <ItemGroup>
-      <PackageReference Include="MitMediator.AutoApi.Abstractions" Version="7.0.0-alfa" />
+      <ProjectReference Include="..\MitMediator.AutoApi.Abstractions\MitMediator.AutoApi.Abstractions.csproj" />
     </ItemGroup>
 </Project>

@@ -1,6 +1,6 @@
 using System.Reflection;
 using MitMediator.AutoApi.Abstractions;
-using MitMediator.AutoApi.Tests.RequestsForTests;
+using RequestsForTests;
 
 namespace MitMediator.AutoApi.Tests;
 

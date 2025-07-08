@@ -28,7 +28,7 @@ var app = builder.Build();
 InitDatabase(app);
 
 app.UseCustomExceptionsHandler();
-app.UseAutoApi();
+app.UseAutoApi("api");
 
 app.UseSwagger(c => { c.RouteTemplate = "swagger/{documentname}/swagger.json"; })
     .UseSwaggerUI(options =>

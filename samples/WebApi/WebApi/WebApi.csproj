@@ -15,11 +15,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="MitMediator.AutoApi" Version="7.0.0-alfa" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="7.3.2" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\..\src\MitMediator.AutoApi\MitMediator.AutoApi.csproj" />
       <ProjectReference Include="..\Application\Application.csproj" />
       <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
     </ItemGroup>
