@@ -1,5 +1,6 @@
 [![Build and Test](https://github.com/dzmprt/MitMediator/actions/workflows/dotnet.yml/badge.svg)](https://github.com/dzmprt/MitMediator/actions/workflows/dotnet.yml)
 ![NuGet](https://img.shields.io/nuget/v/MitMediator.AutoApi)
+![.NET 7.0](https://img.shields.io/badge/Version-.NET%207.0-informational?style=flat&logo=dotnet)
 ![License](https://img.shields.io/github/license/dzmprt/MitMediator.AutoApi)
 # MitMediator.AutoApi
 
@@ -11,7 +12,7 @@
 ### For ASP.NET API projects
 Install package to enable attribute-based registration:
 ```bash
-dotnet add package MitMediator.AutoApi -v 7.0.0-alfa
+dotnet add package MitMediator.AutoApi -v 7.0.0-alfa-2
 ```
 
 ### For application layer projects
