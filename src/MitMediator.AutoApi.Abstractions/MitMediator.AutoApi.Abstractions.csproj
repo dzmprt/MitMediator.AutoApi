@@ -22,10 +22,6 @@ Init version for tests</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="MitMediator" Version="6.0.0-rc-2" />
-    </ItemGroup>
-
-    <ItemGroup>
         <None Include="..\..\assets\logo.png" Pack="true" PackagePath="" />
     </ItemGroup>
 

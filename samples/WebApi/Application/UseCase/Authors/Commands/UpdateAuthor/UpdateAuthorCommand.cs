@@ -7,7 +7,6 @@ namespace Application.UseCase.Authors.Commands.UpdateAuthor;
 /// <summary>
 /// Update author.
 /// </summary>
-[UpdateByKey(nameof(Authors), "v1", "Update author by id.")]
 public struct UpdateAuthorCommand : IRequest<Author>, IKeyRequest<int>
 {
     /// <summary>

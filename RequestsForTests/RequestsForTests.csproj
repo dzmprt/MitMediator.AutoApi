@@ -6,12 +6,16 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
-    <PropertyGroup>
-        <ExcludeFromCodeCoverage>true</ExcludeFromCodeCoverage>
-    </PropertyGroup>
-
     <ItemGroup>
       <ProjectReference Include="..\src\MitMediator.AutoApi.Abstractions\MitMediator.AutoApi.Abstractions.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MitMediator" Version="6.0.0-rc-2" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <ExcludeFromCodeCoverage>true</ExcludeFromCodeCoverage>
+    </PropertyGroup>
 
 </Project>

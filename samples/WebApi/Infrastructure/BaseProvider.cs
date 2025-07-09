@@ -34,6 +34,17 @@ public class BaseProvider<TEntity> : IBaseProvider<TEntity> where TEntity : clas
         return await DbSet.FirstOrDefaultAsync(predicate, cancellationToken: cancellationToken);
     }
 
+    public async ValueTask<int> CountAsync(Expression<Func<TEntity, bool>>? predicate, CancellationToken cancellationToken)
+    {
+        var query = DbSet.AsQueryable();
+        if (predicate is not null)
+        {
+            query = query.Where(predicate);
+        }
+
+        return await query.CountAsync(cancellationToken);
+    }
+
     /// <inheritdoc/>
     public async ValueTask<TEntity[]> SearchAsync<TKey>(Expression<Func<TEntity, bool>>? predicate, Expression<Func<TEntity, TKey>>? orderBy, int? limit, int? offset, CancellationToken cancellationToken)
     {

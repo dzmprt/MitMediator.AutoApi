@@ -7,7 +7,6 @@ namespace Application.UseCase.Authors.Queries.GetAuthor;
 /// <summary>
 /// Get author query.
 /// </summary>
-[GetByKey(nameof(Authors), "v1", "Get author by id.")]
 public struct GetAuthorQuery : IRequest<Author>, IKeyRequest<int>
 {
     /// <summary>

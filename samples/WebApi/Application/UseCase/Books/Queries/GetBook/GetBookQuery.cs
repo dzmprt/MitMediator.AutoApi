@@ -7,7 +7,6 @@ namespace Application.UseCase.Books.Queries.GetBook;
 /// <summary>
 /// Get book query.
 /// </summary>
-[GetByKey(nameof(Books), "v1", "Get book by id.")]
 public struct GetBookQuery : IRequest<Book>, IKeyRequest<int>
 {
     /// <summary>

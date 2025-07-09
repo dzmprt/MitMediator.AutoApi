@@ -6,7 +6,6 @@ namespace Application.UseCase.Authors.Commands.DeleteAuthor;
 /// <summary>
 /// Delete author command.
 /// </summary>
-[DeleteByKey(nameof(Authors), "v1", "Delete author by id.")]
 public struct DeleteAuthorCommand : IRequest, IKeyRequest<int>
 {
     /// <summary>
