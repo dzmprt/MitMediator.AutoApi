@@ -2,10 +2,10 @@ using MitMediator;
 
 namespace LiteTestWebApi.UseCase.Test.Commands.Update;
 
-public class TestUpdateCommandHandler : IRequestHandler<TestUpdateCommand, string>
+public class UpdateTestCommandHandler : IRequestHandler<UpdateTestCommand, string>
 {
-    public ValueTask<string> HandleAsync(TestUpdateCommand request, CancellationToken cancellationToken)
+    public ValueTask<string> HandleAsync(UpdateTestCommand request, CancellationToken cancellationToken)
     {
-        return ValueTask.FromResult($"Result from {nameof(TestUpdateCommandHandler)}, TestData: {request.TestData}");
+        return ValueTask.FromResult($"Result from {nameof(UpdateTestCommandHandler)}, TestData: {request.TestData}");
     }
 }

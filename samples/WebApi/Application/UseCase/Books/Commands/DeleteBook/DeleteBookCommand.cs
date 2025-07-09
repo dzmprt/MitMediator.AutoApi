@@ -7,11 +7,10 @@ namespace Application.UseCase.Books.Commands.DeleteBook;
 /// <summary>
 /// Delete book command.
 /// </summary>
-[DeleteByKey(nameof(Books), "v1", "Delete book by id.")]
 public struct DeleteBookCommand : IRequest, IKeyRequest<int>
 {
     /// <summary>
-    /// Author id.
+    /// Book id.
     /// </summary>
     internal int BookId { get; private set; }
 

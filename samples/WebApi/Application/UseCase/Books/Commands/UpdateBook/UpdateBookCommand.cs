@@ -7,7 +7,6 @@ namespace Application.UseCase.Books.Commands.UpdateBook;
 /// <summary>
 /// Update book command.
 /// </summary>
-[UpdateByKey(nameof(Books), "v1", "Update book")]
 public class UpdateBookCommand : IRequest<Book>, IKeyRequest<int>
 {
     /// <summary>

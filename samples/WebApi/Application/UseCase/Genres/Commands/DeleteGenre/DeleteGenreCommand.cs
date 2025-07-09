@@ -6,7 +6,6 @@ namespace Application.UseCase.Genres.Commands.DeleteGenre;
 /// <summary>
 /// Delete genre command.
 /// </summary>
-[DeleteByKey(nameof(Genres), "v1", "Delete genre by name.")]
 public struct DeleteGenreCommand : IRequest, IKeyRequest<string>
 {
     /// <summary>

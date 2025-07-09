@@ -9,19 +9,15 @@
 
 ## 🚀 Installation
 
-### For ASP.NET API projects
-Install package to enable attribute-based registration:
+### 1. Add package
 ```bash
-dotnet add package MitMediator.AutoApi -v 7.0.0-alfa-2
-```
+# for ASP.NET API projects
+dotnet add package MitMediator.AutoApi -v 7.0.0-alfa-3
 
-### For application layer projects
-Install the abstractions package to define attributes and interfaces:
-```bash
-dotnet add package MitMediator.AutoApi.Abstractions -v 7.0.0-alfa
+# for application layer
+dotnet add package MitMediator.AutoApi.Abstractions -v 7.0.0-alfa-3
 ```
-
-## ⚙️ Setup
+### 2. Use extension for IEndpointRouteBuilder
 
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
@@ -30,63 +26,195 @@ builder.Services.AddMitMediator();
 
 var app = builder.Build();
 
-// Automatically maps endpoints based on IRequest attributes with one of attributes
+// Automatically maps endpoints based on IRequest
 app.UseAutoApi(); 
 
 app.Run();
 ```
+To use base path "api" and select assemblies with requests:
+```csharp
+app.UseAutoApi("api", new []{typeof(GetQuery).Assembly});
+```
 
-## 🧩 How It Works
+### 3. Done! All public requests have endpoints
 
-1. Scans all loaded assemblies for `IRequest` types decorated with action attributes (e.g. `[Create]`, `[GetByKey]`, etc.)
+## 🧪 Examples
+
+### `GET` method 
+```csharp
+// Get - http method
+// Books - main tag
+// Api URL: GET /books?limit=1&offset=1&freeText=clara
+public struct GetBooksQuery : IRequest<Book[]>
+{
+    public int? Limit { get; init; }
+    
+    public int? Offset { get; init; }
+    
+    public string? FreeText { get; init; }
+}
+```
+
+### `GET` method with key in url
+```csharp
+// Use IKeyRequest<> to get get from url.
+// Get - http method
+// Book - main tag (books in url)
+// Api URL: GET /books/123
+public struct GetBookQuery : IRequest<Book>, IKeyRequest<int>
+{
+    internal int BookId { get; private set; }
+
+    public void SetKey(int key)
+    {
+        BookId = key;
+    }
+}
+```
+
+### `GET` method with suffix
+```csharp
+// Get - http method
+// Books - main tag
+// Count - action suffix
+// Api URL: GET /books/count?freeText=clara
+public struct GetBooksCountQuery : IRequest<int>
+{
+    public string? FreeText { get; init; }
+}
+```
+
+### `POST` method with 201 response
+```csharp
+// Create - POST http method, return 201
+// Book - main tag (books in url)
+// Api URL: POST /books
+public class CreateBookCommand : IRequest<Book>
+{
+    public string Title { get; init; }
+    
+    public int AuthorId { get; init; }
+
+    public string GenreName { get; init; }
+}
+```
+
+### `PUT` method with key in url
+```csharp
+// Update - PUT http method
+// Book - main tag (books in url)
+// Api URL: PUT /books/123
+public class UpdateBookCommand : IRequest<Book>, IKeyRequest<int>
+{
+    internal int BookId { get; private set; }
+    
+    public string Title { get; init; }
+    
+    public int AuthorId { get; init; }
+
+    public string GenreName { get; init; }
+
+    public void SetKey(int key)
+    {
+        BookId = key;
+    }
+}
+```
+
+### `DELETE` method with key in url
+```csharp
+// Delete - DELETE http method
+// Book - main tag (books in url)
+// Api URL: DELETE /books/123
+public struct DeleteBookCommand : IRequest, IKeyRequest<int>
+{
+    internal int BookId { get; private set; }
+
+    public void SetKey(int key)
+    {
+        BookId = key;
+    }
+}
+```
+
+### Change default mapping
+
+Use the `[AutoApi]` attribute for the request type to change default mapping
+
+### `GET` method with version and custom tag
+```csharp
+// Get - http method
+// books - main tag
+// v2 - api version
+// Api URL: GET v2/new-books?limit=1&offset=1&freeText=clara
+[AutoApi("new-books", "v2")]
+public struct GetBooksQuery : IRequest<Book[]>
+{
+    public int? Limit { get; init; }
+    
+    public int? Offset { get; init; }
+    
+    public string? FreeText { get; init; }
+}
+```
+### `GET` method with version, custom pattern and selected http method
+```csharp
+[AutoApi(customPattern: "with-keys/{key1}/{key2}", version: "v3", httpMethodType:HttpMethodType.Delete)]
+public class DoSomeWithBookAndDeleteCommand : IRequest<Book[]>, IKeyRequest<int, Guid>
+{
+    internal int BookId { get; private set; }
+    
+    internal Guid GuidId { get; private set; }
+
+    public void SetKey1(int key)
+    {
+        BookId = key;
+    }
+    
+    public void SetKey2(Guid key)
+    {
+        GuidId = key;
+    }
+}
+```
+
+### 📁 See [samples](./samples) for usage examples
+
+## ⚙️ How It Works
+
+1. Scans all loaded assemblies for `IRequest` types
 2. Dynamically generates and registers endpoints for each match
 3. Maps routes using `MapPost`, `MapGet`, `MapPut`, and `MapDelete`, internally calling `IMediator.SendAsync()`
 
-## 🔖 Supported Attributes
+If you need to change the generated method, use the `[AutoApi]` attribute for the request type
 
-| Attribute     | HTTP Method | Default Route    | Response status code |
-|---------------|-------------|------------------|----------------------| 
-| `Create`      | POST        | `/v1/tag`        | 201                  |
-| `CreateByKey` | POST        | `/v1/tag/{key}`  | 201                  |
-| `Post`        | POST        | `/v1/tag`        | 200                  |
-| `PostByKey`   | POST        | `/v1/tag/{key}`  | 200                  |
-| `Update`      | PUT         | `/v1/tag`        | 200                  |
-| `UpdateByKey` | PUT         | `/v1/tag/{key}`  | 200                  |
-| `Delete`      | DELETE      | `/v1/tag`        | 200                  |
-| `DeleteByKey` | DELETE      | `/v1/tag/{key}`  | 200                  |
-| `Get`         | GET         | `/v1/tag`        | 200                  |
-| `GetByKey`    | GET         | `/v1/tag/{key}`  | 200                  |
+The HTTP method type is determined automatically according to the request name:
 
-## 🧪 Example Command
+| Request name start with | HTTP Method         |
+|-------------------------|---------------------|
+| `get`                   | GET                 |
+| `load`                  | GET                 |
+| `download`              | GET                 |
+| `update`                | PUT                 |
+| `change`                | PUT                 |
+| `edit`                  | PUT                 |
+| `modify`                | PUT                 |
+| `put`                   | PUT                 |
+| `post`                  | POST                |
+| `add`                   | POST (201 response) |
+| `create`                | POST (201 response) |
+| `upload`                | POST (201 response) |
+| `delete`                | DELETE              |
+| `remove`                | DELETE              |
+| `drop`                  | DELETE              |
 
-```csharp
-// Maps to POST /v1/users with status 201
-[Create("uses", "v1")]
-public class CreateUserCommand : IRequest<UserDto>
-{
-    public string Name { get; set; }
+The first word after the method will be the main tag. Second and other - suffix. For example:
 
-    public int Age { get; set; }
-}
-```
+`GetBookCountQuery` - Get - http method GET, Book - main tag (books in url), Count - suffix (/count in url)
 
-You can override default route generation by providing a custom pattern through the attribute’s customPattern property. This enables fine-grained control over endpoint structure
+`RemoveBookWithAuthorCommand` - Remove - http method DELETE, Book - main tag (books in url), WithAuthor - suffix (/with-author in url)
 
-```csharp
-// Maps to DELETE /v2/items/remove/{key1}/{key2} endpoint, 
-// return no payload responses with http status code 200
-[DeleteByKey("any-tag", customPattern: "v2/items/remove/{key1}/{key2}")]
-public class DeleteItemCommand : IRequest, IKeyRequest<Guid, int>
-{
-    internal Guid GuidId { get; set; }
-    
-    internal int IntId { get; set; }
-
-    public void SetKey1(Guid id) => GuidId = id;
-    
-    public void SetKey2(int id) => IntId = id;
-}
-```
+Words `command`, `query`, and `request` in the end of request type name will be deleted from url.
 
 ## 💡 Features
 

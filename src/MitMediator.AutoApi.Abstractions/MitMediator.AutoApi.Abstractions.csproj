@@ -4,7 +4,7 @@
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Version>7.0.0-alfa</Version>
+        <Version>7.0.0-alfa-3</Version>
         <Title>MitMediator.AutoApi.Abstractions</Title>
         <Description>Abstractions of attribute-driven minimal API registration for MitMediator</Description>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -16,14 +16,10 @@
         <PackageIcon>logo.png</PackageIcon>
         <RepositoryUrl>https://github.com/dzmprt/MitMediator.AutoApi</RepositoryUrl>
         <PackageTags>mediator;request;response;queries;commands;mitmediator;minimalapi;autoapi;cqrs;</PackageTags>
-        <PackageReleaseNotes>v7.0.0-alfa
-Init version for tests</PackageReleaseNotes>
+        <PackageReleaseNotes>v7.0.0-alfa-3
+Version for tests</PackageReleaseNotes>
         <TrimMode>full</TrimMode>
     </PropertyGroup>
-
-    <ItemGroup>
-      <PackageReference Include="MitMediator" Version="6.0.0-rc-2" />
-    </ItemGroup>
 
     <ItemGroup>
         <None Include="..\..\assets\logo.png" Pack="true" PackagePath="" />

@@ -20,10 +20,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="UseCase\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\..\src\MitMediator.AutoApi\MitMediator.AutoApi.csproj" />
     </ItemGroup>
 

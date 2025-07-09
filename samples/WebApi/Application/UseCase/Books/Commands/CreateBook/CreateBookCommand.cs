@@ -7,7 +7,6 @@ namespace Application.UseCase.Books.Commands.CreateBook;
 /// <summary>
 /// Create book command.
 /// </summary>
-[Create(nameof(Books), "v1", "Create book")]
 public class CreateBookCommand : IRequest<Book>
 {
     /// <summary>
@@ -24,5 +23,4 @@ public class CreateBookCommand : IRequest<Book>
     /// Genre.
     /// </summary>
     public string GenreName { get; init; }
-
 }

@@ -24,6 +24,15 @@ public interface IBaseProvider<TEntity>
     /// <param name="cancellationToken"><see cref="CancellationToken"/>.</param>
     /// <returns>Search result.</returns>
     ValueTask<TEntity[]> SearchAsync<TKey>(Expression<Func<TEntity, bool>>? predicate, Expression<Func<TEntity, TKey>>? orderBy, int? limit, int? offset, CancellationToken cancellationToken);
+   
+    /// <summary>
+    /// Get entities count.
+    /// </summary>
+    /// <param name="predicate">Filter predicate.</param>
+    /// <param name="cancellationToken"><see cref="CancellationToken"/>.</param>
+    /// <returns>Search result.</returns>
+    ValueTask<int> CountAsync(Expression<Func<TEntity, bool>>? predicate, CancellationToken cancellationToken);
+
     
     /// <summary>
     /// Get all entities.
