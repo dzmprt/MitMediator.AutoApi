@@ -201,6 +201,7 @@ The HTTP method type is determined automatically according to the request name:
 | `modify`                | PUT                 |
 | `put`                   | PUT                 |
 | `post`                  | POST                |
+| `import`                | POST                |
 | `add`                   | POST (201 response) |
 | `create`                | POST (201 response) |
 | `upload`                | POST (201 response) |

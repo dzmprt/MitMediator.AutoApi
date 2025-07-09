@@ -345,6 +345,7 @@ internal static class Helpers
         ["put"] = HttpMethodType.Put,
 
         ["post"] = HttpMethodType.Post,
+        ["import"] = HttpMethodType.Post,
 
         ["add"] = HttpMethodType.PostCreate,
         ["create"] = HttpMethodType.PostCreate,
