@@ -4,7 +4,7 @@
 ![License](https://img.shields.io/github/license/dzmprt/MitMediator.AutoApi)
 # MitMediator.AutoApi
 
-## Attribute-driven Minimal API registration for MitMediator
+## Minimal API registration for MitMediator
 ### 🔗 Extension for [MitMediator](https://github.com/dzmprt/MitMediator)
 
 ## 🚀 Installation
