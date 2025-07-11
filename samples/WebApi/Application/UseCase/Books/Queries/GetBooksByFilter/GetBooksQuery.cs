@@ -7,7 +7,7 @@ namespace Application.UseCase.Books.Queries.GetBooksByFilter;
 /// <summary>
 /// Get books query.
 /// </summary>
-public struct GetBooksQuery : IRequest<Book[]>
+public class GetBooksQuery : IRequest<Book[]>
 {
     /// <summary>
     /// Limit.

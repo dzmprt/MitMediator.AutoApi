@@ -4,7 +4,7 @@
 ![License](https://img.shields.io/github/license/dzmprt/MitMediator.AutoApi)
 # MitMediator.AutoApi
 
-## Attribute-driven Minimal API registration for MitMediator
+## Minimal API registration for MitMediator
 ### 🔗 Extension for [MitMediator](https://github.com/dzmprt/MitMediator)
 
 ## 🚀 Installation
@@ -12,10 +12,13 @@
 ### 1. Add package
 ```bash
 # for ASP.NET API projects
-dotnet add package MitMediator.AutoApi -v 7.0.0-alfa-3
+dotnet add package MitMediator.AutoApi -v 7.0.0-alfa-4
 
 # for application layer
-dotnet add package MitMediator.AutoApi.Abstractions -v 7.0.0-alfa-3
+dotnet add package MitMediator.AutoApi.Abstractions -v 7.0.0-alfa-4
+
+# for client application (MAUI, Blazor, UWP, etc.)
+dotnet add package MitMediator.AutoApi.HttpMediator -v 7.0.0-alfa-4
 ```
 ### 2. Use extension for IEndpointRouteBuilder
 
@@ -57,7 +60,7 @@ public struct GetBooksQuery : IRequest<Book[]>
 
 ### `GET` method with key in url
 ```csharp
-// Use IKeyRequest<> to get get from url.
+// Use IKeyRequest<> to set and get key from ur.
 // Get - http method
 // Book - main tag (books in url)
 // Api URL: GET /books/123
@@ -69,6 +72,8 @@ public struct GetBookQuery : IRequest<Book>, IKeyRequest<int>
     {
         BookId = key;
     }
+    
+    public int GetKey => BookId;
 }
 ```
 
@@ -118,6 +123,8 @@ public class UpdateBookCommand : IRequest<Book>, IKeyRequest<int>
     {
         BookId = key;
     }
+    
+    public int GetKey => BookId;
 }
 ```
 
@@ -134,6 +141,8 @@ public struct DeleteBookCommand : IRequest, IKeyRequest<int>
     {
         BookId = key;
     }
+    
+    public int GetKey => BookId;
 }
 ```
 
@@ -171,14 +180,57 @@ public class DoSomeWithBookAndDeleteCommand : IRequest<Book[]>, IKeyRequest<int,
         BookId = key;
     }
     
+    public int GetKey1 => BookId;
+    
     public void SetKey2(Guid key)
     {
         GuidId = key;
     }
+    
+    public Guid GetKey2 => GuidId;
 }
 ```
 
-### 📁 See [samples](./samples) for usage examples
+### 🎯 Use auto client: HttpMediator
+
+You can reuse your `IRequest` types to seamlessly send HTTP requests to a server-side API using `HttpMediator`
+
+`HttpMediator` supports `IPipelineBehavior<TRequest, TResponse>` for middleware-like extensibility, and `IHttpHeaderInjector<TRequest, TResponse>` for injecting custom headers per request
+
+### 🔧 Sample usage:
+
+```csharp
+var mediator = new HttpMediator(serviceProvider, baseUrl: "https://api.example.com");
+var response = await mediator.SendAsync<MyRequest, MyResponse>(new MyRequest(), cancellationToken);
+```
+
+### 🔧 More
+```csharp
+var baseApiUrl = "api";
+var httpClientName = "baseHttpClient";
+var serviceCollection = new ServiceCollection();
+serviceCollection.AddHttpClient(httpClientName, client => { client.BaseAddress = new Uri("https://localhost:7127/"); });
+serviceCollection.AddScoped(typeof(IHttpHeaderInjector<,>), typeof(AuthorizationHeaderInjection<,>));
+serviceCollection.AddScoped<IHttpMediator, HttpMediator>(c => new HttpMediator(c, baseApiUrl, httpClientName));
+
+var provider = serviceCollection.BuildServiceProvider();
+var httpMediator = provider.GetRequiredService<IHttpMediator>();
+
+var query = new GetBookQuery();
+query.SetKey(12);
+var data = await httpMediator.SendAsync<GetBookQuery, Book>(query, CancellationToken.None);
+
+public class AuthorizationHeaderInjection<TRequest, TResponse> : IHttpHeaderInjector<TRequest, TResponse> where TRequest : IRequest<TResponse>
+{
+    public ValueTask<(string, string)?> GetHeadersAsync(CancellationToken cancellationToken)
+    {
+        var result = ("Authorization", "Bearer token");
+        return ValueTask.FromResult<(string, string)?>(result);
+    }
+}
+```
+
+### 📁 See [samples](./samples)
 
 ## ⚙️ How It Works
 
@@ -201,10 +253,10 @@ The HTTP method type is determined automatically according to the request name:
 | `modify`                | PUT                 |
 | `put`                   | PUT                 |
 | `post`                  | POST                |
+| `upload`                | POST                |
 | `import`                | POST                |
 | `add`                   | POST (201 response) |
 | `create`                | POST (201 response) |
-| `upload`                | POST (201 response) |
 | `delete`                | DELETE              |
 | `remove`                | DELETE              |
 | `drop`                  | DELETE              |
@@ -225,3 +277,4 @@ Words `command`, `query`, and `request` in the end of request type name will be 
 * Built-in handling of `Unit` results (no payload responses)
 * Key binding via IKeyRequest<TKey1, TKey2, ...> (pattern `{key1}/{key2}/.../{key7}`)
 * Supports custom patterns (`custom-route/my-route`, `with-keys/{key1}/{key2}/field/{key3}`)
+* Auto client `HttpMediator` for clients applications

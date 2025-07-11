@@ -1,4 +1,3 @@
-using LiteTestWebApi.UseCase.Test.Commands.PostBy6Keys;
 using MitMediator;
 using MitMediator.AutoApi.Abstractions;
 
@@ -27,9 +26,19 @@ public class PostTestBy7KeysCommand : IRequest<string>, IKeyRequest<int, int, in
         Key1 = key;
     }
 
+    public int GetKey1()
+    {
+        throw new NotImplementedException();
+    }
+
     public void SetKey2(int key)
     {
         Key2 = key;
+    }
+
+    public int GetKey2()
+    {
+        throw new NotImplementedException();
     }
 
     public void SetKey3(int key)
@@ -37,9 +46,19 @@ public class PostTestBy7KeysCommand : IRequest<string>, IKeyRequest<int, int, in
         Key3 = key;
     }
 
+    public int GetKey3()
+    {
+        throw new NotImplementedException();
+    }
+
     public void SetKey4(int key)
     {
         Key4 = key;
+    }
+
+    public int GetKey4()
+    {
+        throw new NotImplementedException();
     }
 
     public void SetKey5(int key)
@@ -47,13 +66,28 @@ public class PostTestBy7KeysCommand : IRequest<string>, IKeyRequest<int, int, in
         Key5 = key;
     }
 
+    public int GetKey5()
+    {
+        throw new NotImplementedException();
+    }
+
     public void SetKey6(int key)
     {
         Key6 = key;
     }
 
+    public int GetKey6()
+    {
+        throw new NotImplementedException();
+    }
+
     public void SetKey7(int key)
     {
         Key7 = key;
+    }
+
+    public int GetKey7()
+    {
+        throw new NotImplementedException();
     }
 }

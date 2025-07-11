@@ -1,0 +1,135 @@
+using System.Net.Http.Headers;
+using System.Reflection;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.Extensions.DependencyInjection;
+using MitMediator.AutoApi.Abstractions;
+
+namespace MitMediator.AutoApi.HttpMediator;
+
+internal class HttpRequestHandler<TRequest, TResponse> : IRequestHandler<TRequest, TResponse> where TRequest : IRequest<TResponse>
+{
+    private readonly IServiceProvider _serviceProvider;
+    
+    private readonly string? _baseUrl;
+
+    private readonly string? _httpClientName;
+
+    public HttpRequestHandler(IServiceProvider serviceProvider, string? baseUrl = null, string? httpClientName = null)
+    {
+        _serviceProvider = serviceProvider;
+        _baseUrl = baseUrl;
+        _httpClientName = httpClientName;
+    }
+    
+    public async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
+    {
+        var typeRequest = typeof(TRequest);
+        var pattern = RequestHelper.GetPattern(typeRequest);
+        var autoApiAttribute = typeRequest.GetCustomAttribute<AutoApiAttribute>();
+        var patternKeys = ExtractKeys(request);
+        if (patternKeys.Any())
+        {
+            if (patternKeys.Length == 1)
+            {
+                pattern = pattern.Replace("{key}", patternKeys[0].ToString());
+            }
+            else
+            {
+                for (var i = 1; i < patternKeys.Length + 1; i++)
+                {
+                    pattern = pattern.Replace($"{{key}}{i}", patternKeys[0].ToString());
+                }
+            }
+        }
+        if (string.IsNullOrWhiteSpace(autoApiAttribute?.CustomPattern))
+        {
+            if (!string.IsNullOrWhiteSpace(_baseUrl))
+            {
+                pattern = string.Concat(_baseUrl, "/" ,pattern);
+            }
+        }
+        var httpMethod = RequestHelper.GetHttpMethod(typeof(TRequest));
+        var httpHeaderInjectors = _serviceProvider
+            .GetServices<IHttpHeaderInjector<TRequest, TResponse>>();
+        var clientFactory = _serviceProvider.GetRequiredService<IHttpClientFactory>();
+        var httpClient = _httpClientName is null ? clientFactory.CreateClient() :  clientFactory.CreateClient(_httpClientName);
+        foreach (var httpHeaderInjector in httpHeaderInjectors)
+        {
+            var header = await httpHeaderInjector.GetHeadersAsync(cancellationToken);
+            if (header.HasValue)
+            {
+                httpClient.DefaultRequestHeaders.Add(header.Value.Item1, header.Value.Item2);   
+            }
+        }
+
+        switch (httpMethod)
+        {
+            case HttpMethodType.Get:
+                var getResponse = await httpClient.GetAsync(pattern + request.ToQueryString(), cancellationToken);
+                ThrowIfNotSuccessStatusCode(getResponse);
+                return (await ConvertResponseAsync<TResponse>(getResponse, cancellationToken)).Item1;
+            case HttpMethodType.PostCreate:
+            case HttpMethodType.Post:
+                var postResponse = await httpClient.PostAsync(pattern, new StringContent(
+                    JsonSerializer.Serialize(request),
+                    Encoding.UTF8,
+                    "application/json"), cancellationToken);
+                ThrowIfNotSuccessStatusCode(postResponse);
+                return (await ConvertResponseAsync<TResponse>(postResponse, cancellationToken)).Item1;
+            case HttpMethodType.Put:
+                var putResponse = await httpClient.PutAsync(pattern, new StringContent(
+                    JsonSerializer.Serialize(request),
+                    Encoding.UTF8,
+                    "application/json"), cancellationToken);
+                ThrowIfNotSuccessStatusCode(putResponse);
+                return (await ConvertResponseAsync<TResponse>(putResponse, cancellationToken)).Item1;
+            case HttpMethodType.Delete:
+                var deleteResponse = await httpClient.DeleteAsync(pattern, cancellationToken);
+                ThrowIfNotSuccessStatusCode(deleteResponse);
+                return (await ConvertResponseAsync<TResponse>(deleteResponse, cancellationToken)).Item1;
+            case HttpMethodType.Auto:
+            default:
+                throw new NotImplementedException($"HTTP method {httpMethod} is not implemented");
+        }
+    }
+
+    public static object[] ExtractKeys(object obj)
+    {
+        var type = obj.GetType();
+        
+        var methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public)
+            .Where(m => m.Name.StartsWith("GetKey"))
+            .OrderBy(m => m.Name == "GetKey" ? 0 : int.TryParse(m.Name.Substring("GetKey".Length), out var index) ? index : 1000);
+
+        return (from method in methods where method.GetParameters().Length == 0 select method.Invoke(obj, null)).ToArray();
+    }
+    
+    private static void ThrowIfNotSuccessStatusCode(HttpResponseMessage response)
+    {
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException(response.ReasonPhrase, null, response.StatusCode);
+        }
+    }
+    
+    private static async ValueTask<(T, HttpResponseHeaders responseHeaders)> ConvertResponseAsync<T>(
+        HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        var content = await response.Content.ReadAsStringAsync(cancellationToken);
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return (default, response.Headers);
+        }
+        var stringEnumConverter = new JsonStringEnumConverter();
+        var opts = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            TypeInfoResolver = new PrivateSetterResolver()
+        };
+        opts.Converters.Add(stringEnumConverter);
+        var responseModel = JsonSerializer.Deserialize<T>(content, opts)!;
+        return (responseModel, response.Headers);
+    }
+}

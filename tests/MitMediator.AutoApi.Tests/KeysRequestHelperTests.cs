@@ -1,8 +1,5 @@
 using System.Reflection;
 using MitMediator.AutoApi.Abstractions;
-using RequestsForTests;
-using RequestsForTests.Test.Queries.GetByKey;
-using RequestsForTests.Test.Queries.GetEmpty;
 
 namespace MitMediator.AutoApi.Tests;
 
@@ -13,15 +10,15 @@ public class KeysRequestHelperTests
     {
         // Arrange
         var type = typeof(string);
-        var method = typeof(Helpers)
-            .GetMethod(nameof(Helpers.GetKeysCount), BindingFlags.NonPublic | BindingFlags.Static)!;
+        var method = typeof(RequestHelper)
+            .GetMethod(nameof(RequestHelper.GetKeysCount), BindingFlags.Public | BindingFlags.Static)!;
         
         // Act & Assert
         var ex = Assert.Throws<TargetInvocationException>(() =>
             method.Invoke(null, new object[] { type }));
         
         Assert.NotNull(ex.InnerException);
-        Assert.Equal($"Invalid number of generic arguments for type String. Type must implement IKeyRequest<> interface.", ex.InnerException.Message);
+        Assert.Equal("Invalid number of generic arguments for type String. Type must implement IKeyRequest<> interface.", ex.InnerException.Message);
     }
 
     [Fact]
@@ -29,8 +26,8 @@ public class KeysRequestHelperTests
     {
         // Arrange
         var type = typeof(string);
-        var method = typeof(Helpers)
-            .GetMethod(nameof(Helpers.GetKeyType), BindingFlags.NonPublic | BindingFlags.Static)!;
+        var method = typeof(RequestHelper)
+            .GetMethod(nameof(RequestHelper.GetKeyType), BindingFlags.Public | BindingFlags.Static)!;
         
         // Act & Assert
         var ex = Assert.Throws<TargetInvocationException>(() =>
@@ -45,8 +42,8 @@ public class KeysRequestHelperTests
     {
         // Arrange
         var type = typeof(string);
-        var method = typeof(Helpers)
-            .GetMethod(nameof(Helpers.GetKey2Type), BindingFlags.NonPublic | BindingFlags.Static)!;
+        var method = typeof(RequestHelper)
+            .GetMethod(nameof(RequestHelper.GetKey2Type), BindingFlags.Public | BindingFlags.Static)!;
         
         // Act & Assert
         var ex = Assert.Throws<TargetInvocationException>(() =>
@@ -61,8 +58,8 @@ public class KeysRequestHelperTests
     {
         // Arrange
         var type = typeof(string);
-        var method = typeof(Helpers)
-            .GetMethod(nameof(Helpers.GetKey3Type), BindingFlags.NonPublic | BindingFlags.Static)!;
+        var method = typeof(RequestHelper)
+            .GetMethod(nameof(RequestHelper.GetKey3Type), BindingFlags.Public | BindingFlags.Static)!;
         
         // Act & Assert
         var ex = Assert.Throws<TargetInvocationException>(() =>
@@ -77,8 +74,8 @@ public class KeysRequestHelperTests
     {
         // Arrange
         var type = typeof(string);
-        var method = typeof(Helpers)
-            .GetMethod(nameof(Helpers.GetKey4Type), BindingFlags.NonPublic | BindingFlags.Static)!;
+        var method = typeof(RequestHelper)
+            .GetMethod(nameof(RequestHelper.GetKey4Type), BindingFlags.Public | BindingFlags.Static)!;
         
         // Act & Assert
         var ex = Assert.Throws<TargetInvocationException>(() =>
@@ -93,8 +90,8 @@ public class KeysRequestHelperTests
     {
         // Arrange
         var type = typeof(string);
-        var method = typeof(Helpers)
-            .GetMethod(nameof(Helpers.GetKey5Type), BindingFlags.NonPublic | BindingFlags.Static)!;
+        var method = typeof(RequestHelper)
+            .GetMethod(nameof(RequestHelper.GetKey5Type), BindingFlags.Public | BindingFlags.Static)!;
         
         // Act & Assert
         var ex = Assert.Throws<TargetInvocationException>(() =>
@@ -109,8 +106,8 @@ public class KeysRequestHelperTests
     {
         // Arrange
         var type = typeof(string);
-        var method = typeof(Helpers)
-            .GetMethod(nameof(Helpers.GetKey6Type), BindingFlags.NonPublic | BindingFlags.Static)!;
+        var method = typeof(RequestHelper)
+            .GetMethod(nameof(RequestHelper.GetKey6Type), BindingFlags.Public | BindingFlags.Static)!;
         
         // Act & Assert
         var ex = Assert.Throws<TargetInvocationException>(() =>
@@ -125,8 +122,8 @@ public class KeysRequestHelperTests
     {
         // Arrange
         var type = typeof(string);
-        var method = typeof(Helpers)
-            .GetMethod(nameof(Helpers.GetKey7Type), BindingFlags.NonPublic | BindingFlags.Static)!;
+        var method = typeof(RequestHelper)
+            .GetMethod(nameof(RequestHelper.GetKey7Type), BindingFlags.Public | BindingFlags.Static)!;
         
         // Act & Assert
         var ex = Assert.Throws<TargetInvocationException>(() =>

@@ -7,7 +7,7 @@ namespace Application.UseCase.Books.Queries.GetBook;
 /// <summary>
 /// Get book query.
 /// </summary>
-public struct GetBookQuery : IRequest<Book>, IKeyRequest<int>
+public class GetBookQuery : IRequest<Book>, IKeyRequest<int>
 {
     /// <summary>
     /// Book id.
@@ -18,4 +18,6 @@ public struct GetBookQuery : IRequest<Book>, IKeyRequest<int>
     {
         BookId = key;
     }
+    
+    public int GetKey() => BookId;
 }

@@ -4,6 +4,9 @@ using MitMediator.AutoApi.Abstractions;
 
 namespace MitMediator.AutoApi;
 
+/// <summary>
+/// Delegates for minimal api registrations.
+/// </summary>
 internal static class EndpointsMethods
 {
     internal static string? baseUrl { get; set; }
@@ -281,7 +284,7 @@ internal static class EndpointsMethods
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
                 var requestType = typeof(TRequest);
                 var keyPattern =
-                    string.Concat(baseUrl, Helpers.GetPattern(requestType), "/{key}");
+                    string.Concat(baseUrl, RequestHelper.GetPattern(requestType), "/{key}");
                 return Results.Created(keyPattern, result);
             });
     }
@@ -298,7 +301,7 @@ internal static class EndpointsMethods
                 request.SetKey(key);
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
                 var requestType = typeof(TRequest);
-                var keyPattern = Helpers.GetPattern(requestType);
+                var keyPattern = RequestHelper.GetPattern(requestType);
                 keyPattern = keyPattern.Replace("{key}", key?.ToString());
                 keyPattern = string.Concat(baseUrl, keyPattern, "/{key}");
                 return result is Unit ? Results.Created(keyPattern, null) : Results.Created(keyPattern, result);
@@ -316,7 +319,7 @@ internal static class EndpointsMethods
                 request.SetKey2(key2);
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
                 var requestType = typeof(TRequest);
-                var keyPattern = string.Concat(baseUrl, Helpers.GetPattern(requestType), "/{key}");
+                var keyPattern = string.Concat(baseUrl, RequestHelper.GetPattern(requestType), "/{key}");
                 keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
                 keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
                 return result is Unit ? Results.Created(keyPattern, null) : Results.Created(keyPattern, result);
@@ -335,7 +338,7 @@ internal static class EndpointsMethods
                 request.SetKey3(key3);
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
                 var requestType = typeof(TRequest);
-                var keyPattern = string.Concat(baseUrl, Helpers.GetPattern(requestType), "/{key}");
+                var keyPattern = string.Concat(baseUrl, RequestHelper.GetPattern(requestType), "/{key}");
                 keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
                 keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
                 keyPattern = keyPattern.Replace("{key3}", key3?.ToString());
@@ -356,7 +359,7 @@ internal static class EndpointsMethods
                 request.SetKey4(key4);
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
                 var requestType = typeof(TRequest);
-                var keyPattern = string.Concat(baseUrl, Helpers.GetPattern(requestType), "/{key}");
+                var keyPattern = string.Concat(baseUrl, RequestHelper.GetPattern(requestType), "/{key}");
                 keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
                 keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
                 keyPattern = keyPattern.Replace("{key3}", key3?.ToString());
@@ -379,7 +382,7 @@ internal static class EndpointsMethods
                 request.SetKey5(key5);
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
                 var requestType = typeof(TRequest);
-                var keyPattern = string.Concat(baseUrl, Helpers.GetPattern(requestType), "/{key}");
+                var keyPattern = string.Concat(baseUrl, RequestHelper.GetPattern(requestType), "/{key}");
                 keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
                 keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
                 keyPattern = keyPattern.Replace("{key3}", key3?.ToString());
@@ -404,7 +407,7 @@ internal static class EndpointsMethods
                 request.SetKey6(key6);
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
                 var requestType = typeof(TRequest);
-                var keyPattern = string.Concat(baseUrl, Helpers.GetPattern(requestType), "/{key");
+                var keyPattern = string.Concat(baseUrl, RequestHelper.GetPattern(requestType), "/{key");
                 keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
                 keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
                 keyPattern = keyPattern.Replace("{key3}", key3?.ToString());

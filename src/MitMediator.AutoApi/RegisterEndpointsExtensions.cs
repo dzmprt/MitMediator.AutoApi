@@ -5,35 +5,46 @@ namespace MitMediator.AutoApi;
 
 public static class RegisterEndpointsExtensions
 {
+    /// <summary>
+    /// Register all IRequest as minimal API endpoints.
+    /// </summary>
+    /// <param name="app"><see cref="IEndpointRouteBuilder"/>.</param>
+    /// <param name="basePath">Base path (for example "api")</param>
+    /// <param name="requestsAssemblies">Assembly to scan.</param>
+    /// <returns><see cref="IEndpointRouteBuilder"/></returns>
     public static IEndpointRouteBuilder UseAutoApi(this IEndpointRouteBuilder app, string? basePath = null, Assembly[]? requestsAssemblies = null)
     {
         requestsAssemblies ??= AppDomain.CurrentDomain.GetAssemblies();
-        var requests = Helpers.GetRequestsTypes(requestsAssemblies);
+        var requests = RequestHelper.GetRequestsTypes(requestsAssemblies);
         foreach (var request in requests)
         {
+            if (request.GetCustomAttribute<AutoApiIgnoreAttribute>() != null)
+            {
+                continue;
+            }
             app.MapRequest(request, basePath);
         }
 
         return app;
     }
-
+    
     private static void MapRequest(this IEndpointRouteBuilder app, Type requestType, string? basePath)
     {
         var attribute = requestType.GetCustomAttribute<AutoApiAttribute>();
-        var pattern = Helpers.GetPattern(requestType);
+        var pattern = RequestHelper.GetPattern(requestType);
         if (!string.IsNullOrWhiteSpace(basePath) && string.IsNullOrWhiteSpace(attribute?.CustomPattern))
         {
             pattern = string.Join("/", basePath, pattern);
         }
 
-        var responseType = Helpers.GetResponseType(requestType);
+        var responseType = RequestHelper.GetResponseType(requestType);
 
         Delegate requestDelegate;
         RouteHandlerBuilder routeHandlerBuilder;
-        var isKeyRequest = Helpers.IsKeyRequest(requestType);
+        var isKeyRequest = RequestHelper.IsKeyRequest(requestType);
 
         var httpMethod = attribute?.HttpMethodType is HttpMethodType.Auto or null ? 
-            Helpers.GetHttpMethodType(requestType) : attribute.HttpMethodType;
+            RequestHelper.GetHttpMethod(requestType) : attribute.HttpMethodType;
 
         switch (httpMethod)
         {
@@ -64,9 +75,9 @@ public static class RegisterEndpointsExtensions
                 }
                 else
                 {
+                    var methodName = nameof(EndpointsMethods.WithBody);
                     var methodInfo = typeof(EndpointsMethods)
-                        .GetMethod(nameof(EndpointsMethods.WithBody),
-                            BindingFlags.Static | BindingFlags.NonPublic)!
+                        .GetMethod(methodName,  BindingFlags.Static | BindingFlags.NonPublic)!
                         .MakeGenericMethod(requestType, responseType);
 
                     requestDelegate = (Delegate)methodInfo.Invoke(null, Array.Empty<object>())!;
@@ -84,9 +95,9 @@ public static class RegisterEndpointsExtensions
                 }
                 else
                 {
+                    var methodName = nameof(EndpointsMethods.WithBody);
                     var methodInfo = typeof(EndpointsMethods)
-                        .GetMethod(nameof(EndpointsMethods.WithBody),
-                            BindingFlags.Static | BindingFlags.NonPublic)!
+                        .GetMethod(methodName,BindingFlags.Static | BindingFlags.NonPublic)!
                         .MakeGenericMethod(requestType, responseType);
 
                     requestDelegate = (Delegate)methodInfo.Invoke(null, Array.Empty<object>())!;
@@ -120,12 +131,12 @@ public static class RegisterEndpointsExtensions
             case HttpMethodType.Delete:
                 if (isKeyRequest)
                 {
-                    requestDelegate = GetDelegateEndpointWithBodyAndKeys(requestType, responseType);
+                    requestDelegate = WithGetParamsAndKeys(requestType, responseType);
                 }
                 else
                 {
                     var methodInfo = typeof(EndpointsMethods)
-                        .GetMethod(nameof(EndpointsMethods.WithBody),
+                        .GetMethod(nameof(EndpointsMethods.WithGetParams),
                             BindingFlags.Static | BindingFlags.NonPublic)!
                         .MakeGenericMethod(requestType, responseType);
 
@@ -141,7 +152,7 @@ public static class RegisterEndpointsExtensions
                 throw new NotSupportedException($"Http method {httpMethod} is not supported");
         }
 
-        var tag = Helpers.GetTag(requestType);
+        var tag = RequestHelper.GetTag(requestType);
         if (!string.IsNullOrWhiteSpace(tag))
         {
             tag = char.ToUpper(tag[0]) + tag[1..];
@@ -154,41 +165,41 @@ public static class RegisterEndpointsExtensions
         }
     }
 
-    internal static Delegate WithGetParamsAndKeys(Type requestType, Type responseType)
+    private static Delegate WithGetParamsAndKeys(Type requestType, Type responseType)
     {
         MethodInfo methodInfo = null;
-        var keysCount = Helpers.GetKeysCount(requestType);
+        var keysCount = RequestHelper.GetKeysCount(requestType);
         switch (keysCount)
         {
             case 1:
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.WithGetParamsAnd1Key),
                         BindingFlags.Static | BindingFlags.NonPublic)!
-                    .MakeGenericMethod(requestType, responseType, Helpers.GetKeyType(requestType));
+                    .MakeGenericMethod(requestType, responseType, RequestHelper.GetKeyType(requestType));
                 break;
             case 2:
-                var keys2 = Helpers.GetKey2Type(requestType);
+                var keys2 = RequestHelper.GetKey2Type(requestType);
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.WithGetParamsAnd2Keys),
                         BindingFlags.Static | BindingFlags.NonPublic)!
                     .MakeGenericMethod(requestType, responseType, keys2.Item1, keys2.Item2);
                 break;
             case 3:
-                var keys3 = Helpers.GetKey3Type(requestType);
+                var keys3 = RequestHelper.GetKey3Type(requestType);
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.WithGetParamsAnd3Keys),
                         BindingFlags.Static | BindingFlags.NonPublic)!
                     .MakeGenericMethod(requestType, responseType, keys3.Item1, keys3.Item2, keys3.Item3);
                 break;
             case 4:
-                var keys4 = Helpers.GetKey4Type(requestType);
+                var keys4 = RequestHelper.GetKey4Type(requestType);
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.WithGetParamsAnd4Keys),
                         BindingFlags.Static | BindingFlags.NonPublic)!
                     .MakeGenericMethod(requestType, responseType, keys4.Item1, keys4.Item2, keys4.Item3, keys4.Item4);
                 break;
             case 5:
-                var keys5 = Helpers.GetKey5Type(requestType);
+                var keys5 = RequestHelper.GetKey5Type(requestType);
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.WithGetParamsAnd5Keys),
                         BindingFlags.Static | BindingFlags.NonPublic)!
@@ -196,7 +207,7 @@ public static class RegisterEndpointsExtensions
                         keys5.Item5);
                 break;
             case 6:
-                var keys6 = Helpers.GetKey6Type(requestType);
+                var keys6 = RequestHelper.GetKey6Type(requestType);
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.WithGetParamsAnd6Keys),
                         BindingFlags.Static | BindingFlags.NonPublic)!
@@ -204,7 +215,7 @@ public static class RegisterEndpointsExtensions
                         keys6.Item5, keys6.Item6);
                 break;
             case 7:
-                var keys7 = Helpers.GetKey7Type(requestType);
+                var keys7 = RequestHelper.GetKey7Type(requestType);
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.WithGetParamsAnd7Keys),
                         BindingFlags.Static | BindingFlags.NonPublic)!
@@ -217,41 +228,41 @@ public static class RegisterEndpointsExtensions
         return requestDelegate;
     }
 
-    internal static Delegate GetDelegateEndpointWithBodyAndKeys(Type requestType, Type responseType)
+    private static Delegate GetDelegateEndpointWithBodyAndKeys(Type requestType, Type responseType)
     {
         MethodInfo methodInfo = null;
-        var keysCount = Helpers.GetKeysCount(requestType);
+        var keysCount = RequestHelper.GetKeysCount(requestType);
         switch (keysCount)
         {
             case 1:
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.WithBodyAnd1Key),
                         BindingFlags.Static | BindingFlags.NonPublic)!
-                    .MakeGenericMethod(requestType, responseType, Helpers.GetKeyType(requestType));
+                    .MakeGenericMethod(requestType, responseType, RequestHelper.GetKeyType(requestType));
                 break;
             case 2:
-                var keys2 = Helpers.GetKey2Type(requestType);
+                var keys2 = RequestHelper.GetKey2Type(requestType);
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.WithBodyAnd2Keys),
                         BindingFlags.Static | BindingFlags.NonPublic)!
                     .MakeGenericMethod(requestType, responseType, keys2.Item1, keys2.Item2);
                 break;
             case 3:
-                var keys3 = Helpers.GetKey3Type(requestType);
+                var keys3 = RequestHelper.GetKey3Type(requestType);
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.WithBodyAnd3Keys),
                         BindingFlags.Static | BindingFlags.NonPublic)!
                     .MakeGenericMethod(requestType, responseType, keys3.Item1, keys3.Item2, keys3.Item3);
                 break;
             case 4:
-                var keys4 = Helpers.GetKey4Type(requestType);
+                var keys4 = RequestHelper.GetKey4Type(requestType);
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.WithBodyAnd4Keys),
                         BindingFlags.Static | BindingFlags.NonPublic)!
                     .MakeGenericMethod(requestType, responseType, keys4.Item1, keys4.Item2, keys4.Item3, keys4.Item4);
                 break;
             case 5:
-                var keys5 = Helpers.GetKey5Type(requestType);
+                var keys5 = RequestHelper.GetKey5Type(requestType);
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.WithBodyAnd5Keys),
                         BindingFlags.Static | BindingFlags.NonPublic)!
@@ -259,7 +270,7 @@ public static class RegisterEndpointsExtensions
                         keys5.Item5);
                 break;
             case 6:
-                var keys6 = Helpers.GetKey6Type(requestType);
+                var keys6 = RequestHelper.GetKey6Type(requestType);
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.WithBodyAnd6Keys),
                         BindingFlags.Static | BindingFlags.NonPublic)!
@@ -267,7 +278,7 @@ public static class RegisterEndpointsExtensions
                         keys6.Item5, keys6.Item6);
                 break;
             case 7:
-                var keys7 = Helpers.GetKey7Type(requestType);
+                var keys7 = RequestHelper.GetKey7Type(requestType);
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.WithBodyAnd7Keys),
                         BindingFlags.Static | BindingFlags.NonPublic)!
@@ -280,41 +291,41 @@ public static class RegisterEndpointsExtensions
         return requestDelegate;
     }
 
-    internal static Delegate GetCreateDelegateEndpointWithBodyAndKeys(Type requestType, Type responseType)
+    private static Delegate GetCreateDelegateEndpointWithBodyAndKeys(Type requestType, Type responseType)
     {
         MethodInfo methodInfo = null;
-        var keysCount = Helpers.GetKeysCount(requestType);
+        var keysCount = RequestHelper.GetKeysCount(requestType);
         switch (keysCount)
         {
             case 1:
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.CreateWithBodyAnd1Key),
                         BindingFlags.Static | BindingFlags.NonPublic)!
-                    .MakeGenericMethod(requestType, responseType, Helpers.GetKeyType(requestType));
+                    .MakeGenericMethod(requestType, responseType, RequestHelper.GetKeyType(requestType));
                 break;
             case 2:
-                var keys2 = Helpers.GetKey2Type(requestType);
+                var keys2 = RequestHelper.GetKey2Type(requestType);
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.CreateWithBodyAnd2Keys),
                         BindingFlags.Static | BindingFlags.NonPublic)!
                     .MakeGenericMethod(requestType, responseType, keys2.Item1, keys2.Item2);
                 break;
             case 3:
-                var keys3 = Helpers.GetKey3Type(requestType);
+                var keys3 = RequestHelper.GetKey3Type(requestType);
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.CreateWithBodyAnd3Keys),
                         BindingFlags.Static | BindingFlags.NonPublic)!
                     .MakeGenericMethod(requestType, responseType, keys3.Item1, keys3.Item2, keys3.Item3);
                 break;
             case 4:
-                var keys4 = Helpers.GetKey4Type(requestType);
+                var keys4 = RequestHelper.GetKey4Type(requestType);
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.CreateWithBodyAnd4Keys),
                         BindingFlags.Static | BindingFlags.NonPublic)!
                     .MakeGenericMethod(requestType, responseType, keys4.Item1, keys4.Item2, keys4.Item3, keys4.Item4);
                 break;
             case 5:
-                var keys5 = Helpers.GetKey5Type(requestType);
+                var keys5 = RequestHelper.GetKey5Type(requestType);
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.CreateWithBodyAnd5Keys),
                         BindingFlags.Static | BindingFlags.NonPublic)!
@@ -322,7 +333,7 @@ public static class RegisterEndpointsExtensions
                         keys5.Item5);
                 break;
             case 6:
-                var keys6 = Helpers.GetKey6Type(requestType);
+                var keys6 = RequestHelper.GetKey6Type(requestType);
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.CreateWithBodyAnd6Keys),
                         BindingFlags.Static | BindingFlags.NonPublic)!

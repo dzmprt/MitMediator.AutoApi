@@ -17,10 +17,11 @@ public class HttpMethodTypeTests
     [InlineData("PutEntryCommand", HttpMethodType.Put)]
 
     [InlineData("PostEntryCommand", HttpMethodType.Post)]
-
+    [InlineData("UploadItem", HttpMethodType.Post)]
+    [InlineData("ImportItem", HttpMethodType.Post)]
+    
     [InlineData("AddItem", HttpMethodType.PostCreate)]
     [InlineData("CreateItem", HttpMethodType.PostCreate)]
-    [InlineData("UploadItem", HttpMethodType.PostCreate)]
     
     [InlineData("DeleteEntry", HttpMethodType.Delete)]
     [InlineData("RemoveEntry", HttpMethodType.Delete)]
@@ -28,7 +29,7 @@ public class HttpMethodTypeTests
     public void GetHttpMethodType_ShouldReturnExpected(string name, HttpMethodType expected)
     {
         var type = TypeFactory.CreateTypeWithName(name);
-        var result = Helpers.GetHttpMethodType(type);
+        var result = RequestHelper.GetHttpMethod(type);
         Assert.Equal(expected, result);
     }
 
@@ -36,7 +37,7 @@ public class HttpMethodTypeTests
     public void GetHttpMethodType_UnknownName_ReturnsDefault()
     {
         var type = TypeFactory.CreateTypeWithName("Unrecognized");
-        var result = Helpers.GetHttpMethodType(type);
+        var result = RequestHelper.GetHttpMethod(type);
         Assert.Equal(HttpMethodType.Get, result);
     }
 }

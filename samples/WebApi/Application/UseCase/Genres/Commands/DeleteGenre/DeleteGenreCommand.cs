@@ -17,4 +17,6 @@ public struct DeleteGenreCommand : IRequest, IKeyRequest<string>
     {
         GenreName = key;
     }
+    
+    public string GetKey() => GenreName;
 }

@@ -4,7 +4,7 @@ using MitMediator.AutoApi.Abstractions;
 namespace LiteTestWebApi.UseCase.Test.Commands.CreateByKey;
 
 [AutoApi(patternSuffix:"create")]
-public class CreateTestByKeyCommand : IRequest<string>, IKeyRequest<int>
+public struct CreateTestByKeyCommand : IRequest<string>, IKeyRequest<int>
 {
     internal int Key { get; private set; }
     
@@ -13,5 +13,10 @@ public class CreateTestByKeyCommand : IRequest<string>, IKeyRequest<int>
     public void SetKey(int key)
     {
         Key = key;
+    }
+
+    public int GetKey()
+    {
+        throw new NotImplementedException();
     }
 }
