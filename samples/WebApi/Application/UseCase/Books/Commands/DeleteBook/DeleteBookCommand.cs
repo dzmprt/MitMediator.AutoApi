@@ -18,4 +18,6 @@ public struct DeleteBookCommand : IRequest, IKeyRequest<int>
     {
         BookId = key;
     }
+    
+    public int GetKey() => BookId;
 }

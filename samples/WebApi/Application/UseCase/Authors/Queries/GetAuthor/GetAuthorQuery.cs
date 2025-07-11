@@ -18,4 +18,6 @@ public struct GetAuthorQuery : IRequest<Author>, IKeyRequest<int>
     {
         AuthorId = key;
     }
+    
+    public int GetKey() => AuthorId;
 }

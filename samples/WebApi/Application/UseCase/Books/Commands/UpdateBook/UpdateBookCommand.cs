@@ -33,4 +33,6 @@ public class UpdateBookCommand : IRequest<Book>, IKeyRequest<int>
     {
         BookId = key;
     }
+    
+    public int GetKey() => BookId;
 }

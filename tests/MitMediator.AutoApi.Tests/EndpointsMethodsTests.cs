@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using GetTestQuery = RequestsForTests.Test.Queries.GetByKey3.GetTestQuery;
+using RequestsForTests.Test.Queries.GetByKey3;
 
 namespace MitMediator.AutoApi.Tests;
 

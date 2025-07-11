@@ -12,4 +12,9 @@ public class DeleteTestByKeyCommand : IRequest, IKeyRequest<int>
     {
         Key = key;
     }
+
+    public int GetKey()
+    {
+        throw new NotImplementedException();
+    }
 }

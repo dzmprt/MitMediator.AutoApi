@@ -26,50 +26,63 @@ public class EndpointsRegistrationsTests
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/tests/with-suffix"));
         Assert.Contains(endpoints, e => Matches(e, "GET", "my_custom_path/{key}/some_field"));
         Assert.Contains(endpoints, e => Matches(e, "GET", "my_custom_path_with_2Keys/{key1}/some_field/{key2}"));
-        Assert.Contains(endpoints, e => Matches(e, "GET", "api/v2/tests"));        
-        
+        Assert.Contains(endpoints, e => Matches(e, "GET", "api/v2/tests"));
+
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/tests/{key}"));
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/tests/{key1}/{key2}"));
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/tests/{key1}/{key2}/{key3}"));
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/tests/{key1}/{key2}/{key3}/{key4}"));
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/tests/{key1}/{key2}/{key3}/{key4}/{key5}"));
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}"));
-        Assert.Contains(endpoints, e => Matches(e, "GET", "api/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/{key7}"));
-        
+        Assert.Contains(endpoints,
+            e => Matches(e, "GET", "api/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/{key7}"));
+
         Assert.Contains(endpoints, e => Matches(e, "PUT", "api/tests"));
         Assert.Contains(endpoints, e => Matches(e, "PUT", "api/tests/{key}/by-key"));
         Assert.Contains(endpoints, e => Matches(e, "PUT", "api/tests/{key1}/{key2}/by2-keys"));
         Assert.Contains(endpoints, e => Matches(e, "PUT", "api/tests/{key1}/{key2}/{key3}/by3-keys"));
         Assert.Contains(endpoints, e => Matches(e, "PUT", "api/tests/{key1}/{key2}/{key3}/{key4}/by4-keys"));
         Assert.Contains(endpoints, e => Matches(e, "PUT", "api/tests/{key1}/{key2}/{key3}/{key4}/{key5}/by5-keys"));
-        Assert.Contains(endpoints, e => Matches(e, "PUT", "api/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/by6-keys"));
-        Assert.Contains(endpoints, e => Matches(e, "PUT", "api/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/{key7}/by7-keys"));
-        
+        Assert.Contains(endpoints,
+            e => Matches(e, "PUT", "api/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/by6-keys"));
+        Assert.Contains(endpoints,
+            e => Matches(e, "PUT", "api/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/{key7}/by7-keys"));
+
         Assert.Contains(endpoints, e => Matches(e, "POST", "api/tests"));
         Assert.Contains(endpoints, e => Matches(e, "POST", "api/tests/{key}/by-key"));
         Assert.Contains(endpoints, e => Matches(e, "POST", "api/tests/{key1}/{key2}/by2-keys"));
         Assert.Contains(endpoints, e => Matches(e, "POST", "api/tests/{key1}/{key2}/{key3}/by3-keys"));
         Assert.Contains(endpoints, e => Matches(e, "POST", "api/tests/{key1}/{key2}/{key3}/{key4}/by4-keys"));
         Assert.Contains(endpoints, e => Matches(e, "POST", "api/tests/{key1}/{key2}/{key3}/{key4}/{key5}/by5-keys"));
-        Assert.Contains(endpoints, e => Matches(e, "POST", "api/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/by6-keys"));
-        Assert.Contains(endpoints, e => Matches(e, "POST", "api/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/{key7}/by7-keys"));
-        
+        Assert.Contains(endpoints,
+            e => Matches(e, "POST", "api/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/by6-keys"));
+        Assert.Contains(endpoints,
+            e => Matches(e, "POST", "api/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/{key7}/by7-keys"));
+
         Assert.Contains(endpoints, e => Matches(e, "POST", "api/tests/create"));
         Assert.Contains(endpoints, e => Matches(e, "POST", "api/tests/{key}/by-key/create"));
         Assert.Contains(endpoints, e => Matches(e, "POST", "api/tests/{key1}/{key2}/by2-keys/create"));
         Assert.Contains(endpoints, e => Matches(e, "POST", "api/tests/{key1}/{key2}/{key3}/by3-keys/create"));
         Assert.Contains(endpoints, e => Matches(e, "POST", "api/tests/{key1}/{key2}/{key3}/{key4}/by4-keys/create"));
-        Assert.Contains(endpoints, e => Matches(e, "POST", "api/tests/{key1}/{key2}/{key3}/{key4}/{key5}/by5-keys/create"));
-        Assert.Contains(endpoints, e => Matches(e, "POST", "api/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/by6-keys/create"));
-        
+        Assert.Contains(endpoints,
+            e => Matches(e, "POST", "api/tests/{key1}/{key2}/{key3}/{key4}/{key5}/by5-keys/create"));
+        Assert.Contains(endpoints,
+            e => Matches(e, "POST", "api/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/by6-keys/create"));
+
         Assert.Contains(endpoints, e => Matches(e, "DELETE", "api/tests"));
         Assert.Contains(endpoints, e => Matches(e, "DELETE", "api/tests/{key}/by-key"));
         Assert.Contains(endpoints, e => Matches(e, "DELETE", "api/tests/{key1}/{key2}/by2-keys"));
         Assert.Contains(endpoints, e => Matches(e, "DELETE", "api/tests/{key1}/{key2}/{key3}/by3-keys"));
         Assert.Contains(endpoints, e => Matches(e, "DELETE", "api/tests/{key1}/{key2}/{key3}/{key4}/by4-keys"));
         Assert.Contains(endpoints, e => Matches(e, "DELETE", "api/tests/{key1}/{key2}/{key3}/{key4}/{key5}/by5-keys"));
-        Assert.Contains(endpoints, e => Matches(e, "DELETE", "api/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/by6-keys"));
-        Assert.Contains(endpoints, e => Matches(e, "DELETE", "api/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/{key7}/by7-keys"));
+        Assert.Contains(endpoints,
+            e => Matches(e, "DELETE", "api/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/by6-keys"));
+        Assert.Contains(endpoints,
+            e => Matches(e, "DELETE", "api/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/{key7}/by7-keys"));
+        
+        Assert.DoesNotContain(endpoints, e => Matches(e, "POST", "TestIgnore"));
+        
+        Assert.Contains(endpoints, e => Matches(e, "GET", "api/custom-tag-but/remove-tag-from-suffix"));
     }
 
     private static bool Matches(Endpoint endpoint, string verb, string pattern)

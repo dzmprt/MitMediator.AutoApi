@@ -6,7 +6,7 @@ namespace Application.UseCase.Authors.Commands.DeleteAuthor;
 /// <summary>
 /// Delete author command.
 /// </summary>
-public struct DeleteAuthorCommand : IRequest, IKeyRequest<int>
+public class DeleteAuthorCommand : IRequest, IKeyRequest<int>
 {
     /// <summary>
     /// Author id.
@@ -17,4 +17,6 @@ public struct DeleteAuthorCommand : IRequest, IKeyRequest<int>
     {
         AuthorId = key;
     }
+
+    public int GetKey() => AuthorId;
 }
