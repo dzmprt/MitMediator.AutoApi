@@ -22,7 +22,6 @@ Version for tests</PackageReleaseNotes>
 
     <ItemGroup>
       <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
-      <PackageReference Include="MitMediator.AutoApi.Abstractions" Version="7.0.0-alfa-4" />
     </ItemGroup>
 
     <ItemGroup>
@@ -39,6 +38,10 @@ Version for tests</PackageReleaseNotes>
 
     <ItemGroup>
         <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MitMediator.AutoApi.Abstractions\MitMediator.AutoApi.Abstractions.csproj" />
     </ItemGroup>
 
 </Project>
