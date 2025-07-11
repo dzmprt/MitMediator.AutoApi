@@ -5,6 +5,7 @@
 # MitMediator.AutoApi
 
 ## Minimal API registration for MitMediator
+
 ### 🔗 Extension for [MitMediator](https://github.com/dzmprt/MitMediator)
 
 ## 🚀 Installation
