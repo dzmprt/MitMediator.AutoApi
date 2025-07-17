@@ -9,7 +9,8 @@
     <ItemGroup>
       <PackageReference Include="FluentValidation" Version="11.11.0" />
       <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
-      <PackageReference Include="MitMediator" Version="6.0.0-rc-2" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+      <PackageReference Include="MitMediator" Version="6.0.0-rc-3" />
     </ItemGroup>
 
     <ItemGroup>
