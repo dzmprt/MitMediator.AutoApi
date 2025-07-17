@@ -34,6 +34,11 @@ public class AutoApiAttribute : Attribute
     /// Set Http Method.
     /// </summary>
     public HttpMethodType HttpMethodType { get; }
+    
+    /// <summary>
+    /// Custom HTTP response ContentType.
+    /// </summary>
+    public string? CustomResponseContentType { get; }
 
     /// <summary>
     /// Create AutoApiAttribute.
@@ -51,6 +56,7 @@ public class AutoApiAttribute : Attribute
         string? description = null, 
         string? customPattern = null,
         string? patternSuffix = null,
+        string? customResponseContentType = null,
         HttpMethodType httpMethodType = HttpMethodType.Auto)
     {
         Tag = tag;
@@ -59,6 +65,7 @@ public class AutoApiAttribute : Attribute
         CustomPattern = customPattern;
         PatternSuffix = patternSuffix;
         HttpMethodType = httpMethodType;
+        CustomResponseContentType = customResponseContentType;
         if (!string.IsNullOrWhiteSpace(CustomPattern) && !string.IsNullOrWhiteSpace(PatternSuffix))
         {
             throw new Exception("Suffix can't be specified when a custom pattern is provided.");

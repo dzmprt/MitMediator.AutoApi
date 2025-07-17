@@ -20,7 +20,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
-app.UseAutoApi("api", new []{typeof(GetQuery).Assembly});
+app.UseAutoApi("api", new []{typeof(GetEmptyTestQuery).Assembly});
 
 // Configure the HTTP request pipeline.
 app.UseSwagger(c => { c.RouteTemplate = "swagger/{documentname}/swagger.json"; })

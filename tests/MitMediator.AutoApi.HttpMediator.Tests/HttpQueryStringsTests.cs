@@ -1,6 +1,4 @@
-using System.Text;
-using MitMediator.AutoApi;
-using MitMediator.AutoApi.HttpMediator;
+namespace MitMediator.AutoApi.HttpMediator.Tests;
 
 public class HttpQueryStringsTests
 {

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using RequestsForTests.Test.Queries.Get;
+using MitMediator.AutoApi.Tests.RequestsForTests.Test.Queries.Get;
 
 namespace MitMediator.AutoApi.Tests;
 
@@ -80,9 +80,32 @@ public class EndpointsRegistrationsTests
         Assert.Contains(endpoints,
             e => Matches(e, "DELETE", "api/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/{key7}/by7-keys"));
         
+        
         Assert.DoesNotContain(endpoints, e => Matches(e, "POST", "TestIgnore"));
         
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/custom-tag-but/remove-tag-from-suffix"));
+        
+        Assert.Contains(endpoints, e => Matches(e, "GET", "api/custom-tag-withs/but-remove-tag-from-suffix"));
+        
+        Assert.Contains(endpoints, e => Matches(e, "GET", "api/custom-tag-empty-suffix"));
+        
+        Assert.Contains(endpoints, e => Matches(e, "GET", "api/files/with-custom-name"));
+        Assert.Contains(endpoints, e => Matches(e, "GET", "api/files/txt"));
+        Assert.Contains(endpoints, e => Matches(e, "GET", "api/files/png"));
+        Assert.Contains(endpoints, e => Matches(e, "GET", "api/files"));
+        Assert.Contains(endpoints, e => Matches(e, "PUT", "api/files"));
+        Assert.Contains(endpoints, e => Matches(e, "POST", "api/files"));
+        
+        Assert.Contains(endpoints, e => Matches(e, "GET", "api/buses/suffix"));
+        Assert.Contains(endpoints, e => Matches(e, "GET", "api/cities"));
+        Assert.Contains(endpoints, e => Matches(e, "GET", "api/heroes"));
+        Assert.Contains(endpoints, e => Matches(e, "GET", "api/potatoes"));
+        Assert.Contains(endpoints, e => Matches(e, "GET", "api/quizzes"));
+        
+        Assert.Contains(endpoints, e => Matches(e, "GET", "api/v2/my-books/favorite"));
+
+        Assert.Contains(endpoints, e => Matches(e, "DELETE", "with-keys/{key1}/field/{key2}"));
+
     }
 
     private static bool Matches(Endpoint endpoint, string verb, string pattern)

@@ -1,10 +1,6 @@
-using System;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
-using MitMediator.AutoApi;
-using MitMediator.AutoApi.HttpMediator;
-using Xunit;
+
+namespace MitMediator.AutoApi.HttpMediator.Tests;
 
 public class PrivateSetterResolverTests
 {

@@ -13,13 +13,13 @@
 ### 1. Add package
 ```bash
 # for ASP.NET API projects
-dotnet add package MitMediator.AutoApi -v 7.0.0-alfa-4
+dotnet add package MitMediator.AutoApi -v 7.0.0-alfa-6
 
 # for application layer
-dotnet add package MitMediator.AutoApi.Abstractions -v 7.0.0-alfa-4
+dotnet add package MitMediator.AutoApi.Abstractions -v 7.0.0-alfa-6
 
 # for client application (MAUI, Blazor, UWP, etc.)
-dotnet add package MitMediator.AutoApi.HttpMediator -v 7.0.0-alfa-4
+dotnet add package MitMediator.AutoApi.HttpMediator -v 7.0.0-alfa-6
 ```
 ### 2. Use extension for IEndpointRouteBuilder
 
@@ -44,7 +44,7 @@ app.UseAutoApi("api", new []{typeof(GetQuery).Assembly});
 
 ## 🧪 Examples
 
-### `GET` method 
+### `GET` endpoint 
 ```csharp
 // Get - http method
 // Books - main tag
@@ -59,7 +59,7 @@ public struct GetBooksQuery : IRequest<Book[]>
 }
 ```
 
-### `GET` method with key in url
+### `GET` endpoint with key in url
 ```csharp
 // Use IKeyRequest<> to set and get key from ur.
 // Get - http method
@@ -74,11 +74,11 @@ public struct GetBookQuery : IRequest<Book>, IKeyRequest<int>
         BookId = key;
     }
     
-    public int GetKey => BookId;
+    public int GetKey() => BookId;
 }
 ```
 
-### `GET` method with suffix
+### `GET` endpoint with suffix
 ```csharp
 // Get - http method
 // Books - main tag
@@ -90,7 +90,7 @@ public struct GetBooksCountQuery : IRequest<int>
 }
 ```
 
-### `POST` method with 201 response
+### `POST` endpoint with 201 response
 ```csharp
 // Create - POST http method, return 201
 // Book - main tag (books in url)
@@ -105,7 +105,7 @@ public class CreateBookCommand : IRequest<Book>
 }
 ```
 
-### `PUT` method with key in url
+### `PUT` endpoint with key in url
 ```csharp
 // Update - PUT http method
 // Book - main tag (books in url)
@@ -125,11 +125,11 @@ public class UpdateBookCommand : IRequest<Book>, IKeyRequest<int>
         BookId = key;
     }
     
-    public int GetKey => BookId;
+    public int GetKey() => BookId;
 }
 ```
 
-### `DELETE` method with key in url
+### `DELETE` endpoint with key in url
 ```csharp
 // Delete - DELETE http method
 // Book - main tag (books in url)
@@ -143,7 +143,46 @@ public struct DeleteBookCommand : IRequest, IKeyRequest<int>
         BookId = key;
     }
     
-    public int GetKey => BookId;
+    public int GetKey() => BookId;
+}
+```
+
+### `GET` endpoint text file ("application/octet-stream")
+```csharp
+// Get - GET http method
+// Book - main tag (books in url)
+// Text - action suffix
+// Api URL: GET /books/text/123
+public class GetBookTextQuery: IRequest<byte[]>, IKeyRequest<int>
+{
+    internal int BookId { get; private set; }
+    
+    public void SetKey(int key)
+    {
+        BookId = key;
+    }
+    
+    public int GetKey() => BookId;
+}
+```
+
+### `GET` endpoint png file ("image/png")
+```csharp
+// Get - GET http method
+// Book - main tag (books in url)
+// Cover - action suffix
+// Api URL: GET /books/сover/123
+[AutoApi(customResponseContentType:"image/png")]
+public class GetBookCoverQuery: IRequest<byte[]>, IKeyRequest<int>
+{
+    internal int BookId { get; private set; }
+    
+    public void SetKey(int key)
+    {
+        BookId = key;
+    }
+    
+    public int GetKey() => BookId;
 }
 ```
 
@@ -151,13 +190,13 @@ public struct DeleteBookCommand : IRequest, IKeyRequest<int>
 
 Use the `[AutoApi]` attribute for the request type to change default mapping
 
-### `GET` method with version and custom tag
+### `GET` endpoint with version, custom tag and custom suffix
 ```csharp
 // Get - http method
-// books - main tag
-// v2 - api version
-// Api URL: GET v2/new-books?limit=1&offset=1&freeText=clara
-[AutoApi("new-books", "v2")]
+// Books - main tag (books in url)
+// API version: "v2"
+// Api URL: GET v2/my-books/favorite?limit=1&offset=1&freeText=clara
+[AutoApi("my-books", "v2", PatternSuffix = "favorite")]
 public struct GetBooksQuery : IRequest<Book[]>
 {
     public int? Limit { get; init; }
@@ -167,9 +206,13 @@ public struct GetBooksQuery : IRequest<Book[]>
     public string? FreeText { get; init; }
 }
 ```
-### `GET` method with version, custom pattern and selected http method
+### `GET` endpoint with version, custom tag, URL pattern and specified HTTP method
 ```csharp
-[AutoApi(customPattern: "with-keys/{key1}/{key2}", version: "v3", httpMethodType:HttpMethodType.Delete)]
+// Auto-generated DELETE endpoint.
+// Base tag: "books"
+// API version: "v3"
+// Custom URL pattern overrides base route: DELETE with-keys/{key1}/field/{key2}
+[AutoApi("books", customPattern: "with-keys/{key1}/field/{key2}", version: "v3", httpMethodType:HttpMethodType.Delete)]
 public class DoSomeWithBookAndDeleteCommand : IRequest<Book[]>, IKeyRequest<int, Guid>
 {
     internal int BookId { get; private set; }
@@ -181,14 +224,14 @@ public class DoSomeWithBookAndDeleteCommand : IRequest<Book[]>, IKeyRequest<int,
         BookId = key;
     }
     
-    public int GetKey1 => BookId;
+    public int GetKey1() => BookId;
     
     public void SetKey2(Guid key)
     {
         GuidId = key;
     }
     
-    public Guid GetKey2 => GuidId;
+    public Guid GetKey2() => GuidId;
 }
 ```
 
@@ -248,14 +291,15 @@ The HTTP method type is determined automatically according to the request name:
 | `get`                   | GET                 |
 | `load`                  | GET                 |
 | `download`              | GET                 |
+| `fetch`                 | GET                 |
 | `update`                | PUT                 |
 | `change`                | PUT                 |
 | `edit`                  | PUT                 |
 | `modify`                | PUT                 |
 | `put`                   | PUT                 |
 | `post`                  | POST                |
-| `upload`                | POST                |
 | `import`                | POST                |
+| `upload`                | POST                |
 | `add`                   | POST (201 response) |
 | `create`                | POST (201 response) |
 | `delete`                | DELETE              |
@@ -268,7 +312,12 @@ The first word after the method will be the main tag. Second and other - suffix.
 
 `RemoveBookWithAuthorCommand` - Remove - http method DELETE, Book - main tag (books in url), WithAuthor - suffix (/with-author in url)
 
-Words `command`, `query`, and `request` in the end of request type name will be deleted from url.
+Words `command`, `query`, and `request` in the end of request type name will be deleted from url
+
+## 📄 File response (`byte[]` and `FileResponse`)
+
+For requests returning `byte[]` (via `IRequest<byte[]>`), the response uses the "application/octet-stream" content type by default.
+To specify a download file name, use the FileResponse class. Use `[AutoApi(customResponseContentType:"image/png")]` attribute for custom content type
 
 ## 💡 Features
 
@@ -279,3 +328,8 @@ Words `command`, `query`, and `request` in the end of request type name will be 
 * Key binding via IKeyRequest<TKey1, TKey2, ...> (pattern `{key1}/{key2}/.../{key7}`)
 * Supports custom patterns (`custom-route/my-route`, `with-keys/{key1}/{key2}/field/{key3}`)
 * Auto client `HttpMediator` for clients applications
+* File response (`IRequest<byte[]>` or `IRequest<FileResponse>`)
+
+## 📜 License
+
+MIT
