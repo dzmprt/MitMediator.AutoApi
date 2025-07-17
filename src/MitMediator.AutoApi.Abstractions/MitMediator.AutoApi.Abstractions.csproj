@@ -4,7 +4,7 @@
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Version>7.0.0-alfa-5</Version>
+        <Version>7.0.0-alfa-6</Version>
         <Title>MitMediator.AutoApi.Abstractions</Title>
         <Description>Minimal API registration for MitMediator</Description>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -16,9 +16,9 @@
         <PackageIcon>logo.png</PackageIcon>
         <RepositoryUrl>https://github.com/dzmprt/MitMediator.AutoApi</RepositoryUrl>
         <PackageTags>mediator;request;response;queries;commands;mitmediator;minimalapi;autoapi;cqrs;</PackageTags>
-        <PackageReleaseNotes>v7.0.0-alfa-5
+        <PackageReleaseNotes>v7.0.0-alfa-6
 Version for tests
-Fix bags, add file result support</PackageReleaseNotes>
+Up mitmediator version to 7.0.0-alfa</PackageReleaseNotes>
         <TrimMode>full</TrimMode>
     </PropertyGroup>
 
@@ -39,8 +39,7 @@ Fix bags, add file result support</PackageReleaseNotes>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
-      <PackageReference Include="MitMediator" Version="6.0.0-rc-3" />
+      <PackageReference Include="MitMediator" Version="7.0.0-alfa" />
     </ItemGroup>
 
 </Project>

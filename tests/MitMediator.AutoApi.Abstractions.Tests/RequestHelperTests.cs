@@ -1,14 +1,29 @@
-using MitMediator.AutoApi.Abstractions;
-using GetTestQuery = RequestsForTests.Test.Queries.GetByKey3.GetTestQuery;
+using System.Diagnostics.CodeAnalysis;
 
-namespace MitMediator.AutoApi.Tests;
+namespace MitMediator.AutoApi.Abstractions.Tests;
+
+[ExcludeFromCodeCoverage]
+public class GetTestQuery : IRequest<string>, IKeyRequest<int>
+{
+    internal int Key { get; private set; }
+
+    public void SetKey(int key)
+    {
+        Key = key;
+    }
+
+    public int GetKey()
+    {
+        throw new NotImplementedException();
+    }
+}
 
 public class RequestHelperTests
 {
     [Fact]
     public void GetKeyType_ValidRequest_ReturnsGenericType()
     {
-        var result = RequestHelper.GetKeyType(typeof(RequestsForTests.Test.Queries.GetByKey.GetTestQuery));
+        var result = RequestHelper.GetKeyType(typeof(GetTestQuery));
         Assert.Equal(typeof(int), result);
     }
 
@@ -29,7 +44,7 @@ public class RequestHelperTests
     [Fact]
     public void GetResponseType_ReturnsExpectedGenericArgument()
     {
-        var result = RequestHelper.GetResponseType(typeof(RequestsForTests.Test.Queries.Get.GetTestQuery));
+        var result = RequestHelper.GetResponseType(typeof(GetTestQuery));
         Assert.Equal(typeof(string), result);
     }
 

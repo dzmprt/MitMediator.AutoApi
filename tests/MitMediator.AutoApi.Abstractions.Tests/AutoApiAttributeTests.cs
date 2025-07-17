@@ -1,6 +1,4 @@
-using MitMediator.AutoApi.Abstractions;
-
-namespace MitMediator.AutoApi.Tests;
+namespace MitMediator.AutoApi.Abstractions.Tests;
 
 public class AutoApiAttributeTests
 {

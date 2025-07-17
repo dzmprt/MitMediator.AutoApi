@@ -1,6 +1,4 @@
-using Xunit;
-using MitMediator.AutoApi;
-using MitMediator.AutoApi.Abstractions;
+namespace MitMediator.AutoApi.Abstractions.Tests;
 
 public class PluralizerTests
 {

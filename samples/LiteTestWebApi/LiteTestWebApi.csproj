@@ -20,7 +20,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\MitMediator.AutoApi.Abstractions\MitMediator.AutoApi.Abstractions.csproj" />
       <ProjectReference Include="..\..\src\MitMediator.AutoApi\MitMediator.AutoApi.csproj" />
     </ItemGroup>
 

@@ -2,12 +2,11 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
-using MitMediator;
-using MitMediator.AutoApi;
 using MitMediator.AutoApi.Abstractions;
-using MitMediator.AutoApi.HttpMediator;
 using Moq;
 using Moq.Protected;
+
+namespace MitMediator.AutoApi.HttpMediator.Tests;
 
 public class GetFileWithNameQuery : IRequest<FileResponse>
 {
