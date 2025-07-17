@@ -16,18 +16,12 @@ public class PostTestBy2KeysCommand : IRequest<string>, IKeyRequest<int, int>
         Key1 = key;
     }
 
-    public int GetKey1()
-    {
-        throw new NotImplementedException();
-    }
+    public int GetKey1() => Key1;
 
     public void SetKey2(int key)
     {
         Key2 = key;
     }
 
-    public int GetKey2()
-    {
-        throw new NotImplementedException();
-    }
+    public int GetKey2() => Key2;
 }

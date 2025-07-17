@@ -34,11 +34,11 @@ Version for tests</PackageReleaseNotes>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="MitMediator" Version="6.0.0-rc-2" />
+        <InternalsVisibleTo Include="MitMediator.AutoApi.Abstractions.Tests" />
     </ItemGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="MitMediator.AutoApi.Abstractions.Tests" />
+      <PackageReference Include="MitMediator" Version="6.0.0-rc-3" />
     </ItemGroup>
 
 </Project>

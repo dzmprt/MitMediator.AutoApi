@@ -66,6 +66,15 @@ public class PluralizerTests
     [InlineData("basis", "bases")]
     [InlineData("quiz", "quizzes")]
     [InlineData("calf", "calves")]
+    [InlineData("tomato", "tomatoes")]
+    [InlineData("echo", "echoes")]
+    [InlineData("veto", "vetoes")]
+    [InlineData("cargo", "cargoes")]
+    [InlineData("mosquito", "mosquitoes")]
+    [InlineData("tornado", "tornadoes")]
+    [InlineData("volcano", "volcanoes")]
+    [InlineData("embargo", "embargoes")]
+    [InlineData("deer", "deer")]
     public void Pluralize_IrregularCases_ReturnsCorrectPlural(string input, string expected)
     {
         Assert.Equal(expected, Pluralizer.Pluralize(input));

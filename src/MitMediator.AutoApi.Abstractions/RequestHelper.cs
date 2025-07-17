@@ -218,10 +218,10 @@ public static class RequestHelper
             return attribute.CustomPattern;
         }
 
-        var tag = GetTag(requestType);
+        var pliralizedTag = GetPluralizedTag(requestType);
 
         var version = attribute?.Version;
-        var pattern = !string.IsNullOrWhiteSpace(attribute?.Version) ? string.Concat(version, "/", tag) : tag;
+        var pattern = !string.IsNullOrWhiteSpace(attribute?.Version) ? string.Concat(version, "/", pliralizedTag) : pliralizedTag;
 
         if (isKeyRequest)
         {
@@ -236,10 +236,14 @@ public static class RequestHelper
         if (splitedRequestName.Length > 1)
         {
             var suffixFromType = string.Join("-", splitedRequestName);
-            if (suffixFromType.StartsWith(tag))
+            var originTag = GetTag(requestType);
+            if (suffixFromType.StartsWith(pliralizedTag) || 
+                suffixFromType.StartsWith(originTag) ||
+                ((pliralizedTag.EndsWith("s") && suffixFromType.StartsWith(pliralizedTag[..1])) || 
+                 pliralizedTag.EndsWith("es")) && suffixFromType.StartsWith(pliralizedTag[..2]))
             {
-                var skip = tag.Length + 1;
-                suffixFromType = suffixFromType[skip..];
+                var segmentsInTag = pliralizedTag.Split("-").Length;
+                suffixFromType = string.Join("-", splitedRequestName[segmentsInTag..]);
             }
             else
             {
@@ -259,8 +263,22 @@ public static class RequestHelper
 
         return pattern;
     }
-
+    
     public static string GetTag(Type requestType)
+    {
+        var attribute = requestType.GetCustomAttribute<AutoApiAttribute>();
+        var tag = attribute?.Tag;
+        if (string.IsNullOrWhiteSpace(tag))
+        {
+            var requestNameToKebab = RemoveKeywordsAndSplitRequestNameToKebab(requestType);
+            tag = requestNameToKebab.Split("-").First();
+            return tag;
+        }
+
+        return SplitPascalCaseToKebab(tag);
+    }
+
+    public static string GetPluralizedTag(Type requestType)
     {
         var attribute = requestType.GetCustomAttribute<AutoApiAttribute>();
         var tag = attribute?.Tag;
@@ -290,6 +308,7 @@ public static class RequestHelper
         ["get"] = HttpMethodType.Get,
         ["load"] = HttpMethodType.Get,
         ["download"] = HttpMethodType.Get,
+        ["fetch"] = HttpMethodType.Get,
 
         ["update"] = HttpMethodType.Put,
         ["change"] = HttpMethodType.Put,

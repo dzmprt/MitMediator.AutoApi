@@ -55,6 +55,16 @@ internal static class Pluralizer
             case "thief": return ReplaceCase(singular, "thieves");
             case "wolf": return ReplaceCase(singular, "wolves");
             case "scarf": return ReplaceCase(singular, "scarves");
+            case "hero": return ReplaceCase(singular, "heroes");
+            case "potato": return ReplaceCase(singular, "potatoes");
+            case "tomato": return ReplaceCase(singular, "tomatoes");
+            case "echo": return ReplaceCase(singular, "echoes");
+            case "veto": return ReplaceCase(singular, "vetoes");
+            case "cargo": return ReplaceCase(singular, "cargoes");
+            case "mosquito": return ReplaceCase(singular, "mosquitoes");
+            case "tornado": return ReplaceCase(singular, "tornadoes");
+            case "volcano": return ReplaceCase(singular, "volcanoes");
+            case "embargo": return ReplaceCase(singular, "embargoes");
             case "deer":
             case "sheep":
             case "fish":

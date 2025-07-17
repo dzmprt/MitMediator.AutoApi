@@ -15,8 +15,5 @@ public struct CreateTestByKeyCommand : IRequest<string>, IKeyRequest<int>
         Key = key;
     }
 
-    public int GetKey()
-    {
-        throw new NotImplementedException();
-    }
+    public int GetKey() => Key;
 }

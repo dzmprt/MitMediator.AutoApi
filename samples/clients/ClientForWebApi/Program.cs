@@ -8,7 +8,6 @@ using Application.UseCase.Books.Queries.GetBooksByFilter;
 using Domain;
 using Microsoft.Extensions.DependencyInjection;
 using MitMediator;
-using MitMediator.AutoApi;
 using MitMediator.AutoApi.HttpMediator;
 
 var baseApiUrl = "api";

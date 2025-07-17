@@ -39,7 +39,7 @@ internal class HttpRequestHandler<TRequest, TResponse> : IRequestHandler<TReques
             {
                 for (var i = 1; i < patternKeys.Length + 1; i++)
                 {
-                    pattern = pattern.Replace($"{{key}}{i}", patternKeys[0].ToString());
+                    pattern = pattern.Replace($"{{key{i}}}", patternKeys[0].ToString());
                 }
             }
         }
@@ -66,10 +66,6 @@ internal class HttpRequestHandler<TRequest, TResponse> : IRequestHandler<TReques
 
         switch (httpMethod)
         {
-            case HttpMethodType.Get:
-                var getResponse = await httpClient.GetAsync(pattern + request.ToQueryString(), cancellationToken);
-                ThrowIfNotSuccessStatusCode(getResponse);
-                return (await ConvertResponseAsync<TResponse>(getResponse, cancellationToken)).Item1;
             case HttpMethodType.PostCreate:
             case HttpMethodType.Post:
                 var postResponse = await httpClient.PostAsync(pattern, new StringContent(
@@ -86,12 +82,14 @@ internal class HttpRequestHandler<TRequest, TResponse> : IRequestHandler<TReques
                 ThrowIfNotSuccessStatusCode(putResponse);
                 return (await ConvertResponseAsync<TResponse>(putResponse, cancellationToken)).Item1;
             case HttpMethodType.Delete:
-                var deleteResponse = await httpClient.DeleteAsync(pattern, cancellationToken);
+                var deleteResponse = await httpClient.DeleteAsync(pattern + request.ToQueryString(), cancellationToken);
                 ThrowIfNotSuccessStatusCode(deleteResponse);
                 return (await ConvertResponseAsync<TResponse>(deleteResponse, cancellationToken)).Item1;
-            case HttpMethodType.Auto:
+            case HttpMethodType.Get:
             default:
-                throw new NotImplementedException($"HTTP method {httpMethod} is not implemented");
+                var getResponse = await httpClient.GetAsync(pattern + request.ToQueryString(), cancellationToken);
+                ThrowIfNotSuccessStatusCode(getResponse);
+                return (await ConvertResponseAsync<TResponse>(getResponse, cancellationToken)).Item1;
         }
     }
 
@@ -114,9 +112,21 @@ internal class HttpRequestHandler<TRequest, TResponse> : IRequestHandler<TReques
         }
     }
     
-    private static async ValueTask<(T, HttpResponseHeaders responseHeaders)> ConvertResponseAsync<T>(
+    private static async ValueTask<(TResponse, HttpResponseHeaders responseHeaders)> ConvertResponseAsync<TResponse>(
         HttpResponseMessage response, CancellationToken cancellationToken)
     {
+        if (typeof(TResponse) == typeof(byte[]))
+        {
+            var result = await response.Content.ReadAsByteArrayAsync(cancellationToken);
+            return ((TResponse)(object)result, response.Headers);
+        }
+        if (typeof(TResponse) == typeof(FileResponse))
+        {
+            var data = await response.Content.ReadAsByteArrayAsync(cancellationToken);
+            var fileName = response.Content.Headers.ContentDisposition?.FileName ?? string.Empty;
+            var result = new FileResponse(data, fileName);
+            return ((TResponse)(object)result, response.Headers);
+        }
         var content = await response.Content.ReadAsStringAsync(cancellationToken);
         if (string.IsNullOrWhiteSpace(content))
         {
@@ -129,7 +139,7 @@ internal class HttpRequestHandler<TRequest, TResponse> : IRequestHandler<TReques
             TypeInfoResolver = new PrivateSetterResolver()
         };
         opts.Converters.Add(stringEnumConverter);
-        var responseModel = JsonSerializer.Deserialize<T>(content, opts)!;
+        var responseModel = JsonSerializer.Deserialize<TResponse>(content, opts)!;
         return (responseModel, response.Headers);
     }
 }

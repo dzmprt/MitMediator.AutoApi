@@ -3,7 +3,7 @@ using MitMediator.AutoApi.Abstractions;
 
 namespace LiteTestWebApi.UseCase.Test.Queries.GetByKey;
 
-public class GetTestQuery : IRequest<string>, IKeyRequest<int>
+public class GetTestByKeyQuery : IRequest<string>, IKeyRequest<int>
 {
     internal int Key { get; private set; }
 
@@ -12,8 +12,5 @@ public class GetTestQuery : IRequest<string>, IKeyRequest<int>
         Key = key;
     }
 
-    public int GetKey()
-    {
-        throw new NotImplementedException();
-    }
+    public int GetKey() => Key;
 }

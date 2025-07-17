@@ -1,4 +1,6 @@
 using System.Net;
+using System.Net.Http.Headers;
+using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using MitMediator;
 using MitMediator.AutoApi;
@@ -6,6 +8,16 @@ using MitMediator.AutoApi.Abstractions;
 using MitMediator.AutoApi.HttpMediator;
 using Moq;
 using Moq.Protected;
+
+public class GetFileWithNameQuery : IRequest<FileResponse>
+{
+    
+}
+
+public class GetFileQuery : IRequest<byte[]>
+{
+    
+}
 
 public class GetCommand : IRequest<string>
 {
@@ -45,9 +57,9 @@ public class EmptyResponseCommand : IRequest<string>
 
 public class HttpRequestHandlerTests
 {
-    private static HttpRequestHandler<TReq, string> BuildHandler<TReq>(HttpMethodType method, string? responseContent,
+    private static HttpRequestHandler<TReq, TResponse> BuildHandler<TReq, TResponse>(HttpMethodType method, TResponse? responseContent,
         Action<HttpRequestMessage>? capture = null, bool customPattern = false, bool throwError = false)
-        where TReq : IRequest<string>
+        where TReq : IRequest<TResponse>
     {
         var msgHandlerMock = new Mock<HttpMessageHandler>();
         msgHandlerMock.Protected()
@@ -58,7 +70,24 @@ public class HttpRequestHandlerTests
                 {
                     return new HttpResponseMessage(HttpStatusCode.BadRequest) { ReasonPhrase = "Bad" };
                 }
-                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(responseContent ?? "") };
+
+                if (typeof(TResponse) == typeof(string))
+                {
+                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(responseContent?.ToString() ?? string.Empty) };
+                }
+
+                if (typeof(TResponse) == typeof(FileResponse))
+                {
+                    var resp = responseContent as FileResponse;
+                    var context = new StreamContent(new MemoryStream(resp.Data));
+                    var fileResp = new HttpResponseMessage(HttpStatusCode.OK) { Content = context };
+                    fileResp.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+                    fileResp.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment") {
+                        FileName = resp.FileName
+                    };
+                    return fileResp;
+                }
+                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(responseContent as byte[]) };
             });
 
         var httpClient = new HttpClient(msgHandlerMock.Object)
@@ -69,61 +98,61 @@ public class HttpRequestHandlerTests
         var clientFactory = new Mock<IHttpClientFactory>();
         clientFactory.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(httpClient);
 
-        var headerMock = new Mock<IHttpHeaderInjector<TReq, string>>();
+        var headerMock = new Mock<IHttpHeaderInjector<TReq, TResponse>>();
         headerMock.Setup(h => h.GetHeadersAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(("X-Demo", "value"));
 
         var services = new ServiceCollection();
         services.AddSingleton(clientFactory.Object);
-        services.AddSingleton<IEnumerable<IHttpHeaderInjector<TReq, string>>>(new[] { headerMock.Object });
+        services.AddSingleton<IEnumerable<IHttpHeaderInjector<TReq, TResponse>>>(new[] { headerMock.Object });
 
-        return new HttpRequestHandler<TReq, string>(services.BuildServiceProvider(), "https://base");
+        return new HttpRequestHandler<TReq, TResponse>(services.BuildServiceProvider(), "https://base");
     }
     
     [Fact]
     public async Task Get_ShouldReturn_Response()
     {
-        var handler = BuildHandler<GetCommand>(HttpMethodType.Get, "\"get-value\"");
-        var result = await handler.HandleAsync(new GetCommand(), default);
+        var handler = BuildHandler<GetCommand, string>(HttpMethodType.Get, "\"get-value\"");
+        var result = await handler.HandleAsync(new GetCommand(), CancellationToken.None);
         Assert.Equal("get-value", result);
     }
 
     [Fact]
     public async Task Post_ShouldReturn_Response()
     {
-        var handler = BuildHandler<PostCommand>(HttpMethodType.Post, "\"post-value\"");
-        var result = await handler.HandleAsync(new PostCommand(), default);
+        var handler = BuildHandler<PostCommand, string>(HttpMethodType.Post, "\"post-value\"");
+        var result = await handler.HandleAsync(new PostCommand(), CancellationToken.None);
         Assert.Equal("post-value", result);
     }
 
     [Fact]
     public async Task Put_ShouldReturn_Response()
     {
-        var handler = BuildHandler<PutCommand>(HttpMethodType.Put, "\"put-value\"");
-        var result = await handler.HandleAsync(new PutCommand(), default);
+        var handler = BuildHandler<PutCommand, string>(HttpMethodType.Put, "\"put-value\"");
+        var result = await handler.HandleAsync(new PutCommand(), CancellationToken.None);
         Assert.Equal("put-value", result);
     }
 
     [Fact]
     public async Task Delete_ShouldReturn_Response()
     {
-        var handler = BuildHandler<DeleteCommand>(HttpMethodType.Delete, "\"delete-value\"");
-        var result = await handler.HandleAsync(new DeleteCommand(), default);
+        var handler = BuildHandler<DeleteCommand, string>(HttpMethodType.Delete, "\"delete-value\"");
+        var result = await handler.HandleAsync(new DeleteCommand(), CancellationToken.None);
         Assert.Equal("delete-value", result);
     }
 
     [Fact]
     public async Task PostCreate_ShouldReturn_Response()
     {
-        var handler = BuildHandler<PostCreateCommand>(HttpMethodType.PostCreate, "\"create-value\"");
-        var result = await handler.HandleAsync(new PostCreateCommand(), default);
+        var handler = BuildHandler<PostCreateCommand, string>(HttpMethodType.PostCreate, "\"create-value\"");
+        var result = await handler.HandleAsync(new PostCreateCommand(), CancellationToken.None);
         Assert.Equal("create-value", result);
     }
 
     [Fact]
     public async Task ShouldThrow_HttpRequestException_WhenStatusCodeIsError()
     {
-        var handler = BuildHandler<DeleteCommand>(
+        var handler = BuildHandler<DeleteCommand, string>(
             HttpMethodType.Delete,
             null,
             throwError: true);
@@ -137,4 +166,21 @@ public class HttpRequestHandlerTests
     
     [AutoApi(httpMethodType: HttpMethodType.Auto)]
     private class UnsupportedCommand : IRequest<string> { }
+    
+    [Fact]
+    public async Task GetFileQuery_ShouldReturn_Response()
+    {
+        var handler = BuildHandler<GetFileQuery, byte[]>(HttpMethodType.PostCreate, "test"u8.ToArray());
+        var result = await handler.HandleAsync(new GetFileQuery(),CancellationToken.None);
+        Assert.Equal("test", Encoding.UTF8.GetString(result));
+    }
+    
+    [Fact]
+    public async Task TaskGetFileWithNameQuery_ShouldReturn_Response()
+    {
+        var handler = BuildHandler<GetFileWithNameQuery, FileResponse>(HttpMethodType.PostCreate, new FileResponse("test"u8.ToArray(), "testfile.txt"));
+        var result = await handler.HandleAsync(new GetFileWithNameQuery(),CancellationToken.None);
+        Assert.Equal("test", Encoding.UTF8.GetString(result.Data));
+        Assert.Equal("testfile.txt", result.FileName);
+    }
 }
