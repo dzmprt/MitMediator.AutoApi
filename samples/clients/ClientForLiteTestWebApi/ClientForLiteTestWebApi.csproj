@@ -12,8 +12,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\samples\LiteTestWebApi\LiteTestWebApi.csproj" />
-      <ProjectReference Include="..\src\MitMediator.AutoApi.HttpMediator\MitMediator.AutoApi.HttpMediator.csproj" />
+      <ProjectReference Include="..\..\..\src\MitMediator.AutoApi.HttpMediator\MitMediator.AutoApi.HttpMediator.csproj" />
+      <ProjectReference Include="..\..\LiteTestWebApi\LiteTestWebApi.csproj" />
     </ItemGroup>
 
 </Project>

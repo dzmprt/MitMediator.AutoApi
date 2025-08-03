@@ -72,28 +72,24 @@ internal class HttpRequestHandler<TRequest, TResponse> : IRequestHandler<TReques
                     JsonSerializer.Serialize(request),
                     Encoding.UTF8,
                     "application/json"), cancellationToken);
-                ThrowIfNotSuccessStatusCode(postResponse);
                 return (await ConvertResponseAsync<TResponse>(postResponse, cancellationToken)).Item1;
             case HttpMethodType.Put:
                 var putResponse = await httpClient.PutAsync(pattern, new StringContent(
                     JsonSerializer.Serialize(request),
                     Encoding.UTF8,
                     "application/json"), cancellationToken);
-                ThrowIfNotSuccessStatusCode(putResponse);
                 return (await ConvertResponseAsync<TResponse>(putResponse, cancellationToken)).Item1;
             case HttpMethodType.Delete:
                 var deleteResponse = await httpClient.DeleteAsync(pattern + request.ToQueryString(), cancellationToken);
-                ThrowIfNotSuccessStatusCode(deleteResponse);
                 return (await ConvertResponseAsync<TResponse>(deleteResponse, cancellationToken)).Item1;
             case HttpMethodType.Get:
             default:
                 var getResponse = await httpClient.GetAsync(pattern + request.ToQueryString(), cancellationToken);
-                ThrowIfNotSuccessStatusCode(getResponse);
                 return (await ConvertResponseAsync<TResponse>(getResponse, cancellationToken)).Item1;
         }
     }
 
-    public static object[] ExtractKeys(object obj)
+    private static object[] ExtractKeys(object obj)
     {
         var type = obj.GetType();
         
@@ -104,17 +100,15 @@ internal class HttpRequestHandler<TRequest, TResponse> : IRequestHandler<TReques
         return (from method in methods where method.GetParameters().Length == 0 select method.Invoke(obj, null)).ToArray();
     }
     
-    private static void ThrowIfNotSuccessStatusCode(HttpResponseMessage response)
-    {
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new HttpRequestException(response.ReasonPhrase, null, response.StatusCode);
-        }
-    }
-    
     private static async ValueTask<(TResponse, HttpResponseHeaders responseHeaders)> ConvertResponseAsync<TResponse>(
         HttpResponseMessage response, CancellationToken cancellationToken)
     {
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new HttpRequestException(string.IsNullOrWhiteSpace(error) ? response.ReasonPhrase : error, null, response.StatusCode);
+        }
+        
         if (typeof(TResponse) == typeof(byte[]))
         {
             var result = await response.Content.ReadAsByteArrayAsync(cancellationToken);
