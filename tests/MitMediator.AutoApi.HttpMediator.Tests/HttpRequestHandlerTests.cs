@@ -20,44 +20,31 @@ public class GetFileQuery : IRequest<byte[]>
 
 public class GetCommand : IRequest<string>
 {
-    public string Query => "test";
-    public string GetKey() => "42";
 }
 
 public class PostCommand : IRequest<string>
 {
-    public string Payload => "data";
-    public string GetKey1() => "A";
-    public string GetKey2() => "B";
+
 }
 
 public class PutCommand : IRequest<string>
 {
-    public int Id => 5;
-    public string GetKey() => "777";
+
 }
 
 public class DeleteCommand : IRequest<string>
 {
-    public string GetKey() => "99";
+
 }
 
 public class PostCreateCommand : IRequest<string>
-{
-    public string Name => "New";
-    public string GetKey() => "123";
-}
-
-public class AutoCommand : IRequest<string> { }
-
-public class EmptyResponseCommand : IRequest<string>
 {
 }
 
 public class HttpRequestHandlerTests
 {
     private static HttpRequestHandler<TReq, TResponse> BuildHandler<TReq, TResponse>(HttpMethodType method, TResponse? responseContent,
-        Action<HttpRequestMessage>? capture = null, bool customPattern = false, bool throwError = false)
+        Action<HttpRequestMessage>? capture = null, bool customPattern = false, bool throwError = false, string? errorMessage = null)
         where TReq : IRequest<TResponse>
     {
         var msgHandlerMock = new Mock<HttpMessageHandler>();
@@ -67,7 +54,9 @@ public class HttpRequestHandlerTests
             {
                 if (throwError)
                 {
-                    return new HttpResponseMessage(HttpStatusCode.BadRequest) { ReasonPhrase = "Bad" };
+                    return errorMessage == null ? 
+                        new HttpResponseMessage(HttpStatusCode.BadRequest) { ReasonPhrase = "Bad" } : 
+                        new HttpResponseMessage(HttpStatusCode.BadRequest) { ReasonPhrase = "Bad", Content = new StringContent(errorMessage) };
                 }
 
                 if (typeof(TResponse) == typeof(string))
@@ -163,8 +152,21 @@ public class HttpRequestHandlerTests
         Assert.Equal(HttpStatusCode.BadRequest, exception.StatusCode);
     }
     
-    [AutoApi(httpMethodType: HttpMethodType.Auto)]
-    private class UnsupportedCommand : IRequest<string> { }
+    [Fact]
+    public async Task ShouldThrow_HttpRequestException_WhenStatusCodeIsErrorAndBodyHaveErrorMessage()
+    {
+        var handler = BuildHandler<DeleteCommand, string>(
+            HttpMethodType.Delete,
+            null,
+            throwError: true,
+            errorMessage: "{error:\"error message\"}");
+
+        var exception = await Assert.ThrowsAsync<HttpRequestException>(() =>
+            handler.HandleAsync(new DeleteCommand(), CancellationToken.None).AsTask());
+
+        Assert.Equal("{error:\"error message\"}", exception.Message);
+        Assert.Equal(HttpStatusCode.BadRequest, exception.StatusCode);
+    }
     
     [Fact]
     public async Task GetFileQuery_ShouldReturn_Response()
