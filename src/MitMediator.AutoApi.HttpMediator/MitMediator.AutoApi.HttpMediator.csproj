@@ -12,14 +12,14 @@
         <PackageIcon>logo.png</PackageIcon>
         <RepositoryUrl>https://github.com/dzmprt/MitMediator.AutoApi</RepositoryUrl>
         <PackageTags>mediator;request;response;queries;commands;mitmediator;minimalapi;autoapi;cqrs;httpmediator;httpclient</PackageTags>
-        <PackageReleaseNotes>v7.0.0-alfa-7
+        <PackageReleaseNotes>v7.0.0-alfa-8
 Version for tests
-Up mitmediator version to 7.0.0
-Add http response body to HttpRequestException message</PackageReleaseNotes>
+Implemented automatic X-Total-Count header for ITotalCount responses  
+Enabled Location header inference via IResourceKey on 201 Created responses</PackageReleaseNotes>
         <TrimMode>full</TrimMode>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
-        <Version>7.0.0-alfa-7</Version>
+        <Version>7.0.0-alfa-8</Version>
     </PropertyGroup>
 
     <ItemGroup>
@@ -41,6 +41,10 @@ Add http response body to HttpRequestException message</PackageReleaseNotes>
 
     <ItemGroup>
         <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MitMediator.AutoApi.Abstractions\MitMediator.AutoApi.Abstractions.csproj" />
     </ItemGroup>
 
 </Project>
