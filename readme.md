@@ -4,7 +4,7 @@
 ![License](https://img.shields.io/github/license/dzmprt/MitMediator.AutoApi)
 # MitMediator.AutoApi
 
-## Minimal API registration for MitMediator
+## Minimal API registration and http client for MitMediator
 
 ### 🔗 Extension for [MitMediator](https://github.com/dzmprt/MitMediator)
 
@@ -13,13 +13,13 @@
 ### 1. Add package
 ```bash
 # for ASP.NET API projects
-dotnet add package MitMediator.AutoApi -v 7.0.0-alfa-7
+dotnet add package MitMediator.AutoApi -v 7.0.0-alfa-8
 
 # for application layer
-dotnet add package MitMediator.AutoApi.Abstractions -v 7.0.0-alfa-7
+dotnet add package MitMediator.AutoApi.Abstractions -v 7.0.0-alfa-8
 
 # for client application (MAUI, Blazor, UWP, etc.)
-dotnet add package MitMediator.AutoApi.HttpMediator -v 7.0.0-alfa-7
+dotnet add package MitMediator.AutoApi.HttpMediator -v 7.0.0-alfa-8
 ```
 ### 2. Use extension for IEndpointRouteBuilder
 
@@ -186,7 +186,7 @@ public class GetBookCoverQuery: IRequest<byte[]>, IKeyRequest<int>
 }
 ```
 
-### Change default mapping
+## Change default mapping
 
 Use the `[AutoApi]` attribute for the request type to change default mapping
 
@@ -235,7 +235,71 @@ public class DoSomeWithBookAndDeleteCommand : IRequest<Book[]>, IKeyRequest<int,
 }
 ```
 
-### 🎯 Use auto client: HttpMediator
+### 🚫 Ignore Request
+
+You can disable automatic endpoint generation for a request if you prefer to implement the endpoint manually or exclude it from the API surface.
+To do so, apply the `[AutoApiIgnore]` attribute to the request type:
+
+```csharp
+[AutoApiIgnore]
+public class MyCustomRequest : IRequest<MyResponse>
+{
+    // This request will not be exposed via AutoAPI
+}
+```
+
+### 📄 File response (`byte[]` and `FileResponse`)
+
+For requests returning `byte[]` (via `IRequest<byte[]>`), the response uses the "application/octet-stream" content type by default.
+To specify a download file name, use the FileResponse class. Use `[AutoApi(customResponseContentType:"image/png")]` attribute for custom content type
+
+### 🔢 `X-Total-Count` Header
+
+To include the `X-Total-Count` header in the HTTP response, implement the `ITotalCount` interface in your response type. This is useful for paginated endpoints or any scenario where the client needs to know the total number of items available.
+
+```csharp
+public class GetBooksResponse : ITotalCount
+{
+    public Book[] Items { get; init; }
+
+    private int _totalCount;
+    
+    public int GetTotalCount() => _totalCount;
+
+    public void SetTotalCount(int totalCount)
+    {
+        _totalCount = totalCount;
+    }
+}
+```
+
+When this interface is implemented, MitMediator.AutoApi will automatically include the `X-Total-Count` header in the response, reflecting the value returned by `GetTotalCount()`
+
+### 📍 Resource ID in `Location` header for `201 Created` responses
+
+To insert the correct ID into the Location header of a 201 Created response, implement the `IResourceKey` interface in your response type:
+
+```csharp
+// Api URL: POST /books
+public class CreateBookCommand : IRequest<CreatedBookResponse>
+{
+    public string Title { get; init; }
+}
+
+// Location Header: /books/{BookId}
+public class CreatedBookResponse : IResourceKey
+{
+    public int BookId { get; private set; }
+    
+    public string Title { get; private set; }
+    
+    public string GetResourceKey() => BookId.ToString();
+}
+```
+
+If you do not implement the `IResourceKey` interface, the Location header will default to the format `/books/{key}`, where `{key}` is a placeholder string
+
+## 🎯 Use auto client: HttpMediator
 
 You can reuse your `IRequest` types to seamlessly send HTTP requests to a server-side API using `HttpMediator`
 
@@ -274,7 +338,7 @@ public class AuthorizationHeaderInjection<TRequest, TResponse> : IHttpHeaderInje
 }
 ```
 
-### 📁 See [samples](./samples)
+## 📁 See [samples](./samples)
 
 ## ⚙️ How It Works
 
@@ -314,21 +378,18 @@ The first word after the method will be the main tag. Second and other - suffix.
 
 Words `command`, `query`, and `request` in the end of request type name will be deleted from url
 
-## 📄 File response (`byte[]` and `FileResponse`)
-
-For requests returning `byte[]` (via `IRequest<byte[]>`), the response uses the "application/octet-stream" content type by default.
-To specify a download file name, use the FileResponse class. Use `[AutoApi(customResponseContentType:"image/png")]` attribute for custom content type
 
 ## 💡 Features
 
-* Declarative routing via attributes
+* Declarative routing via request class name or attributes
 * Automatic tag and version grouping
-* Custom route patterns with up to 7 composite keys
 * Built-in handling of `Unit` results (no payload responses)
+* Custom route patterns with up to 7 composite keys
 * Key binding via IKeyRequest<TKey1, TKey2, ...> (pattern `{key1}/{key2}/.../{key7}`)
 * Supports custom patterns (`custom-route/my-route`, `with-keys/{key1}/{key2}/field/{key3}`)
 * Auto client `HttpMediator` for clients applications
 * File response (`IRequest<byte[]>` or `IRequest<FileResponse>`)
+* `X-Total-Count` header (implement `ITotalCount` in response type)
 
 ## 📜 License
 

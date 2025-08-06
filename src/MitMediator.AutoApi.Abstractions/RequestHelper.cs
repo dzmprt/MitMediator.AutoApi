@@ -5,6 +5,8 @@ namespace MitMediator.AutoApi.Abstractions;
 
 public static class RequestHelper
 {
+    public static string BasePath { get; set; }
+    
     public static Type GetKeyType(Type queryType)
     {
         var requestKeyInterface = queryType
@@ -261,6 +263,11 @@ public static class RequestHelper
             pattern = string.Concat(pattern, "/", attribute.PatternSuffix);
         }
 
+        if (!string.IsNullOrWhiteSpace(BasePath))
+        {
+            pattern = string.Join("/", BasePath, pattern);
+        }
+
         return pattern;
     }
     
@@ -362,9 +369,9 @@ public static class RequestHelper
             return string.Empty;
 
         var builder = new StringBuilder();
-        for (int i = 0; i < input.Length; i++)
+        for (var i = 0; i < input.Length; i++)
         {
-            char c = input[i];
+            var c = input[i];
             if (char.IsUpper(c))
             {
                 if (i > 0)

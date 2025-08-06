@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MitMediator.AutoApi.Abstractions;
+using MitMediator.AutoApi.Tests.RequestsForTests;
 using MitMediator.AutoApi.Tests.RequestsForTests.Test.Queries.Get;
 
 namespace MitMediator.AutoApi.Tests;
@@ -105,7 +107,10 @@ public class EndpointsRegistrationsTests
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/v2/my-books/favorite"));
 
         Assert.Contains(endpoints, e => Matches(e, "DELETE", "with-keys/{key1}/field/{key2}"));
-
+        
+        Assert.Contains(endpoints, e => Matches(e, "GET", "api/lists"));
+        
+        Assert.Contains(endpoints, e => Matches(e, "GET", "api/nots/supported-prefix"));
     }
 
     private static bool Matches(Endpoint endpoint, string verb, string pattern)

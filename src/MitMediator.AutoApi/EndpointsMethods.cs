@@ -17,12 +17,7 @@ internal static class EndpointsMethods
             {
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
-                var requestType = typeof(TRequest);
-                if (result is byte[] || result is FileResponse)
-                {
-                    return GetFileResult(requestType, result);
-                }
-                return result is Unit ? Results.Ok() : Results.Ok(result);
+                return GetApiResult<TRequest, TResponse>(result, ctx);
             });
     }
 
@@ -37,14 +32,11 @@ internal static class EndpointsMethods
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 request.SetKey(key);
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
-                var requestType = typeof(TRequest);
-                if (result is byte[] || result is FileResponse)
-                {
-                    return GetFileResult(requestType, result);
-                }
-                return result is Unit ? Results.Ok() : Results.Ok(result);
+                return GetApiResult<TRequest, TResponse>(result, ctx);
             });
     }
+
+
 
     internal static Delegate WithGetParamsAnd2Keys<TRequest, TResponse, TKey1, TKey2>()
         where TRequest : IRequest<TResponse>, IKeyRequest<TKey1, TKey2>
@@ -56,12 +48,7 @@ internal static class EndpointsMethods
                 request.SetKey1(key1);
                 request.SetKey2(key2);
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
-                var requestType = typeof(TRequest);
-                if (result is byte[] || result is FileResponse)
-                {
-                    return GetFileResult(requestType, result);
-                }
-                return result is Unit ? Results.Ok() : Results.Ok(result);
+                return GetApiResult<TRequest, TResponse>(result, ctx);
             });
     }
 
@@ -76,12 +63,7 @@ internal static class EndpointsMethods
                 request.SetKey2(key2);
                 request.SetKey3(key3);
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
-                var requestType = typeof(TRequest);
-                if (result is byte[] || result is FileResponse)
-                {
-                    return GetFileResult(requestType, result);
-                }
-                return result is Unit ? Results.Ok() : Results.Ok(result);
+                return GetApiResult<TRequest, TResponse>(result, ctx);
             });
     }
 
@@ -98,12 +80,7 @@ internal static class EndpointsMethods
                 request.SetKey3(key3);
                 request.SetKey4(key4);
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
-                var requestType = typeof(TRequest);
-                if (result is byte[] || result is FileResponse)
-                {
-                    return GetFileResult(requestType, result);
-                }
-                return result is Unit ? Results.Ok() : Results.Ok(result);
+                return GetApiResult<TRequest, TResponse>(result, ctx);
             });
     }
 
@@ -121,12 +98,7 @@ internal static class EndpointsMethods
                 request.SetKey4(key4);
                 request.SetKey5(key5);
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
-                var requestType = typeof(TRequest);
-                if (result is byte[] || result is FileResponse)
-                {
-                    return GetFileResult(requestType, result);
-                }
-                return result is Unit ? Results.Ok() : Results.Ok(result);
+                return GetApiResult<TRequest, TResponse>(result, ctx);
             });
     }
 
@@ -146,12 +118,7 @@ internal static class EndpointsMethods
                 request.SetKey5(key5);
                 request.SetKey6(key6);
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
-                var requestType = typeof(TRequest);
-                if (result is byte[] || result is FileResponse)
-                {
-                    return GetFileResult(requestType, result);
-                }
-                return result is Unit ? Results.Ok() : Results.Ok(result);
+                return GetApiResult<TRequest, TResponse>(result, ctx);
             });
     }
 
@@ -173,12 +140,7 @@ internal static class EndpointsMethods
                 request.SetKey6(key6);
                 request.SetKey7(key7);
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
-                var requestType = typeof(TRequest);
-                if (result is byte[] || result is FileResponse)
-                {
-                    return GetFileResult(requestType, result);
-                }
-                return result is Unit ? Results.Ok() : Results.Ok(result);
+                return GetApiResult<TRequest, TResponse>(result, ctx);
             });
     }
 
@@ -193,17 +155,12 @@ internal static class EndpointsMethods
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
                 var requestType = typeof(TRequest);
-                if (result is byte[] || result is FileResponse)
-                {
-                    return GetFileResult(requestType, result);
-                }
                 if (RequestHelper.GetHttpMethod(requestType) != HttpMethodType.PostCreate)
                 {
-                    return result is Unit ? Results.Ok() : Results.Ok(result);
+                    return GetApiResult<TRequest, TResponse>(result, ctx);
                 }
-
-                var keyPattern = string.Concat(RequestHelper.GetPattern(request.GetType()), "/{key}");
-                return Results.Created(keyPattern, result is Unit ? null : result);
+                var keyPattern = $"{RequestHelper.GetPattern(requestType)}/{{key}}";
+                return GetApiResult<TRequest, TResponse>(result, ctx, keyPattern);
             });
     }
 
@@ -219,18 +176,14 @@ internal static class EndpointsMethods
                 request.SetKey(key);
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
                 var requestType = typeof(TRequest);
-                if (result is byte[] || result is FileResponse)
-                {
-                    return GetFileResult(requestType, result);
-                }
                 if (RequestHelper.GetHttpMethod(requestType) != HttpMethodType.PostCreate)
                 {
-                    return result is Unit ? Results.Ok() : Results.Ok(result);
+                    return GetApiResult<TRequest, TResponse>(result, ctx);
                 }
                 var keyPattern = RequestHelper.GetPattern(requestType);
                 keyPattern = keyPattern.Replace("{key}", key?.ToString());
                 keyPattern = string.Concat(keyPattern, "/{key}");
-                return result is Unit ? Results.Created(keyPattern, null) : Results.Created(keyPattern, result);
+                return GetApiResult<TRequest, TResponse>(result, ctx, keyPattern);
             });
     }
 
@@ -245,18 +198,14 @@ internal static class EndpointsMethods
                 request.SetKey2(key2);
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
                 var requestType = typeof(TRequest);
-                if (result is byte[] || result is FileResponse)
-                {
-                    return GetFileResult(requestType, result);
-                }
                 if (RequestHelper.GetHttpMethod(requestType) != HttpMethodType.PostCreate)
                 {
-                    return result is Unit ? Results.Ok() : Results.Ok(result);
+                    return GetApiResult<TRequest, TResponse>(result, ctx);
                 }
                 var keyPattern = string.Concat(RequestHelper.GetPattern(requestType), "/{key}");
                 keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
                 keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
-                return result is Unit ? Results.Created(keyPattern, null) : Results.Created(keyPattern, result);
+                return GetApiResult<TRequest, TResponse>(result, ctx, keyPattern);
             });
     }
 
@@ -272,19 +221,15 @@ internal static class EndpointsMethods
                 request.SetKey3(key3);
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
                 var requestType = typeof(TRequest);
-                if (result is byte[] || result is FileResponse)
-                {
-                    return GetFileResult(requestType, result);
-                }
                 if (RequestHelper.GetHttpMethod(requestType) != HttpMethodType.PostCreate)
                 {
-                    return result is Unit ? Results.Ok() : Results.Ok(result);
+                    return GetApiResult<TRequest, TResponse>(result, ctx);
                 }
                 var keyPattern = string.Concat(RequestHelper.GetPattern(requestType), "/{key}");
                 keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
                 keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
                 keyPattern = keyPattern.Replace("{key3}", key3?.ToString());
-                return result is Unit ? Results.Created(keyPattern, null) : Results.Created(keyPattern, result);
+                return GetApiResult<TRequest, TResponse>(result, ctx, keyPattern);
             });
     }
 
@@ -302,20 +247,16 @@ internal static class EndpointsMethods
                 request.SetKey4(key4);
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
                 var requestType = typeof(TRequest);
-                if (result is byte[] || result is FileResponse)
-                {
-                    return GetFileResult(requestType, result);
-                }
                 if (RequestHelper.GetHttpMethod(requestType) != HttpMethodType.PostCreate)
                 {
-                    return result is Unit ? Results.Ok() : Results.Ok(result);
+                    return GetApiResult<TRequest, TResponse>(result, ctx);
                 }
                 var keyPattern = string.Concat(RequestHelper.GetPattern(requestType), "/{key}");
                 keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
                 keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
                 keyPattern = keyPattern.Replace("{key3}", key3?.ToString());
                 keyPattern = keyPattern.Replace("{key4}", key4?.ToString());
-                return result is Unit ? Results.Created(keyPattern, null) : Results.Created(keyPattern, result);
+                return GetApiResult<TRequest, TResponse>(result, ctx, keyPattern);
             });
     }
 
@@ -334,13 +275,9 @@ internal static class EndpointsMethods
                 request.SetKey5(key5);
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
                 var requestType = typeof(TRequest);
-                if (result is byte[] || result is FileResponse)
-                {
-                    return GetFileResult(requestType, result);
-                }
                 if (RequestHelper.GetHttpMethod(requestType) != HttpMethodType.PostCreate)
                 {
-                    return result is Unit ? Results.Ok() : Results.Ok(result);
+                    return GetApiResult<TRequest, TResponse>(result, ctx);
                 }
                 var keyPattern = string.Concat(RequestHelper.GetPattern(requestType), "/{key}");
                 keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
@@ -348,7 +285,7 @@ internal static class EndpointsMethods
                 keyPattern = keyPattern.Replace("{key3}", key3?.ToString());
                 keyPattern = keyPattern.Replace("{key4}", key4?.ToString());
                 keyPattern = keyPattern.Replace("{key5}", key5?.ToString());
-                return result is Unit ? Results.Created(keyPattern, null) : Results.Created(keyPattern, result);
+                return GetApiResult<TRequest, TResponse>(result, ctx, keyPattern);
             });
     }
 
@@ -369,13 +306,9 @@ internal static class EndpointsMethods
                 request.SetKey6(key6);
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
                 var requestType = typeof(TRequest);
-                if (result is byte[] bytes)
+                if (RequestHelper.GetHttpMethod(requestType) != HttpMethodType.PostCreate)
                 {
-                    return GetFileResult(requestType, bytes);
-                }
-                if (result is byte[] || result is FileResponse)
-                {
-                    return GetFileResult(requestType, result);
+                    return GetApiResult<TRequest, TResponse>(result, ctx);
                 }
                 var keyPattern = string.Concat(RequestHelper.GetPattern(requestType), "/{key");
                 keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
@@ -384,7 +317,7 @@ internal static class EndpointsMethods
                 keyPattern = keyPattern.Replace("{key4}", key4?.ToString());
                 keyPattern = keyPattern.Replace("{key5}", key5?.ToString());
                 keyPattern = keyPattern.Replace("{key6}", key6?.ToString());
-                return result is Unit ? Results.Created(keyPattern, null) : Results.Created(keyPattern, result);
+                return GetApiResult<TRequest, TResponse>(result, ctx, keyPattern);
             });
     }
     
@@ -406,13 +339,9 @@ internal static class EndpointsMethods
                 request.SetKey7(key7);
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
                 var requestType = typeof(TRequest);
-                if (result is byte[] || result is FileResponse)
-                {
-                    return GetFileResult(requestType, result);
-                }
                 if (RequestHelper.GetHttpMethod(requestType) != HttpMethodType.PostCreate)
                 {
-                    return result is Unit ? Results.Ok() : Results.Ok(result);
+                    return GetApiResult<TRequest, TResponse>(result, ctx);
                 }
                 var keyPattern = string.Concat(RequestHelper.GetPattern(requestType), "/{key");
                 keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
@@ -422,7 +351,7 @@ internal static class EndpointsMethods
                 keyPattern = keyPattern.Replace("{key5}", key5?.ToString());
                 keyPattern = keyPattern.Replace("{key6}", key6?.ToString());
                 keyPattern = keyPattern.Replace("{key7}", key7?.ToString());
-                return result is Unit ? Results.Created(keyPattern, null) : Results.Created(keyPattern, result);
+                return GetApiResult<TRequest, TResponse>(result, ctx, keyPattern);
             });
     }
 
@@ -445,5 +374,32 @@ internal static class EndpointsMethods
         }
 
         return Results.File(data, autoApiAttribute?.CustomResponseContentType ?? "application/octet-stream", fileName, true);
+    }
+    
+    private static IResult GetApiResult<TRequest, TResponse>(TResponse result, HttpContext ctx, string? resourseUrl = null)
+        where TRequest : IRequest<TResponse>
+    {
+        if (!string.IsNullOrWhiteSpace(resourseUrl))
+        {
+            if (result is IResourceKey resourceKey)
+            {
+                resourseUrl = resourseUrl.Replace("{key}", resourceKey.GetResourceKey());
+            }
+        }
+        switch (result)
+        {
+            case Unit:
+                return resourseUrl is null ? Results.Ok() : Results.Created(resourseUrl, null);
+            case byte[]:
+            case FileResponse:
+            {
+                var requestType = typeof(TRequest);
+                return GetFileResult(requestType, result);
+            }
+            case ITotalCount totalCount:
+                ctx.Response.Headers.Add("X-Total-Count", totalCount.GetTotalCount().ToString());
+                break;
+        }
+        return resourseUrl is null ? Results.Ok(result) : Results.Created(resourseUrl, result);
     }
 }
