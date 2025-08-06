@@ -42,10 +42,6 @@ Enabled Location header inference via IResourceKey on 201 Created responses</Pac
     </ItemGroup>
     
     <ItemGroup>
-      <PackageReference Include="MitMediator.AutoApi.Abstractions" Version="7.0.0-alfa-7" />
-    </ItemGroup>
-    
-    <ItemGroup>
-      <ProjectReference Include="..\MitMediator.AutoApi.Abstractions\MitMediator.AutoApi.Abstractions.csproj" />
+      <PackageReference Include="MitMediator.AutoApi.Abstractions" Version="7.0.0-alfa-8" />
     </ItemGroup>
 </Project>

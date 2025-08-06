@@ -24,7 +24,7 @@ Enabled Location header inference via IResourceKey on 201 Created responses</Pac
 
     <ItemGroup>
       <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
-      <PackageReference Include="MitMediator.AutoApi.Abstractions" Version="7.0.0-alfa-7" />
+      <PackageReference Include="MitMediator.AutoApi.Abstractions" Version="7.0.0-alfa-8" />
     </ItemGroup>
 
     <ItemGroup>
@@ -41,10 +41,6 @@ Enabled Location header inference via IResourceKey on 201 Created responses</Pac
 
     <ItemGroup>
         <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\MitMediator.AutoApi.Abstractions\MitMediator.AutoApi.Abstractions.csproj" />
     </ItemGroup>
 
 </Project>

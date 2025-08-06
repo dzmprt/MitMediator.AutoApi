@@ -3,7 +3,7 @@ using MitMediator.AutoApi.Abstractions;
 
 namespace BooksCatalog.Application.UseCase.Books.Commands.CreateBook;
 
-public class CreatedBookResponse : IResourceKey
+public class CreatedBookResponse //: IResourceKey
 {
     /// <summary>
     /// Book id.
