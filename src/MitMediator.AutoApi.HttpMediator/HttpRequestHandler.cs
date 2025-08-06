@@ -134,6 +134,15 @@ internal class HttpRequestHandler<TRequest, TResponse> : IRequestHandler<TReques
         };
         opts.Converters.Add(stringEnumConverter);
         var responseModel = JsonSerializer.Deserialize<TResponse>(content, opts)!;
+        if (responseModel is ITotalCount)
+        {
+            var count = response.Headers.GetValues("X-Total-Count").FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(count))
+            {
+                var totalCount = (ITotalCount)responseModel;
+                totalCount.SetTotalCount(int.Parse(count));
+            }
+        }
         return (responseModel, response.Headers);
     }
 }

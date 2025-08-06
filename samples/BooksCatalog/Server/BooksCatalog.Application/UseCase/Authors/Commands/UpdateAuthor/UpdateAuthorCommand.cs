@@ -1,0 +1,33 @@
+using BooksCatalog.Domain;
+using MitMediator;
+using MitMediator.AutoApi.Abstractions;
+
+namespace BooksCatalog.Application.UseCase.Authors.Commands.UpdateAuthor;
+
+/// <summary>
+/// Update author.
+/// </summary>
+public struct UpdateAuthorCommand : IRequest<Author>, IKeyRequest<int>
+{
+    /// <summary>
+    /// Author id.
+    /// </summary>
+    internal int AuthorId { get; private set; }
+    
+    /// <summary>
+    /// First name.
+    /// </summary>
+    public string FirstName { get; init; }
+    
+    /// <summary>
+    /// Last name.
+    /// </summary>
+    public string LastName { get; init; }
+
+    public void SetKey(int key)
+    {
+        AuthorId = key;
+    }
+    
+    public int GetKey() => AuthorId;
+}

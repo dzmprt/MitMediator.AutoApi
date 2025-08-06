@@ -31,11 +31,12 @@ public static class RegisterEndpointsExtensions
     private static void MapRequest(this IEndpointRouteBuilder app, Type requestType, string? basePath)
     {
         var attribute = requestType.GetCustomAttribute<AutoApiAttribute>();
-        var pattern = RequestHelper.GetPattern(requestType);
         if (!string.IsNullOrWhiteSpace(basePath) && string.IsNullOrWhiteSpace(attribute?.CustomPattern))
         {
-            pattern = string.Join("/", basePath, pattern);
+            RequestHelper.BasePath = basePath;
         }
+        
+        var pattern = RequestHelper.GetPattern(requestType);
 
         var responseType = RequestHelper.GetResponseType(requestType);
 

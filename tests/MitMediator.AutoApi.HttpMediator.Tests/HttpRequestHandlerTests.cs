@@ -1,12 +1,32 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using MitMediator.AutoApi.Abstractions;
 using Moq;
 using Moq.Protected;
 
 namespace MitMediator.AutoApi.HttpMediator.Tests;
+
+public class GetListQuery : IRequest<GetListResponse>
+{
+    
+}
+
+public class GetListResponse : ITotalCount
+{
+    public string[] Items { get; init; }
+
+    internal int _totalCount;
+
+    public int GetTotalCount() => _totalCount;
+    
+    public void SetTotalCount(int totalCount)
+    {
+        _totalCount = totalCount;
+    }
+}
 
 public class GetFileWithNameQuery : IRequest<FileResponse>
 {
@@ -75,6 +95,16 @@ public class HttpRequestHandlerTests
                     };
                     return fileResp;
                 }
+
+                if (responseContent is ITotalCount)
+                {
+                    var jsonResponse = JsonSerializer.Serialize(responseContent);
+                    var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(jsonResponse) };
+                    var totalCount = responseContent as ITotalCount;
+                    httpResponseMessage.Headers.Add("X-Total-Count", totalCount.GetTotalCount().ToString());
+                    return httpResponseMessage;
+                }
+                
                 return new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(responseContent as byte[]) };
             });
 
@@ -183,5 +213,20 @@ public class HttpRequestHandlerTests
         var result = await handler.HandleAsync(new GetFileWithNameQuery(),CancellationToken.None);
         Assert.Equal("test", Encoding.UTF8.GetString(result.Data));
         Assert.Equal("testfile.txt", result.FileName);
+    }
+    
+    [Fact]
+    public async Task TaskGetListQuery_ShouldReturn_Response()
+    {
+        var response = new GetListResponse()
+        {
+            Items = Enumerable.Range(0, 3).Select(x => $"Record #{x}").ToArray()
+        };
+        response.SetTotalCount(100);
+        var handler = BuildHandler<GetListQuery, GetListResponse>(HttpMethodType.Get, response);
+        var result = await handler.HandleAsync(new GetListQuery(), CancellationToken.None);
+        Assert.Equal(3, result.Items.Length);
+        Assert.Equal(100, result.GetTotalCount());
+        Assert.NotStrictEqual(result, response);
     }
 }
