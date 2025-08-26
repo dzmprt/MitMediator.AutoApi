@@ -44,7 +44,6 @@ Change interface name for client mediator</PackageReleaseNotes>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\MitMediator.AutoApi.Abstractions\MitMediator.AutoApi.Abstractions.csproj" />
+        <PackageReference Include="MitMediator.AutoApi.Abstractions" Version="9.0.0-alfa" />
     </ItemGroup>
-
 </Project>
