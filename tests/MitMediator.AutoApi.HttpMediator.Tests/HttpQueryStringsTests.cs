@@ -1,116 +1,144 @@
 namespace MitMediator.AutoApi.HttpMediator.Tests;
 
-public class HttpQueryStringsTests
+public class HttpQueryStringsExtensionsTests
 {
+    private class SimpleModel
+    {
+        public int Id { get; set; }
+        public string? Name { get; set; }
+        public bool IsActive { get; set; }
+        public DateTime Created { get; set; }
+        public Guid Token { get; set; }
+    }
+
+    private class NestedModel
+    {
+        public SimpleModel? Inner { get; set; }
+        public string? Comment { get; set; }
+    }
+
+    private enum Status { None, Active, Disabled }
+
+    private class EnumModel
+    {
+        public Status Status { get; set; }
+    }
+
     [Fact]
-    public void ToQueryString_ShouldReturnEmptyForNullObject()
+    public void NullObject_ReturnsEmpty()
     {
         object? obj = null;
-
-        var result = HttpQueryStrings.ToQueryString(obj!);
-
+        var result = obj.ToQueryString();
         Assert.Equal(string.Empty, result);
     }
 
     [Fact]
-    public void ToQueryString_ShouldIgnoreDefaultValues()
+    public void EmptyObject_ReturnsEmpty()
     {
-        var obj = new
-        {
-            IntValue = 0,
-            DateValue = default(DateTime)
-        };
-
-        var result = HttpQueryStrings.ToQueryString(obj);
-
+        var obj = new SimpleModel();
+        var result = obj.ToQueryString();
         Assert.Equal(string.Empty, result);
     }
 
     [Fact]
-    public void ToQueryString_ShouldFormatSimpleValues()
+    public void PrimitiveValues_AreSerialized()
     {
-        var obj = new
+        var obj = new SimpleModel
         {
-            Name = "Dmitriy",
-            Age = 35
+            Id = 42,
+            Name = "Test",
+            IsActive = true,
+            Created = new DateTime(2024, 12, 31, 0, 0, 0, DateTimeKind.Utc),
+            Token = Guid.Parse("11111111-1111-1111-1111-111111111111")
         };
 
-        var result = HttpQueryStrings.ToQueryString(obj);
+        var result = obj.ToQueryString();
 
-        Assert.Equal("?Name=Dmitriy&Age=35", result);
+        Assert.Contains("Id=42", result);
+        Assert.Contains("Name=Test", result);
+        Assert.Contains("IsActive=true", result);
+        Assert.Contains("Created=2024-12-31T00%3A00%3A00.000Z", result);
+        Assert.Contains("Token=11111111-1111-1111-1111-111111111111", result);
     }
 
     [Fact]
-    public void ToQueryString_ShouldFormatDateTime()
+    public void NestedObject_IsFlattened()
     {
-        var date = new DateTime(2024, 12, 31);
-        var obj = new { Date = date };
-
-        var result = HttpQueryStrings.ToQueryString(obj);
-
-        Assert.Equal("?Date=2024-12-31", result);
-    }
-
-    [Fact]
-    public void ToQueryString_ShouldHandleStringArray()
-    {
-        var obj = new { Tags = new[] { "api", "test" } };
-
-        var result = HttpQueryStrings.ToQueryString(obj);
-
-        Assert.Equal("?Tags=api&Tags=test", result);
-    }
-
-    [Fact]
-    public void ToQueryString_ShouldHandleDateTimeArray()
-    {
-        var obj = new
+        var obj = new NestedModel
         {
-            Dates = new[] {
-                new DateTime(2022, 1, 1),
-                new DateTime(2023, 6, 6)
-            }
-        };
-
-        var result = HttpQueryStrings.ToQueryString(obj);
-
-        Assert.Equal("?Dates=2022-01-01&Dates=2023-06-06", result);
-    }
-
-    [Fact]
-    public void ToQueryString_ShouldHandleNestedObjects()
-    {
-        var obj = new
-        {
-            Filter = new
+            Comment = "Hello",
+            Inner = new SimpleModel
             {
-                From = new DateTime(2024, 1, 1),
-                Keyword = "core"
+                Id = 1,
+                Name = "Nested",
+                IsActive = true
             }
         };
 
-        var result = HttpQueryStrings.ToQueryString(obj);
+        var result = obj.ToQueryString();
 
-        Assert.Equal("?Filter.From=2024-01-01&Filter.Keyword=core", result);
+        Assert.Contains("Comment=Hello", result);
+        Assert.Contains("Inner.Id=1", result);
+        Assert.Contains("Inner.Name=Nested", result);
+        Assert.Contains("Inner.IsActive=true", result);
     }
-    
-    private class TestObject
-    {
-        public string? NullableProperty { get; set; } = null;
-        public int NonZeroInt => 5;
-    }
-    
+
     [Fact]
-    public void BuildQueryString_ShouldIgnoreNullProperty()
+    public void Collection_IsSerialized()
     {
-        // Arrange
-        var obj = new TestObject();
+        var list = new[] { "one", "two" };
+        var result = list.ToQueryString();
 
-        // Act
-        var query = HttpQueryStrings.ToQueryString(obj);
+        Assert.Contains("one", result);
+        Assert.Contains("two", result);
+    }
 
-        // Assert
-        Assert.DoesNotContain("NullableProperty", query); // проверяем, что null не сериализуется
-        Assert.Contains("NonZeroInt=5", query); // контрольный параметр для уверенности
+    [Fact]
+    public void EmptyCollection_IsIgnored()
+    {
+        var list = Array.Empty<string>();
+        var result = list.ToQueryString();
+        Assert.Equal(string.Empty, result);
+    }
+
+    [Fact]
+    public void Enum_IsSerialized()
+    {
+        var obj = new EnumModel { Status = Status.Active };
+        var result = obj.ToQueryString();
+        Assert.Contains("Status=Active", result);
+    }
+
+    [Fact]
+    public void DefaultValues_AreIgnored()
+    {
+        var obj = new SimpleModel
+        {
+            Id = 0,
+            Name = "",
+            IsActive = false,
+            Created = DateTime.MinValue,
+            Token = Guid.Empty
+        };
+
+        var result = obj.ToQueryString();
+        Assert.Equal(string.Empty, result);
+    }
+
+    [Fact]
+    public void NullableTypes_AreHandled()
+    {
+        var obj = new { Value = (int?)null };
+        var result = obj.ToQueryString();
+        Assert.Equal(string.Empty, result);
+    }
+
+    [Fact]
+    public void DateTimeOffset_IsSerializedCorrectly()
+    {
+        var dto = new DateTimeOffset(2024, 12, 31, 0, 0, 0, TimeSpan.Zero);
+        var obj = new { Timestamp = dto };
+        var result = obj.ToQueryString();
+        Assert.Contains("Timestamp=2024-12-31T00%3A00%3A00.000Z", result);
     }
 }

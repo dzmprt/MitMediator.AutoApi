@@ -1,6 +1,8 @@
+using System.Collections;
 using System.Reflection;
 using System.Runtime.Serialization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
 using MitMediator.AutoApi.Abstractions;
 
 namespace MitMediator.AutoApi;
@@ -16,7 +18,7 @@ internal static class EndpointsMethods
         return (Func<HttpContext, CancellationToken, ValueTask<IResult>>)(
             async (ctx, ct) =>
             {
-                var request = TryBindFromAllForQuerySources<TRequest>(ctx);
+                var request = QueryBinder.BindFromQuery<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
                 return GetApiResult<TRequest, TResponse>(result, ctx);
@@ -31,21 +33,21 @@ internal static class EndpointsMethods
         return (Func<TKey, HttpContext, CancellationToken, ValueTask<IResult>>)(
             async ([FromRoute] key, ctx, ct) =>
             {
-                var request = TryBindFromAllForQuerySources<TRequest>(ctx);
+                var request = QueryBinder.BindFromQuery<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 request.SetKey(key);
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
                 return GetApiResult<TRequest, TResponse>(result, ctx);
             });
     }
-    
+
     internal static Delegate WithGetParamsAnd2Keys<TRequest, TResponse, TKey1, TKey2>()
         where TRequest : IRequest<TResponse>, IKeyRequest<TKey1, TKey2>
     {
         return (Func<TKey1, TKey2, HttpContext, CancellationToken, ValueTask<IResult>>)(
             async ([FromRoute] key1, [FromRoute] key2, ctx, ct) =>
             {
-                var request = TryBindFromAllForQuerySources<TRequest>(ctx);
+                var request = QueryBinder.BindFromQuery<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 request.SetKey1(key1);
                 request.SetKey2(key2);
@@ -60,7 +62,7 @@ internal static class EndpointsMethods
         return (Func<TKey1, TKey2, TKey3, HttpContext, CancellationToken, ValueTask<IResult>>)(
             async ([FromRoute] key1, [FromRoute] key2, [FromRoute] key3, ctx, ct) =>
             {
-                var request = TryBindFromAllForQuerySources<TRequest>(ctx);
+                var request = QueryBinder.BindFromQuery<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 request.SetKey1(key1);
                 request.SetKey2(key2);
@@ -77,7 +79,7 @@ internal static class EndpointsMethods
             async ([FromRoute] key1, [FromRoute] key2, [FromRoute] key3, [FromRoute] key4, ctx,
                 ct) =>
             {
-                var request = TryBindFromAllForQuerySources<TRequest>(ctx);
+                var request = QueryBinder.BindFromQuery<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 request.SetKey1(key1);
                 request.SetKey2(key2);
@@ -95,7 +97,7 @@ internal static class EndpointsMethods
             async ([FromRoute] key1, [FromRoute] key2, [FromRoute] key3, [FromRoute] key4,
                 [FromRoute] key5, ctx, ct) =>
             {
-                var request = TryBindFromAllForQuerySources<TRequest>(ctx);
+                var request = QueryBinder.BindFromQuery<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 request.SetKey1(key1);
                 request.SetKey2(key2);
@@ -115,7 +117,7 @@ internal static class EndpointsMethods
             async ([FromRoute] key1, [FromRoute] key2, [FromRoute] key3, [FromRoute] key4,
                 [FromRoute] key5, [FromRoute] key6, ctx, ct) =>
             {
-                var request = TryBindFromAllForQuerySources<TRequest>(ctx);
+                var request = QueryBinder.BindFromQuery<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 request.SetKey1(key1);
                 request.SetKey2(key2);
@@ -137,7 +139,7 @@ internal static class EndpointsMethods
             async ([FromRoute] key1, [FromRoute] key2, [FromRoute] key3, [FromRoute] key4,
                 [FromRoute] key5, [FromRoute] key6, [FromRoute] key7, ctx, ct) =>
             {
-                var request = TryBindFromAllForQuerySources<TRequest>(ctx);
+                var request = QueryBinder.BindFromQuery<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 request.SetKey1(key1);
                 request.SetKey2(key2);
@@ -166,6 +168,7 @@ internal static class EndpointsMethods
                 {
                     return GetApiResult<TRequest, TResponse>(result, ctx);
                 }
+
                 var keyPattern = $"{RequestHelper.GetPattern(requestType)}/{{key}}";
                 return GetApiResult<TRequest, TResponse>(result, ctx, keyPattern);
             });
@@ -187,6 +190,7 @@ internal static class EndpointsMethods
                 {
                     return GetApiResult<TRequest, TResponse>(result, ctx);
                 }
+
                 var keyPattern = RequestHelper.GetPattern(requestType);
                 keyPattern = keyPattern.Replace("{key}", key?.ToString());
                 keyPattern = string.Concat(keyPattern, "/{key}");
@@ -209,6 +213,7 @@ internal static class EndpointsMethods
                 {
                     return GetApiResult<TRequest, TResponse>(result, ctx);
                 }
+
                 var keyPattern = string.Concat(RequestHelper.GetPattern(requestType), "/{key}");
                 keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
                 keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
@@ -232,6 +237,7 @@ internal static class EndpointsMethods
                 {
                     return GetApiResult<TRequest, TResponse>(result, ctx);
                 }
+
                 var keyPattern = string.Concat(RequestHelper.GetPattern(requestType), "/{key}");
                 keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
                 keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
@@ -258,6 +264,7 @@ internal static class EndpointsMethods
                 {
                     return GetApiResult<TRequest, TResponse>(result, ctx);
                 }
+
                 var keyPattern = string.Concat(RequestHelper.GetPattern(requestType), "/{key}");
                 keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
                 keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
@@ -286,6 +293,7 @@ internal static class EndpointsMethods
                 {
                     return GetApiResult<TRequest, TResponse>(result, ctx);
                 }
+
                 var keyPattern = string.Concat(RequestHelper.GetPattern(requestType), "/{key}");
                 keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
                 keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
@@ -317,6 +325,7 @@ internal static class EndpointsMethods
                 {
                     return GetApiResult<TRequest, TResponse>(result, ctx);
                 }
+
                 var keyPattern = string.Concat(RequestHelper.GetPattern(requestType), "/{key");
                 keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
                 keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
@@ -327,7 +336,7 @@ internal static class EndpointsMethods
                 return GetApiResult<TRequest, TResponse>(result, ctx, keyPattern);
             });
     }
-    
+
     internal static Delegate WithBodyAnd7Keys<TRequest, TResponse, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7>()
         where TRequest : IRequest<TResponse>, IKeyRequest<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7>
     {
@@ -350,6 +359,7 @@ internal static class EndpointsMethods
                 {
                     return GetApiResult<TRequest, TResponse>(result, ctx);
                 }
+
                 var keyPattern = string.Concat(RequestHelper.GetPattern(requestType), "/{key");
                 keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
                 keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
@@ -363,7 +373,7 @@ internal static class EndpointsMethods
     }
 
     #endregion
-    
+
     private static IResult GetFileResult<TResponse>(Type requestType, TResponse response)
     {
         var autoApiAttribute = requestType.GetCustomAttribute<AutoApiAttribute>();
@@ -380,10 +390,12 @@ internal static class EndpointsMethods
             fileName = fileResponse.FileName;
         }
 
-        return Results.File(data, autoApiAttribute?.CustomResponseContentType ?? "application/octet-stream", fileName, true);
+        return Results.File(data, autoApiAttribute?.CustomResponseContentType ?? "application/octet-stream", fileName,
+            true);
     }
-    
-    private static IResult GetApiResult<TRequest, TResponse>(TResponse result, HttpContext ctx, string? resourseUrl = null)
+
+    private static IResult GetApiResult<TRequest, TResponse>(TResponse result, HttpContext ctx,
+        string? resourseUrl = null)
         where TRequest : IRequest<TResponse>
     {
         if (!string.IsNullOrWhiteSpace(resourseUrl))
@@ -393,6 +405,7 @@ internal static class EndpointsMethods
                 resourseUrl = resourseUrl.Replace("{key}", resourceKey.GetResourceKey());
             }
         }
+
         switch (result)
         {
             case Unit:
@@ -407,52 +420,7 @@ internal static class EndpointsMethods
                 ctx.Response.Headers.Add("X-Total-Count", totalCount.GetTotalCount().ToString());
                 break;
         }
+
         return resourseUrl is null ? Results.Ok(result) : Results.Created(resourseUrl, result);
-    }
-
-    private static T? TryBindFromAllForQuerySources<T>(HttpContext ctx)
-    {
-        object obj;
-
-        try
-        {
-            obj = Activator.CreateInstance(typeof(T))!;
-        }
-        catch
-        {
-            return default;
-        }
-
-        var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-        foreach (var prop in props)
-        {
-            if (!prop.CanWrite)
-                continue;
-
-            string? rawValue = null;
-
-            rawValue ??= ctx.Request.Query[prop.Name].FirstOrDefault();
-            rawValue ??= ctx.Request.RouteValues[prop.Name]?.ToString();
-            rawValue ??= ctx.Request.HasFormContentType ? ctx.Request.Form[prop.Name].FirstOrDefault() : null;
-            rawValue ??= ctx.Request.Headers[prop.Name].FirstOrDefault();
-            rawValue ??= ctx.Request.Cookies[prop.Name];
-
-            if (rawValue == null)
-                continue;
-
-            try
-            {
-                var targetType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
-                var value = Convert.ChangeType(rawValue, targetType);
-                prop.SetValue(obj, value);
-            }
-            catch
-            {
-                return default;
-            }
-        }
-
-        return (T)obj;
     }
 }

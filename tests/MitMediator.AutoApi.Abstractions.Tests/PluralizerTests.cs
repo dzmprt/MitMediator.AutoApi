@@ -7,6 +7,7 @@ public class PluralizerTests
     [InlineData("")]
     public void Pluralize_ReturnsOriginal_IfEmpty(string input)
     {
+        // Act & Assert
         Assert.Equal(input, Pluralizer.Pluralize(input));
     }
 
@@ -19,6 +20,7 @@ public class PluralizerTests
     [InlineData("Moose")]
     public void Pluralize_ReturnsOriginal_IfAlreadyPlural(string input)
     {
+        // Act & Assert
         Assert.Equal(input, Pluralizer.Pluralize(input));
     }
 
@@ -75,6 +77,7 @@ public class PluralizerTests
     [InlineData("deer", "deer")]
     public void Pluralize_IrregularCases_ReturnsCorrectPlural(string input, string expected)
     {
+        // Act & Assert
         Assert.Equal(expected, Pluralizer.Pluralize(input));
     }
 
@@ -84,6 +87,7 @@ public class PluralizerTests
     [InlineData("puppy", "puppies")]
     public void Pluralize_EndsWithY_ReturnsIes(string input, string expected)
     {
+        // Act & Assert
         Assert.Equal(expected, Pluralizer.Pluralize(input));
     }
 
@@ -95,6 +99,7 @@ public class PluralizerTests
     [InlineData("brush", "brushes")]
     public void Pluralize_Sibilants_ReturnsEs(string input, string expected)
     {
+        // Act & Assert
         Assert.Equal(expected, Pluralizer.Pluralize(input));
     }
 
@@ -104,6 +109,7 @@ public class PluralizerTests
     [InlineData("cat", "cats")]
     public void Pluralize_Default_AddsS(string input, string expected)
     {
+        // Act & Assert
         Assert.Equal(expected, Pluralizer.Pluralize(input));
     }
 
@@ -118,6 +124,7 @@ public class PluralizerTests
     [InlineData("aircraft", true)]
     public void IsPlural_CorrectlyIdentifiesPluralWords(string input, bool expected)
     {
+        // Act & Assert
         Assert.Equal(expected, Pluralizer.IsPlural(input));
     }
 
@@ -127,12 +134,14 @@ public class PluralizerTests
     [InlineData(" ", false)]
     public void IsPlural_ReturnsFalse_IfEmpty(string input, bool expected)
     {
+        // Act & Assert
         Assert.Equal(expected, Pluralizer.IsPlural(input));
     }
 
     [Fact]
     public void ReplaceCase_PreservesCapitalization()
     {
+        // Act & Assert
         Assert.Equal("Men", Pluralizer.Pluralize("Man"));
         Assert.Equal("men", Pluralizer.Pluralize("man"));
     }

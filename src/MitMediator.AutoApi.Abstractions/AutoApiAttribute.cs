@@ -48,6 +48,7 @@ public class AutoApiAttribute : Attribute
     /// <param name="description"><see cref="Description"/></param>
     /// <param name="customPattern"><see cref="CustomPattern"/></param>
     /// <param name="patternSuffix"><see cref="PatternSuffix"/></param>
+    /// <param name="customResponseContentType"><see cref="CustomResponseContentType"/></param>
     /// <param name="httpMethodType"><see cref="HttpMethodType"/></param>
     /// <exception cref="Exception">Suffix can't be specified when a custom pattern is provided.</exception>
     public AutoApiAttribute(

@@ -12,14 +12,12 @@
         <PackageIcon>logo.png</PackageIcon>
         <RepositoryUrl>https://github.com/dzmprt/MitMediator.AutoApi</RepositoryUrl>
         <PackageTags>mediator;request;response;queries;commands;mitmediator;minimalapi;autoapi;cqrs;httpmediator;httpclient</PackageTags>
-        <PackageReleaseNotes>v9.0.0-alfa
-Up .net version to 9
-Add default group for endpoints "v1"
-Change interface name for client mediator</PackageReleaseNotes>
+        <PackageReleaseNotes>v9.0.0-alfa-2
+Add open api support for query params. Fix qeury params</PackageReleaseNotes>
         <TrimMode>full</TrimMode>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
-        <Version>9.0.0-alfa</Version>
+        <Version>9.0.0-alfa-2</Version>
         <LangVersion>13</LangVersion>
     </PropertyGroup>
 
@@ -44,6 +42,6 @@ Change interface name for client mediator</PackageReleaseNotes>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="MitMediator.AutoApi.Abstractions" Version="9.0.0-alfa" />
+      <ProjectReference Include="..\MitMediator.AutoApi.Abstractions\MitMediator.AutoApi.Abstractions.csproj" />
     </ItemGroup>
 </Project>

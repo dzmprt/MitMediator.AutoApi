@@ -1,4 +1,5 @@
 using System.Reflection;
+using Microsoft.OpenApi.Models;
 using MitMediator.AutoApi.Abstractions;
 
 namespace MitMediator.AutoApi;
@@ -9,7 +10,7 @@ public static class RegisterEndpointsExtensions
     /// Register all IRequest as minimal API endpoints.
     /// </summary>
     /// <param name="app"><see cref="IEndpointRouteBuilder"/>.</param>
-    /// <param name="basePath">Base path (for example "api")</param>
+    /// <param name="basePath">Base path (for example, "api")</param>
     /// <param name="requestsAssemblies">Assembly to scan.</param>
     /// <returns><see cref="IEndpointRouteBuilder"/></returns>
     public static IEndpointRouteBuilder UseAutoApi(this IEndpointRouteBuilder app, string? basePath = null, Assembly[]? requestsAssemblies = null)
@@ -83,7 +84,17 @@ public static class RegisterEndpointsExtensions
         {
             case HttpMethodType.Get:
                 routeHandlerBuilder = app.MapGet(pattern, requestDelegate)
-                    .Produces(StatusCodes.Status200OK, responseType);
+                        .WithOpenApi(op =>
+                        {
+                            var queryParams = OpenApiParameterGenerator.GenerateFromType(requestType);
+                            foreach (var openApiParameter in queryParams)
+                            {
+                                op.Parameters.Add(openApiParameter);
+                            }
+                            return op;
+                        })
+                    .Produces(StatusCodes.Status200OK, responseType)
+                    ;
                 break;
             case HttpMethodType.Put:
                 routeHandlerBuilder = app.MapPut(pattern, requestDelegate)
