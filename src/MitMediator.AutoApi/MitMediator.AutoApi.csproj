@@ -42,6 +42,6 @@ Fix nullable properties for open api</PackageReleaseNotes>
     
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
-      <PackageReference Include="MitMediator.AutoApi.Abstractions" Version="9.0.0-alfa-2" />
+      <PackageReference Include="MitMediator.AutoApi.Abstractions" Version="9.0.0-alfa-3" />
     </ItemGroup>
 </Project>
