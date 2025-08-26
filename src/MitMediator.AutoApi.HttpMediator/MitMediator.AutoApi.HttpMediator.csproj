@@ -12,14 +12,14 @@
         <PackageIcon>logo.png</PackageIcon>
         <RepositoryUrl>https://github.com/dzmprt/MitMediator.AutoApi</RepositoryUrl>
         <PackageTags>mediator;request;response;queries;commands;mitmediator;minimalapi;autoapi;cqrs;httpmediator;httpclient</PackageTags>
-        <PackageReleaseNotes>v7.0.0-alfa-8
-Version for tests
-Implemented automatic X-Total-Count header for ITotalCount responses  
-Enabled Location header inference via IResourceKey on 201 Created responses</PackageReleaseNotes>
+        <PackageReleaseNotes>v9.0.0-alfa
+Up .net version to 9
+Add default group for endpoints "v1"
+Change interface name for client mediator</PackageReleaseNotes>
         <TrimMode>full</TrimMode>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
-        <Version>7.0.0-alfa-8</Version>
+        <Version>9.0.0-alfa</Version>
         <LangVersion>13</LangVersion>
     </PropertyGroup>
 
