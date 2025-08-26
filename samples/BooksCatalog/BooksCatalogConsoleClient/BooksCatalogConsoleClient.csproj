@@ -2,14 +2,18 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <LangVersion>13</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\src\MitMediator.AutoApi.HttpMediator\MitMediator.AutoApi.HttpMediator.csproj" />
       <ProjectReference Include="..\Server\BooksCatalog.Application\BooksCatalog.Application.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MitMediator.AutoApi.HttpMediator" Version="7.0.0-alfa-8" />
     </ItemGroup>
 
     <PropertyGroup>

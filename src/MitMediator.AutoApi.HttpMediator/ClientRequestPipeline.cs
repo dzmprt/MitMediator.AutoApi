@@ -1,12 +1,12 @@
 namespace MitMediator.AutoApi.HttpMediator;
 
-internal struct RequestPipeline<TRequest, TResponse> : IRequestHandlerNext<TRequest, TResponse>
+internal struct ClientRequestPipeline<TRequest, TResponse> : IClientRequestHandlerNext<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
 {
-    private readonly IEnumerator<IPipelineBehavior<TRequest, TResponse>> _behaviors;
-    private readonly IRequestHandler<TRequest, TResponse> _handler;
+    private readonly IEnumerator<IClientPipelineBehavior<TRequest, TResponse>> _behaviors;
+    private readonly IClientRequestHandler<TRequest, TResponse> _handler;
 
-    public RequestPipeline(IEnumerator<IPipelineBehavior<TRequest, TResponse>> behaviors, IRequestHandler<TRequest, TResponse> handler)
+    public ClientRequestPipeline(IEnumerator<IClientPipelineBehavior<TRequest, TResponse>> behaviors, IClientRequestHandler<TRequest, TResponse> handler)
     {
         _behaviors = behaviors;
         _handler = handler;

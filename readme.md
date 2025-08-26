@@ -1,6 +1,6 @@
 [![Build and Test](https://github.com/dzmprt/MitMediator/actions/workflows/dotnet.yml/badge.svg)](https://github.com/dzmprt/MitMediator/actions/workflows/dotnet.yml)
 ![NuGet](https://img.shields.io/nuget/v/MitMediator.AutoApi)
-![.NET 7.0](https://img.shields.io/badge/Version-.NET%207.0-informational?style=flat&logo=dotnet)
+![.NET 9.0](https://img.shields.io/badge/Version-.NET%209.0-informational?style=flat&logo=dotnet)
 ![License](https://img.shields.io/github/license/dzmprt/MitMediator.AutoApi)
 # MitMediator.AutoApi
 
@@ -13,13 +13,13 @@
 ### 1. Add package
 ```bash
 # for ASP.NET API projects
-dotnet add package MitMediator.AutoApi -v 7.0.0-alfa-8
+dotnet add package MitMediator.AutoApi -v 9.0.0-alfa
 
 # for application layer
-dotnet add package MitMediator.AutoApi.Abstractions -v 7.0.0-alfa-8
+dotnet add package MitMediator.AutoApi.Abstractions -v 9.0.0-alfa
 
 # for client application (MAUI, Blazor, UWP, etc.)
-dotnet add package MitMediator.AutoApi.HttpMediator -v 7.0.0-alfa-8
+dotnet add package MitMediator.AutoApi.HttpMediator -v 9.0.0-alfa
 ```
 ### 2. Use extension for IEndpointRouteBuilder
 
@@ -129,7 +129,7 @@ public class UpdateBookCommand : IRequest<Book>, IKeyRequest<int>
 }
 ```
 
-### `DELETE` endpoint with key in url
+### `DELETE` endpoint with a key in url
 ```csharp
 // Delete - DELETE http method
 // Book - main tag (books in url)
@@ -190,7 +190,7 @@ public class GetBookCoverQuery: IRequest<byte[]>, IKeyRequest<int>
 
 Use the `[AutoApi]` attribute for the request type to change default mapping
 
-### `GET` endpoint with version, custom tag and custom suffix
+### `GET` endpoint with a version, custom tag and custom suffix
 ```csharp
 // Get - http method
 // Books - main tag (books in url)
@@ -234,6 +234,8 @@ public class DoSomeWithBookAndDeleteCommand : IRequest<Book[]>, IKeyRequest<int,
     public Guid GetKey2() => GuidId;
 }
 ```
+
+> Default version is `v1`
 
 ### 🚫 Ignore Request
 
@@ -303,7 +305,7 @@ If you do not implement the `IResourceKey` interface, the Location header will d
 
 You can reuse your `IRequest` types to seamlessly send HTTP requests to a server-side API using `HttpMediator`
 
-`HttpMediator` supports `IPipelineBehavior<TRequest, TResponse>` for middleware-like extensibility, and `IHttpHeaderInjector<TRequest, TResponse>` for injecting custom headers per request
+`HttpMediator` supports `IClientPipelineBehavior<TRequest, TResponse>` for middleware-like extensibility, and `IHttpHeaderInjector<TRequest, TResponse>` for injecting custom headers per request
 
 ### 🔧 Sample usage:
 
@@ -319,10 +321,10 @@ var httpClientName = "baseHttpClient";
 var serviceCollection = new ServiceCollection();
 serviceCollection.AddHttpClient(httpClientName, client => { client.BaseAddress = new Uri("https://localhost:7127/"); });
 serviceCollection.AddScoped(typeof(IHttpHeaderInjector<,>), typeof(AuthorizationHeaderInjection<,>));
-serviceCollection.AddScoped<IHttpMediator, HttpMediator>(c => new HttpMediator(c, baseApiUrl, httpClientName));
+serviceCollection.AddScoped<IClientMediator, HttpMediator>(c => new HttpMediator(c, baseApiUrl, httpClientName));
 
 var provider = serviceCollection.BuildServiceProvider();
-var httpMediator = provider.GetRequiredService<IHttpMediator>();
+var httpMediator = provider.GetRequiredService<IClientMediator>();
 
 var query = new GetBookQuery();
 query.SetKey(12);

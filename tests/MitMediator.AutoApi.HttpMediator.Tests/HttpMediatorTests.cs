@@ -43,10 +43,10 @@ public class HttpMediatorTests
             .Returns(httpClientFactoryMock.Object);
 
         var request = new SampleRequest();
-        var behaviorMock = new Mock<IPipelineBehavior<SampleRequest, string>>();
+        var behaviorMock = new Mock<IClientPipelineBehavior<SampleRequest, string>>();
         
         serviceProviderMock
-            .Setup(sp => sp.GetService(typeof(IEnumerable<IPipelineBehavior<SampleRequest, string>>)))
+            .Setup(sp => sp.GetService(typeof(IEnumerable<IClientPipelineBehavior<SampleRequest, string>>)))
             .Returns(new[] { behaviorMock.Object });
         
         var headerInjectorMock = new Mock<IHttpHeaderInjector<SampleRequest, string>>();
@@ -56,8 +56,8 @@ public class HttpMediatorTests
             .Returns(new[] { headerInjectorMock.Object });
         
         behaviorMock
-            .Setup(b => b.HandleAsync(request, It.IsAny<IRequestHandlerNext<SampleRequest, string>>(), It.IsAny<CancellationToken>()))
-            .Returns(async (SampleRequest _, IRequestHandlerNext<SampleRequest, string> next, CancellationToken _) => await next.InvokeAsync(request, cancellationToken));
+            .Setup(b => b.HandleAsync(request, It.IsAny<IClientRequestHandlerNext<SampleRequest, string>>(), It.IsAny<CancellationToken>()))
+            .Returns(async (SampleRequest _, IClientRequestHandlerNext<SampleRequest, string> next, CancellationToken _) => await next.InvokeAsync(request, cancellationToken));
 
         var mediator = new HttpMediator(serviceProviderMock.Object, "https://localhost", "default");
 
@@ -66,7 +66,7 @@ public class HttpMediatorTests
 
         // Assert
         Assert.Equal(expectedResponse, result);
-        behaviorMock.Verify(b => b.HandleAsync(It.IsAny<SampleRequest>(), It.IsAny<IRequestHandlerNext<SampleRequest, string>>(), cancellationToken), Times.Once);
+        behaviorMock.Verify(b => b.HandleAsync(It.IsAny<SampleRequest>(), It.IsAny<IClientRequestHandlerNext<SampleRequest, string>>(), cancellationToken), Times.Once);
     }
     
     [Fact]
@@ -101,10 +101,10 @@ public class HttpMediatorTests
             .Returns(httpClientFactoryMock.Object);
 
         var request = new SampleVoidRequest();
-        var behaviorMock = new Mock<IPipelineBehavior<SampleVoidRequest, Unit>>();
+        var behaviorMock = new Mock<IClientPipelineBehavior<SampleVoidRequest, Unit>>();
         
         serviceProviderMock
-            .Setup(sp => sp.GetService(typeof(IEnumerable<IPipelineBehavior<SampleVoidRequest, Unit>>)))
+            .Setup(sp => sp.GetService(typeof(IEnumerable<IClientPipelineBehavior<SampleVoidRequest, Unit>>)))
             .Returns(new[] { behaviorMock.Object });
         
         var headerInjectorMock = new Mock<IHttpHeaderInjector<SampleVoidRequest, Unit>>();
@@ -114,8 +114,8 @@ public class HttpMediatorTests
             .Returns(new[] { headerInjectorMock.Object });
         
         behaviorMock
-            .Setup(b => b.HandleAsync(request, It.IsAny<IRequestHandlerNext<SampleVoidRequest, Unit>>(), It.IsAny<CancellationToken>()))
-            .Returns(async (SampleVoidRequest _, IRequestHandlerNext<SampleVoidRequest, Unit> next, CancellationToken _) => await next.InvokeAsync(request, cancellationToken));
+            .Setup(b => b.HandleAsync(request, It.IsAny<IClientRequestHandlerNext<SampleVoidRequest, Unit>>(), It.IsAny<CancellationToken>()))
+            .Returns(async (SampleVoidRequest _, IClientRequestHandlerNext<SampleVoidRequest, Unit> next, CancellationToken _) => await next.InvokeAsync(request, cancellationToken));
 
         var mediator = new HttpMediator(serviceProviderMock.Object, "https://localhost", "default");
 
@@ -124,6 +124,6 @@ public class HttpMediatorTests
 
         // Assert
         Assert.Equal(Unit.Value, result);
-        behaviorMock.Verify(b => b.HandleAsync(It.IsAny<SampleVoidRequest>(), It.IsAny<IRequestHandlerNext<SampleVoidRequest, Unit>>(), cancellationToken), Times.Once);
+        behaviorMock.Verify(b => b.HandleAsync(It.IsAny<SampleVoidRequest>(), It.IsAny<IClientRequestHandlerNext<SampleVoidRequest, Unit>>(), cancellationToken), Times.Once);
     }
 }

@@ -8,7 +8,7 @@ using MitMediator.AutoApi.Abstractions;
 
 namespace MitMediator.AutoApi.HttpMediator;
 
-internal class HttpRequestHandler<TRequest, TResponse> : IRequestHandler<TRequest, TResponse> where TRequest : IRequest<TResponse>
+internal class HttpRequestHandler<TRequest, TResponse> : IClientRequestHandler<TRequest, TResponse> where TRequest : IRequest<TResponse>
 {
     private readonly IServiceProvider _serviceProvider;
     

@@ -5,7 +5,7 @@ name: Build and Test
 
 on:
   push:
-    branches: [ "main", "dev" ]
+    branches: [ "*" ]
   pull_request:
     branches: [ "main", "dev" ]
 
@@ -27,10 +27,10 @@ jobs:
     steps:
     
     - uses: actions/checkout@v4
-    - name: Setup .NET 7.0.x
+    - name: Setup .NET 9.0.x
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '7.0.x'
+        dotnet-version: '9.0.x'
     - name: Display dotnet version
       run: dotnet --version
     - name: Restore dependencies

@@ -1,12 +1,12 @@
 namespace MitMediator.AutoApi.HttpMediator;
 
 /// <summary>
-/// Defines a mediator to encapsulate request/response and http requests.
+/// Defines a client mediator.
 /// </summary>
-public interface IHttpMediator
+public interface IClientMediator
 {
     /// <summary>
-    /// Send http request from command.
+    /// Send request from command.
     /// </summary>
     /// <param name="request">Request object.</param>
     /// <param name="cancellationToken"><see cref="CancellationToken"/></param>
@@ -16,7 +16,7 @@ public interface IHttpMediator
     ValueTask<TResponse> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken) where TRequest : IRequest<TResponse>;
     
     /// <summary>
-    /// Send http request from command.
+    /// Send request from command.
     /// </summary>
     /// <param name="request">Request object.</param>
     /// <param name="cancellationToken"><see cref="CancellationToken"/></param>

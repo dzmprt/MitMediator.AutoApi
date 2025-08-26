@@ -109,10 +109,11 @@ public static class RegisterEndpointsExtensions
             routeHandlerBuilder = routeHandlerBuilder.WithTags(tag);
         }
 
-        if (!string.IsNullOrWhiteSpace(attribute?.Version))
-        {
-            routeHandlerBuilder.WithGroupName(attribute.Version);
-        }
+        routeHandlerBuilder.WithDescription(!string.IsNullOrWhiteSpace(attribute?.Description)
+            ? attribute.Description
+            : $"{RequestHelper.GetHttpMethod(requestType).ToString().ToUpperInvariant()} {RequestHelper.GetPattern(requestType)}");
+
+        routeHandlerBuilder.WithGroupName(!string.IsNullOrWhiteSpace(attribute?.Version) ? attribute.Version : "v1");
     }
 
     private static Delegate WithGetParamsAndKeys(Type requestType, Type responseType)
