@@ -1,13 +1,10 @@
 namespace MitMediator.AutoApi.Abstractions;
 
-public sealed class FileResponse 
+/// <summary>
+/// File response with custom file name.
+/// </summary>
+public sealed class FileResponse(byte[] data, string fileName)
 {
-    public string FileName { get; }
-    public byte[] Data { get; }
-
-    public FileResponse(byte[] data, string fileName)
-    {
-        Data = data;
-        FileName = fileName;
-    }
+    public string FileName { get; } = fileName;
+    public byte[] Data { get; } = data;
 }

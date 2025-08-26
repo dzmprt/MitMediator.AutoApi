@@ -3,6 +3,9 @@ using System.Text;
 
 namespace MitMediator.AutoApi.Abstractions;
 
+/// <summary>
+/// Helpers for request metadata.
+/// </summary>
 public static class RequestHelper
 {
     public static string BasePath { get; set; }
@@ -270,8 +273,8 @@ public static class RequestHelper
 
         return pattern;
     }
-    
-    public static string GetTag(Type requestType)
+
+    private static string GetTag(Type requestType)
     {
         var attribute = requestType.GetCustomAttribute<AutoApiAttribute>();
         var tag = attribute?.Tag;
@@ -310,7 +313,7 @@ public static class RequestHelper
         return HttpMethodType.Get;
     }
 
-    public static Dictionary<string, HttpMethodType> ActionNamesMaps = new(StringComparer.InvariantCultureIgnoreCase)
+    private static readonly Dictionary<string, HttpMethodType> ActionNamesMaps = new(StringComparer.InvariantCultureIgnoreCase)
     {
         ["get"] = HttpMethodType.Get,
         ["load"] = HttpMethodType.Get,

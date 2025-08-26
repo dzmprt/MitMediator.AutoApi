@@ -4,7 +4,7 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Version>9.0.0-alfa</Version>
+        <Version>9.0.0-alfa-3</Version>
         <Title>MitMediator.AutoApi.Abstractions</Title>
         <Description>Minimal API registration for MitMediator</Description>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -16,10 +16,8 @@
         <PackageIcon>logo.png</PackageIcon>
         <RepositoryUrl>https://github.com/dzmprt/MitMediator.AutoApi</RepositoryUrl>
         <PackageTags>mediator;request;response;queries;commands;mitmediator;minimalapi;autoapi;cqrs;</PackageTags>
-        <PackageReleaseNotes>v9.0.0-alfa
-Up .net version to 9
-Add default group for endpoints "v1"
-Change interface name for client mediator</PackageReleaseNotes>
+        <PackageReleaseNotes>v9.0.0-alfa-3
+Fix nullable properties for open api</PackageReleaseNotes>
         <TrimMode>full</TrimMode>
         <LangVersion>13</LangVersion>
     </PropertyGroup>

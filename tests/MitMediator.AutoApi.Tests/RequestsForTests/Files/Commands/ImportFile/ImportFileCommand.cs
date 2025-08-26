@@ -5,5 +5,5 @@ namespace MitMediator.AutoApi.Tests.RequestsForTests.Files.Commands.ImportFile;
 [ExcludeFromCodeCoverage]
 public class ImportFileCommand : IRequest<byte[]>
 {
-    public byte[] Base64String { get; set; }
+    public byte[] Base64String { get; set; } = null!;
 }

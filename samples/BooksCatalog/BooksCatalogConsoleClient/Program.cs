@@ -107,7 +107,12 @@ async ValueTask ChangeBookTitleById()
         getBookCommand.SetKey(bookId);
         var book = await httpMediator.SendAsync<GetBookQuery, Book>(getBookCommand, CancellationToken.None);
         Console.Write("New title:>");
-        var newTitle = Console.ReadLine(); ;
+        var newTitle = Console.ReadLine();
+        if (string.IsNullOrWhiteSpace(newTitle))
+        {
+            Console.WriteLine("Invalid title.");
+            return;
+        }
         var updatedBookCommand = new UpdateBookCommand()
         {
             Title = newTitle,
@@ -126,6 +131,11 @@ async ValueTask CreateNewBook()
 {
     Console.Write("New book title:>");
     var newTitle = Console.ReadLine();
+    if (string.IsNullOrWhiteSpace(newTitle))
+    {
+        Console.WriteLine("Invalid title.");
+        return;
+    }
     var createBookCommand = new CreateBookCommand()
     {
         Title = newTitle,
