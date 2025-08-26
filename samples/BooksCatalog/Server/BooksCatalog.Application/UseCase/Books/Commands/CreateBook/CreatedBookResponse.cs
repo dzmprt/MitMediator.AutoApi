@@ -25,6 +25,11 @@ public class CreatedBookResponse //: IResourceKey
     /// </summary>
     public Genre Genre { get; private set; }
 
+    public CreatedBookResponse()
+    {
+        
+    }
+    
     public CreatedBookResponse(Book book)
     {
         BookId = book.BookId;

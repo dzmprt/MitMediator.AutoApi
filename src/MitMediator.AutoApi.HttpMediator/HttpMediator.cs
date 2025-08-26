@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MitMediator.AutoApi.HttpMediator;
 
-public class HttpMediator : IHttpMediator
+public class HttpMediator : IClientMediator
 {
     private readonly IServiceProvider _serviceProvider;
     
@@ -20,12 +20,12 @@ public class HttpMediator : IHttpMediator
     public ValueTask<TResponse> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken) where TRequest : IRequest<TResponse>
     {
         var behaviors = _serviceProvider
-            .GetServices<IPipelineBehavior<TRequest, TResponse>>();
+            .GetServices<IClientPipelineBehavior<TRequest, TResponse>>();
         
         var handler = new HttpRequestHandler<TRequest, TResponse>(_serviceProvider, _baseUrl, _httpClientName);
         
         using var behaviorEnumerator = behaviors.GetEnumerator();
-        var pipeline = new RequestPipeline<TRequest, TResponse>(behaviorEnumerator, handler);
+        var pipeline = new ClientRequestPipeline<TRequest, TResponse>(behaviorEnumerator, handler);
         return pipeline.InvokeAsync(request, cancellationToken);
     }
 

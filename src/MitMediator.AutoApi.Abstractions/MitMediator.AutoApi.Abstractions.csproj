@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <Version>7.0.0-alfa-8</Version>
@@ -21,6 +21,7 @@ Version for tests
 Implemented automatic X-Total-Count header for ITotalCount responses  
 Enabled Location header inference via IResourceKey on 201 Created responses</PackageReleaseNotes>
         <TrimMode>full</TrimMode>
+        <LangVersion>13</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -40,7 +41,7 @@ Enabled Location header inference via IResourceKey on 201 Created responses</Pac
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="MitMediator" Version="7.0.0" />
+      <PackageReference Include="MitMediator" Version="9.0.0" />
     </ItemGroup>
 
 </Project>

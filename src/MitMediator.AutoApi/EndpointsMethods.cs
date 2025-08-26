@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using MitMediator.AutoApi.Abstractions;
 
@@ -12,9 +13,10 @@ internal static class EndpointsMethods
     internal static Delegate WithGetParams<TRequest, TResponse>()
         where TRequest : IRequest<TResponse>
     {
-        return (Func<TRequest, HttpContext, CancellationToken, ValueTask<IResult>>)(
-            async ([AsParameters] request, ctx, ct) =>
+        return (Func<HttpContext, CancellationToken, ValueTask<IResult>>)(
+            async (ctx, ct) =>
             {
+                var request = TryBindFromAllForQuerySources<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
                 return GetApiResult<TRequest, TResponse>(result, ctx);
@@ -26,24 +28,24 @@ internal static class EndpointsMethods
     internal static Delegate WithGetParamsAnd1Key<TRequest, TResponse, TKey>()
         where TRequest : IRequest<TResponse>, IKeyRequest<TKey>
     {
-        return (Func<TRequest, TKey, HttpContext, CancellationToken, ValueTask<IResult>>)(
-            async ([AsParameters] request, [FromRoute] key, ctx, ct) =>
+        return (Func<TKey, HttpContext, CancellationToken, ValueTask<IResult>>)(
+            async ([FromRoute] key, ctx, ct) =>
             {
+                var request = TryBindFromAllForQuerySources<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 request.SetKey(key);
                 var result = await mediator.SendAsync<TRequest, TResponse>(request, ct);
                 return GetApiResult<TRequest, TResponse>(result, ctx);
             });
     }
-
-
-
+    
     internal static Delegate WithGetParamsAnd2Keys<TRequest, TResponse, TKey1, TKey2>()
         where TRequest : IRequest<TResponse>, IKeyRequest<TKey1, TKey2>
     {
-        return (Func<TRequest, TKey1, TKey2, HttpContext, CancellationToken, ValueTask<IResult>>)(
-            async ([AsParameters] request, [FromRoute] key1, [FromRoute] key2, ctx, ct) =>
+        return (Func<TKey1, TKey2, HttpContext, CancellationToken, ValueTask<IResult>>)(
+            async ([FromRoute] key1, [FromRoute] key2, ctx, ct) =>
             {
+                var request = TryBindFromAllForQuerySources<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 request.SetKey1(key1);
                 request.SetKey2(key2);
@@ -55,9 +57,10 @@ internal static class EndpointsMethods
     internal static Delegate WithGetParamsAnd3Keys<TRequest, TResponse, TKey1, TKey2, TKey3>()
         where TRequest : IRequest<TResponse>, IKeyRequest<TKey1, TKey2, TKey3>
     {
-        return (Func<TRequest, TKey1, TKey2, TKey3, HttpContext, CancellationToken, ValueTask<IResult>>)(
-            async ([AsParameters] request, [FromRoute] key1, [FromRoute] key2, [FromRoute] key3, ctx, ct) =>
+        return (Func<TKey1, TKey2, TKey3, HttpContext, CancellationToken, ValueTask<IResult>>)(
+            async ([FromRoute] key1, [FromRoute] key2, [FromRoute] key3, ctx, ct) =>
             {
+                var request = TryBindFromAllForQuerySources<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 request.SetKey1(key1);
                 request.SetKey2(key2);
@@ -70,10 +73,11 @@ internal static class EndpointsMethods
     internal static Delegate WithGetParamsAnd4Keys<TRequest, TResponse, TKey1, TKey2, TKey3, TKey4>()
         where TRequest : IRequest<TResponse>, IKeyRequest<TKey1, TKey2, TKey3, TKey4>
     {
-        return (Func<TRequest, TKey1, TKey2, TKey3, TKey4, HttpContext, CancellationToken, ValueTask<IResult>>)(
-            async ([AsParameters] request, [FromRoute] key1, [FromRoute] key2, [FromRoute] key3, [FromRoute] key4, ctx,
+        return (Func<TKey1, TKey2, TKey3, TKey4, HttpContext, CancellationToken, ValueTask<IResult>>)(
+            async ([FromRoute] key1, [FromRoute] key2, [FromRoute] key3, [FromRoute] key4, ctx,
                 ct) =>
             {
+                var request = TryBindFromAllForQuerySources<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 request.SetKey1(key1);
                 request.SetKey2(key2);
@@ -87,10 +91,11 @@ internal static class EndpointsMethods
     internal static Delegate WithGetParamsAnd5Keys<TRequest, TResponse, TKey1, TKey2, TKey3, TKey4, TKey5>()
         where TRequest : IRequest<TResponse>, IKeyRequest<TKey1, TKey2, TKey3, TKey4, TKey5>
     {
-        return (Func<TRequest, TKey1, TKey2, TKey3, TKey4, TKey5, HttpContext, CancellationToken, ValueTask<IResult>>)(
-            async ([AsParameters] request, [FromRoute] key1, [FromRoute] key2, [FromRoute] key3, [FromRoute] key4,
+        return (Func<TKey1, TKey2, TKey3, TKey4, TKey5, HttpContext, CancellationToken, ValueTask<IResult>>)(
+            async ([FromRoute] key1, [FromRoute] key2, [FromRoute] key3, [FromRoute] key4,
                 [FromRoute] key5, ctx, ct) =>
             {
+                var request = TryBindFromAllForQuerySources<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 request.SetKey1(key1);
                 request.SetKey2(key2);
@@ -105,11 +110,12 @@ internal static class EndpointsMethods
     internal static Delegate WithGetParamsAnd6Keys<TRequest, TResponse, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>()
         where TRequest : IRequest<TResponse>, IKeyRequest<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>
     {
-        return (Func<TRequest, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, HttpContext, CancellationToken,
+        return (Func<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, HttpContext, CancellationToken,
             ValueTask<IResult>>)(
-            async ([AsParameters] request, [FromRoute] key1, [FromRoute] key2, [FromRoute] key3, [FromRoute] key4,
+            async ([FromRoute] key1, [FromRoute] key2, [FromRoute] key3, [FromRoute] key4,
                 [FromRoute] key5, [FromRoute] key6, ctx, ct) =>
             {
+                var request = TryBindFromAllForQuerySources<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 request.SetKey1(key1);
                 request.SetKey2(key2);
@@ -126,11 +132,12 @@ internal static class EndpointsMethods
         TKey7>()
         where TRequest : IRequest<TResponse>, IKeyRequest<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7>
     {
-        return (Func<TRequest, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, HttpContext, CancellationToken,
+        return (Func<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, HttpContext, CancellationToken,
             ValueTask<IResult>>)(
-            async ([AsParameters] request, [FromRoute] key1, [FromRoute] key2, [FromRoute] key3, [FromRoute] key4,
+            async ([FromRoute] key1, [FromRoute] key2, [FromRoute] key3, [FromRoute] key4,
                 [FromRoute] key5, [FromRoute] key6, [FromRoute] key7, ctx, ct) =>
             {
+                var request = TryBindFromAllForQuerySources<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 request.SetKey1(key1);
                 request.SetKey2(key2);
@@ -401,5 +408,51 @@ internal static class EndpointsMethods
                 break;
         }
         return resourseUrl is null ? Results.Ok(result) : Results.Created(resourseUrl, result);
+    }
+
+    private static T? TryBindFromAllForQuerySources<T>(HttpContext ctx)
+    {
+        object obj;
+
+        try
+        {
+            obj = Activator.CreateInstance(typeof(T))!;
+        }
+        catch
+        {
+            return default;
+        }
+
+        var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+        foreach (var prop in props)
+        {
+            if (!prop.CanWrite)
+                continue;
+
+            string? rawValue = null;
+
+            rawValue ??= ctx.Request.Query[prop.Name].FirstOrDefault();
+            rawValue ??= ctx.Request.RouteValues[prop.Name]?.ToString();
+            rawValue ??= ctx.Request.HasFormContentType ? ctx.Request.Form[prop.Name].FirstOrDefault() : null;
+            rawValue ??= ctx.Request.Headers[prop.Name].FirstOrDefault();
+            rawValue ??= ctx.Request.Cookies[prop.Name];
+
+            if (rawValue == null)
+                continue;
+
+            try
+            {
+                var targetType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+                var value = Convert.ChangeType(rawValue, targetType);
+                prop.SetValue(obj, value);
+            }
+            catch
+            {
+                return default;
+            }
+        }
+
+        return (T)obj;
     }
 }

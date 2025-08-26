@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <OutputType>Library</OutputType>
@@ -23,6 +23,7 @@
 Implemented automatic X-Total-Count header for ITotalCount responses  
 Enabled Location header inference via IResourceKey on 201 Created responses</PackageReleaseNotes>
         <TrimMode>full</TrimMode>
+        <LangVersion>13</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -42,6 +43,6 @@ Enabled Location header inference via IResourceKey on 201 Created responses</Pac
     </ItemGroup>
     
     <ItemGroup>
-      <PackageReference Include="MitMediator.AutoApi.Abstractions" Version="7.0.0-alfa-8" />
+      <ProjectReference Include="..\MitMediator.AutoApi.Abstractions\MitMediator.AutoApi.Abstractions.csproj" />
     </ItemGroup>
 </Project>

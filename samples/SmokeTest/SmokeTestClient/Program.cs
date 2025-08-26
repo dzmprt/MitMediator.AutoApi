@@ -36,10 +36,10 @@ var baseApiUrl = "api";
 var httpClientName = "baseHttpClient";
 var serviceCollection = new ServiceCollection();
 serviceCollection.AddHttpClient(httpClientName, client => { client.BaseAddress = new Uri("http://localhost:5035/"); });
-serviceCollection.AddScoped<IHttpMediator, HttpMediator>(c => new HttpMediator(c, baseApiUrl, httpClientName));
+serviceCollection.AddScoped<IClientMediator, HttpMediator>(c => new HttpMediator(c, baseApiUrl, httpClientName));
 
 var provider = serviceCollection.BuildServiceProvider();
-var httpMediator = provider.GetRequiredService<IHttpMediator>();
+var httpMediator = provider.GetRequiredService<IClientMediator>();
 
 Console.WriteLine(await httpMediator.SendAsync<GetEmptyTestQuery, string>(new GetEmptyTestQuery {TestData = "test"}, CancellationToken.None));
 Console.WriteLine(await httpMediator.SendAsync<GetTestQuery, string>(new GetTestQuery {TestData = "test"}, CancellationToken.None));
