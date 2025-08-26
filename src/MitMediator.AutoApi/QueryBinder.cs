@@ -29,7 +29,7 @@ internal static class QueryBinder
             var itemType = type.GetElementType()!;
             var values = query[prefix];
             var array = Array.CreateInstance(itemType, values.Count);
-            for (int i = 0; i < values.Count; i++)
+            for (var i = 0; i < values.Count; i++)
                 array.SetValue(ConvertSimple(values[i], itemType), i);
             return array;
         }

@@ -120,4 +120,156 @@ public class EndpointsMethodsTests
         Assert.Equal(expectedResult.ListParam, responseObject.ListParam);
         Assert.Equal(expectedResult.InnerObject.Name, responseObject.InnerObject.Name);
     }
+    
+    [Fact]
+    public async Task GetMethodWithGetParams_AllNullableParamsIsNull_ShouldCallMediatorCorrectly()
+    {
+        var request = new GetWithQueryAllNullableParamsQuery
+        {
+            TestIntParam = null,
+            TestStringParam = null,
+            TestNullableIntParam = null,
+            TestNullableIntParam2 = null,
+            TestNullableStringParam = null,
+            TestNullableStringParam2 = null,
+            DateTimeLocalParam = null,
+            UtcDateTimeParam = null,
+            DateTimeOffsetParam = null,
+            ArrayParam = null,
+            ListParam = null,
+            InnerObject = null,
+            TestEnumParam = null
+        };
+
+        var expectedResult = request;
+        
+        var queryParams = new Dictionary<string, StringValues>();
+        
+        var mediatorMock = new Mock<IMediator>();
+        mediatorMock.Setup(m => m.SendAsync<GetWithQueryAllNullableParamsQuery, GetWithQueryAllNullableParamsQuery>(
+                It.IsAny<GetWithQueryAllNullableParamsQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Func<GetWithQueryAllNullableParamsQuery, CancellationToken, GetWithQueryAllNullableParamsQuery>((queryRequest, ct) => queryRequest));
+        
+        var services = new ServiceCollection()
+            .AddSingleton(mediatorMock.Object)
+            .AddLogging() 
+            .BuildServiceProvider();
+        
+        var context = new DefaultHttpContext
+        {
+            RequestServices = services,
+            Request =
+            {
+                Query = new QueryCollection(queryParams)
+            }
+        };
+
+        var stream = new MemoryStream();
+        context.Response.Body = stream;
+        var del = EndpointsMethods
+            .WithGetParams<GetWithQueryAllNullableParamsQuery, GetWithQueryAllNullableParamsQuery>();
+        var result = await (ValueTask<IResult>)del.DynamicInvoke(context, CancellationToken.None);
+        await result.ExecuteAsync(context);
+        
+        stream.Seek(0, SeekOrigin.Begin);
+        using var reader = new StreamReader(stream);
+        var json = await reader.ReadToEndAsync();
+        var responseObject = JsonSerializer.Deserialize<GetWithQueryAllNullableParamsQuery>(json,
+            new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+        
+        Assert.Equal(expectedResult.TestIntParam, responseObject.TestIntParam);
+        Assert.Equal(expectedResult.TestStringParam, responseObject.TestStringParam);
+        Assert.Equal(expectedResult.TestNullableIntParam, responseObject.TestNullableIntParam);
+        Assert.Equal(expectedResult.TestNullableIntParam2, responseObject.TestNullableIntParam2);
+        Assert.Equal(expectedResult.TestNullableStringParam, responseObject.TestNullableStringParam);
+        Assert.Equal(expectedResult.TestNullableStringParam2, responseObject.TestNullableStringParam2);
+        Assert.Equal(expectedResult.DateTimeLocalParam, responseObject.DateTimeLocalParam);
+        Assert.Equal(expectedResult.UtcDateTimeParam, responseObject.UtcDateTimeParam?.ToUniversalTime());
+        Assert.Equal(expectedResult.DateTimeOffsetParam, responseObject.DateTimeOffsetParam);
+        Assert.Equal(expectedResult.ArrayParam, responseObject.ArrayParam);
+        Assert.Equal(expectedResult.ListParam, responseObject.ListParam);
+        Assert.Equal(expectedResult.InnerObject?.Name, responseObject.InnerObject?.Name);
+    }
+    
+    
+    [Fact]
+    public async Task GetMethodWithGetParams_PartOfNullableParamsIsNull_ShouldCallMediatorCorrectly()
+    {
+        var request = new GetWithQueryAllNullableParamsQuery
+        {
+            TestIntParam = 123,
+            TestStringParam = "TestStringParam",
+            TestNullableIntParam = null,
+            TestNullableIntParam2 = null,
+            TestNullableStringParam = null,
+            TestNullableStringParam2 = null,
+            DateTimeLocalParam = null,
+            UtcDateTimeParam = null,
+            DateTimeOffsetParam = null,
+            ArrayParam = null,
+            ListParam = ["3", "4"],
+            InnerObject = null,
+            TestEnumParam = null
+        };
+
+        var expectedResult = request;
+        
+        var queryParams = new Dictionary<string, StringValues>
+        {
+            ["TestIntParam"] = request.TestIntParam.ToString(),
+            ["TestStringParam"] = request.TestStringParam,
+            ["ListParam"] = new(request.ListParam.ToArray())
+        };
+        
+        var mediatorMock = new Mock<IMediator>();
+        mediatorMock.Setup(m => m.SendAsync<GetWithQueryAllNullableParamsQuery, GetWithQueryAllNullableParamsQuery>(
+                It.IsAny<GetWithQueryAllNullableParamsQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Func<GetWithQueryAllNullableParamsQuery, CancellationToken, GetWithQueryAllNullableParamsQuery>((queryRequest, ct) => queryRequest));
+        
+        var services = new ServiceCollection()
+            .AddSingleton(mediatorMock.Object)
+            .AddLogging() 
+            .BuildServiceProvider();
+        
+        var context = new DefaultHttpContext
+        {
+            RequestServices = services,
+            Request =
+            {
+                Query = new QueryCollection(queryParams)
+            }
+        };
+
+        var stream = new MemoryStream();
+        context.Response.Body = stream;
+        var del = EndpointsMethods
+            .WithGetParams<GetWithQueryAllNullableParamsQuery, GetWithQueryAllNullableParamsQuery>();
+        var result = await (ValueTask<IResult>)del.DynamicInvoke(context, CancellationToken.None);
+        await result.ExecuteAsync(context);
+        
+        stream.Seek(0, SeekOrigin.Begin);
+        using var reader = new StreamReader(stream);
+        var json = await reader.ReadToEndAsync();
+        var responseObject = JsonSerializer.Deserialize<GetWithQueryAllNullableParamsQuery>(json,
+            new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+        
+        Assert.Equal(expectedResult.TestIntParam, responseObject.TestIntParam);
+        Assert.Equal(expectedResult.TestStringParam, responseObject.TestStringParam);
+        Assert.Equal(expectedResult.TestNullableIntParam, responseObject.TestNullableIntParam);
+        Assert.Equal(expectedResult.TestNullableIntParam2, responseObject.TestNullableIntParam2);
+        Assert.Equal(expectedResult.TestNullableStringParam, responseObject.TestNullableStringParam);
+        Assert.Equal(expectedResult.TestNullableStringParam2, responseObject.TestNullableStringParam2);
+        Assert.Equal(expectedResult.DateTimeLocalParam, responseObject.DateTimeLocalParam);
+        Assert.Equal(expectedResult.UtcDateTimeParam, responseObject.UtcDateTimeParam?.ToUniversalTime());
+        Assert.Equal(expectedResult.DateTimeOffsetParam, responseObject.DateTimeOffsetParam);
+        Assert.Equal(expectedResult.ArrayParam, responseObject.ArrayParam);
+        Assert.Equal(expectedResult.ListParam, responseObject.ListParam);
+        Assert.Equal(expectedResult.InnerObject?.Name, responseObject.InnerObject?.Name);
+    }
 }

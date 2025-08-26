@@ -149,22 +149,9 @@ internal static class OpenApiParameterGenerator
 
     private static bool IsNullable(PropertyInfo prop)
     {
-        if (prop.GetCustomAttribute<RequiredAttribute>() != null)
-        {
-            return false;
-        }
-
-        var type = prop.PropertyType;
-
-        if (!type.IsValueType)
-        {
-            var nullableAttr = prop.CustomAttributes
-                .FirstOrDefault(a => a.AttributeType.FullName == "System.Runtime.CompilerServices.NullableAttribute");
-
-            return nullableAttr != null;
-        }
-
-        return Nullable.GetUnderlyingType(type) != null;
+        var nullabilityContext = new NullabilityInfoContext();
+        var nullabilityInfo = nullabilityContext.Create(prop);
+        return nullabilityInfo.ReadState == NullabilityState.Nullable;
     }
 
     private static string? MapToOpenApiFormat(Type type)
