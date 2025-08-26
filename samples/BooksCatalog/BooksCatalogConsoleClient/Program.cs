@@ -15,10 +15,10 @@ var httpClientName = "baseHttpClient";
 var serviceCollection = new ServiceCollection();
 serviceCollection.AddHttpClient(httpClientName, client => { client.BaseAddress = new Uri("https://localhost:7127/"); });
 serviceCollection.AddScoped(typeof(IHttpHeaderInjector<,>), typeof(AuthorizationHeaderInjection<,>));
-serviceCollection.AddScoped<IHttpMediator, HttpMediator>(c => new HttpMediator(c, baseApiUrl, httpClientName));
+serviceCollection.AddScoped<IClientMediator, HttpMediator>(c => new HttpMediator(c, baseApiUrl, httpClientName));
 
 var provider = serviceCollection.BuildServiceProvider();
-var httpMediator = provider.GetRequiredService<IHttpMediator>();
+var httpMediator = provider.GetRequiredService<IClientMediator>();
 
 while (true)
 {
