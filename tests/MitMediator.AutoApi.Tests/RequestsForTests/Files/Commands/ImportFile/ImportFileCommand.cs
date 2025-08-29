@@ -1,9 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
+using MitMediator.AutoApi.Abstractions;
 
 namespace MitMediator.AutoApi.Tests.RequestsForTests.Files.Commands.ImportFile;
 
 [ExcludeFromCodeCoverage]
-public class ImportFileCommand : IRequest<byte[]>
+public class ImportFileCommand : FileRequest, IRequest<FileStreamResponse>
 {
-    public byte[] Base64String { get; set; } = null!;
 }

@@ -2,6 +2,7 @@
 ![NuGet](https://img.shields.io/nuget/v/MitMediator.AutoApi)
 ![.NET 9.0](https://img.shields.io/badge/Version-.NET%209.0-informational?style=flat&logo=dotnet)
 ![License](https://img.shields.io/github/license/dzmprt/MitMediator.AutoApi)
+
 # MitMediator.AutoApi
 
 ## Minimal API registration and http client for MitMediator
@@ -11,16 +12,18 @@
 ## 🚀 Installation
 
 ### 1. Add package
+
 ```bash
 # for ASP.NET API projects
-dotnet add package MitMediator.AutoApi -v 9.0.0-alfa-3
+dotnet add package MitMediator.AutoApi -v 9.0.0-alfa-4
 
 # for application layer
-dotnet add package MitMediator.AutoApi.Abstractions -v 9.0.0-alfa-3
+dotnet add package MitMediator.AutoApi.Abstractions -v 9.0.0-alfa-4
 
 # for client application (MAUI, Blazor, UWP, etc.)
-dotnet add package MitMediator.AutoApi.HttpMediator -v 9.0.0-alfa-3
+dotnet add package MitMediator.AutoApi.HttpMediator -v 9.0.0-alfa-4
 ```
+
 ### 2. Use extension for IEndpointRouteBuilder
 
 ```csharp
@@ -35,16 +38,19 @@ app.UseAutoApi();
 
 app.Run();
 ```
-To use base path "api" and select assemblies with requests:
+
+To use base path "api", select assemblies to scan and disable antiforgery validation:
+
 ```csharp
-app.UseAutoApi("api", new []{typeof(GetQuery).Assembly});
+app.UseAutoApi("api", new []{typeof(GetQuery).Assembly}, disableAntiforgery: true);
 ```
 
 ### 3. Done! All public requests have endpoints
 
 ## 🧪 Examples
 
-### `GET` endpoint 
+### `GET` endpoint
+
 ```csharp
 // Get - http method
 // Books - main tag
@@ -60,6 +66,7 @@ public struct GetBooksQuery : IRequest<Book[]>
 ```
 
 ### `GET` endpoint with key in url
+
 ```csharp
 // Use IKeyRequest<> to set and get key from ur.
 // Get - http method
@@ -79,6 +86,7 @@ public struct GetBookQuery : IRequest<Book>, IKeyRequest<int>
 ```
 
 ### `GET` endpoint with suffix
+
 ```csharp
 // Get - http method
 // Books - main tag
@@ -91,6 +99,7 @@ public struct GetBooksCountQuery : IRequest<int>
 ```
 
 ### `POST` endpoint with 201 response
+
 ```csharp
 // Create - POST http method, return 201
 // Book - main tag (books in url)
@@ -106,6 +115,7 @@ public class CreateBookCommand : IRequest<Book>
 ```
 
 ### `PUT` endpoint with key in url
+
 ```csharp
 // Update - PUT http method
 // Book - main tag (books in url)
@@ -130,6 +140,7 @@ public class UpdateBookCommand : IRequest<Book>, IKeyRequest<int>
 ```
 
 ### `DELETE` endpoint with a key in url
+
 ```csharp
 // Delete - DELETE http method
 // Book - main tag (books in url)
@@ -148,6 +159,7 @@ public struct DeleteBookCommand : IRequest, IKeyRequest<int>
 ```
 
 ### `GET` endpoint text file ("application/octet-stream")
+
 ```csharp
 // Get - GET http method
 // Book - main tag (books in url)
@@ -167,6 +179,7 @@ public class GetBookTextQuery: IRequest<byte[]>, IKeyRequest<int>
 ```
 
 ### `GET` endpoint png file ("image/png")
+
 ```csharp
 // Get - GET http method
 // Book - main tag (books in url)
@@ -186,11 +199,24 @@ public class GetBookCoverQuery: IRequest<byte[]>, IKeyRequest<int>
 }
 ```
 
+### `POST` upload and download file
+
+```csharp
+// Import - POST http method
+// Document - main tag (documents in url)
+// Word - action suffix
+// Api URL: POST /documents/words
+public class ImportDocumentWordCommand : FileRequest, IRequest<FileResponse>
+{
+}
+```
+
 ## Change default mapping
 
 Use the `[AutoApi]` attribute for the request type to change default mapping
 
 ### `GET` endpoint with a version, custom tag and custom suffix
+
 ```csharp
 // Get - http method
 // Books - main tag (books in url)
@@ -206,7 +232,9 @@ public struct GetBooksQuery : IRequest<Book[]>
     public string? FreeText { get; init; }
 }
 ```
+
 ### `GET` endpoint with version, custom tag, URL pattern and specified HTTP method
+
 ```csharp
 // Auto-generated DELETE endpoint.
 // Base tag: "books"
@@ -239,7 +267,8 @@ public class DoSomeWithBookAndDeleteCommand : IRequest<Book[]>, IKeyRequest<int,
 
 ### 🚫 Ignore Request
 
-You can disable automatic endpoint generation for a request if you prefer to implement the endpoint manually or exclude it from the API surface.
+You can disable automatic endpoint generation for a request if you prefer to implement the endpoint manually or exclude
+it from the API surface.
 To do so, apply the `[AutoApiIgnore]` attribute to the request type:
 
 ```csharp
@@ -250,14 +279,21 @@ public class MyCustomRequest : IRequest<MyResponse>
 }
 ```
 
-### 📄 File response (`byte[]` and `FileResponse`)
+### 📄 Upload and download files
 
-For requests returning `byte[]` (via `IRequest<byte[]>`), the response uses the "application/octet-stream" content type by default.
-To specify a download file name, use the FileResponse class. Use `[AutoApi(customResponseContentType:"image/png")]` attribute for custom content type
+For requests implementing `IRequest<byte[]>`/`IRequest<Stream>`, or  `IRequest<FileResponse>`/
+`IRequest<FileStreamResponse>`, the response will use `"application/octet-stream"` by default. To specify a download
+file name, use the `FileResponse` or `FileStreamResponse` response.
+Use `[AutoApi(customResponseContentType:"image/png")]` attribute for custom content type
+
+When requests implementing `IFileRequest` or inheriting from `FileRequest`, the request will be bound using
+`[FromForm]`, and file parameters will be inferred via `IFromFile` by default
 
 ### 🔢 `X-Total-Count` Header
 
-To include the `X-Total-Count` header in the HTTP response, implement the `ITotalCount` interface in your response type. This is useful for paginated endpoints or any scenario where the client needs to know the total number of items available.
+To include the `X-Total-Count` header in the HTTP response, implement the `ITotalCount` interface in your response type.
+This is useful for paginated endpoints or any scenario where the client needs to know the total number of items
+available.
 
 ```csharp
 public class GetBooksResponse : ITotalCount
@@ -275,11 +311,13 @@ public class GetBooksResponse : ITotalCount
 }
 ```
 
-When this interface is implemented, MitMediator.AutoApi will automatically include the `X-Total-Count` header in the response, reflecting the value returned by `GetTotalCount()`
+When this interface is implemented, MitMediator.AutoApi will automatically include the `X-Total-Count` header in the
+response, reflecting the value returned by `GetTotalCount()`
 
 ### 📍 Resource ID in `Location` header for `201 Created` responses
 
-To insert the correct ID into the Location header of a 201 Created response, implement the `IResourceKey` interface in your response type:
+To insert the correct ID into the Location header of a 201 Created response, implement the `IResourceKey` interface in
+your response type:
 
 ```csharp
 // Api URL: POST /books
@@ -299,13 +337,15 @@ public class CreatedBookResponse : IResourceKey
 }
 ```
 
-If you do not implement the `IResourceKey` interface, the Location header will default to the format `/books/{key}`, where `{key}` is a placeholder string
+If you do not implement the `IResourceKey` interface, the Location header will default to the format `/books/{key}`,
+where `{key}` is a placeholder string
 
 ## 🎯 Use auto client: HttpMediator
 
 You can reuse your `IRequest` types to seamlessly send HTTP requests to a server-side API using `HttpMediator`
 
-`HttpMediator` supports `IClientPipelineBehavior<TRequest, TResponse>` for middleware-like extensibility, and `IHttpHeaderInjector<TRequest, TResponse>` for injecting custom headers per request
+`HttpMediator` supports `IClientPipelineBehavior<TRequest, TResponse>` for middleware-like extensibility, and
+`IHttpHeaderInjector<TRequest, TResponse>` for injecting custom headers per request
 
 ### 🔧 Sample usage:
 
@@ -315,6 +355,7 @@ var response = await mediator.SendAsync<MyRequest, MyResponse>(new MyRequest(), 
 ```
 
 ### 🔧 More
+
 ```csharp
 var baseApiUrl = "api";
 var httpClientName = "baseHttpClient";
@@ -376,10 +417,10 @@ The first word after the method will be the main tag. Second and other - suffix.
 
 `GetBookCountQuery` - Get - http method GET, Book - main tag (books in url), Count - suffix (/count in url)
 
-`RemoveBookWithAuthorCommand` - Remove - http method DELETE, Book - main tag (books in url), WithAuthor - suffix (/with-author in url)
+`RemoveBookWithAuthorCommand` - Remove - http method DELETE, Book - main tag (books in url), WithAuthor - suffix (
+/with-author in url)
 
 Words `command`, `query`, and `request` in the end of request type name will be deleted from url
-
 
 ## 💡 Features
 
@@ -391,6 +432,10 @@ Words `command`, `query`, and `request` in the end of request type name will be 
 * Supports custom patterns (`custom-route/my-route`, `with-keys/{key1}/{key2}/field/{key3}`)
 * Auto client `HttpMediator` for clients applications
 * File response (`IRequest<byte[]>` or `IRequest<FileResponse>`)
+* Upload file stream:
+```csharp 
+public class UploadCoverCommand: FileRequest {}
+```
 * `X-Total-Count` header (implement `ITotalCount` in response type)
 
 ## 📜 License

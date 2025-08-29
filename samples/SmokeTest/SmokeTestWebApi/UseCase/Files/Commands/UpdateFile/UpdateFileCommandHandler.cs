@@ -4,8 +4,10 @@ namespace SmokeTestWebApi.UseCase.Files.Commands.UpdateFile;
 
 public class UpdateFileCommandHandler : IRequestHandler<UpdateFileCommand, byte[]>
 {
-    public ValueTask<byte[]> HandleAsync(UpdateFileCommand request, CancellationToken cancellationToken)
+    public async ValueTask<byte[]> HandleAsync(UpdateFileCommand request, CancellationToken cancellationToken)
     {
-        return ValueTask.FromResult(request.Base64String);
+        using var stream = new MemoryStream();
+        await request.File.CopyToAsync(stream, cancellationToken);
+        return stream.ToArray();
     }
 }

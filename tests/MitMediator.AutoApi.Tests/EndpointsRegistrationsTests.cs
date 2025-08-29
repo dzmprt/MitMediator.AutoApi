@@ -92,11 +92,19 @@ public class EndpointsRegistrationsTests
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/custom-tag-empty-suffix"));
         
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/files/with-custom-name"));
+        Assert.Contains(endpoints, e => Matches(e, "GET", "api/files/stream-with-custom-name"));
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/files/txt"));
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/files/png"));
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/files"));
-        Assert.Contains(endpoints, e => Matches(e, "PUT", "api/files"));
+        Assert.Contains(endpoints, e => Matches(e, "GET", "api/files/stream"));
+        Assert.Contains(endpoints, e => Matches(e, "POST", "api/files/update"));
         Assert.Contains(endpoints, e => Matches(e, "POST", "api/files"));
+        Assert.Contains(endpoints, e => Matches(e, "POST", "api/files/{key}/with-key"));
+        Assert.Contains(endpoints, e => Matches(e, "POST", "api/files/{key1}/{key2}/with-key2"));
+        Assert.Contains(endpoints, e => Matches(e, "POST", "api/files/{key1}/{key2}/{key3}/with-key3"));
+        Assert.Contains(endpoints, e => Matches(e, "POST", "api/files/{key1}/{key2}/{key3}/{key4}/with-key4"));
+        Assert.Contains(endpoints, e => Matches(e, "POST", "api/files/{key1}/{key2}/{key3}/{key4}/{key5}/with-key5"));
+        Assert.Contains(endpoints, e => Matches(e, "POST", "api/files/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/with-key6"));
         
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/buses/suffix"));
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/cities"));
