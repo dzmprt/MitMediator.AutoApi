@@ -3,19 +3,18 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using MitMediator.AutoApi.Tests.RequestsForTests;
-using MitMediator.AutoApi.Tests.RequestsForTests.Test.Queries.GetByKey3;
 using Moq;
 
-namespace MitMediator.AutoApi.Tests;
+namespace MitMediator.AutoApi.Tests.EndpointsMethodsTests;
 
-public class EndpointsMethodsTests
+public class GetMethodsTetst
 {
-    [Fact]
-    public async Task WithBodyAnd3Keys_ShouldCallMediatorCorrectly()
+     [Fact]
+    public async Task GetMethodOneKey_ShouldCallMediatorCorrectly()
     {
         var mediatorMock = new Mock<IMediator>();
-        mediatorMock.Setup(m => m.SendAsync<GetTestQuery, string>(
-                It.IsAny<GetTestQuery>(), It.IsAny<CancellationToken>()))
+        mediatorMock.Setup(m => m.SendAsync<RequestsForTests.Test.Queries.GetByKey.GetTestQuery, string>(
+                It.IsAny<RequestsForTests.Test.Queries.GetByKey.GetTestQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(string.Empty);
 
         var services = new ServiceCollection()
@@ -23,15 +22,148 @@ public class EndpointsMethodsTests
             .BuildServiceProvider();
 
         var context = new DefaultHttpContext { RequestServices = services };
-        var request = new GetTestQuery();
+        var request = new RequestsForTests.Test.Queries.GetByKey.GetTestQuery();
 
         var del = EndpointsMethods
-            .WithBodyAnd3Keys<GetTestQuery, string, int, int, int>();
-        var result = (ValueTask<IResult>)del.DynamicInvoke(request, 1, 2, 3, context, CancellationToken.None);
+            .WithGetParamsAnd1Key<RequestsForTests.Test.Queries.GetByKey.GetTestQuery, string, int>();
+        
+        var result = (ValueTask<IResult>)del.DynamicInvoke(1, context, CancellationToken.None);
 
         Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<string>>(result.Result);
     }
+    
+    [Fact]
+    public async Task GetMethod2Keys_ShouldCallMediatorCorrectly()
+    {
+        var mediatorMock = new Mock<IMediator>();
+        mediatorMock.Setup(m => m.SendAsync<RequestsForTests.Test.Queries.GetByKey2.GetTestQuery, string>(
+                It.IsAny<RequestsForTests.Test.Queries.GetByKey2.GetTestQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(string.Empty);
 
+        var services = new ServiceCollection()
+            .AddSingleton(mediatorMock.Object)
+            .BuildServiceProvider();
+
+        var context = new DefaultHttpContext { RequestServices = services };
+        var request = new RequestsForTests.Test.Queries.GetByKey2.GetTestQuery();
+
+        var del = EndpointsMethods
+            .WithGetParamsAnd2Keys<RequestsForTests.Test.Queries.GetByKey2.GetTestQuery, string, int, int>();
+        var result = (ValueTask<IResult>)del.DynamicInvoke(1, 2, context, CancellationToken.None);
+
+        Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<string>>(result.Result);
+    }
+    
+    [Fact]
+    public async Task GetMethod3Keys_ShouldCallMediatorCorrectly()
+    {
+        var mediatorMock = new Mock<IMediator>();
+        mediatorMock.Setup(m => m.SendAsync<RequestsForTests.Test.Queries.GetByKey3.GetTestQuery, string>(
+                It.IsAny<RequestsForTests.Test.Queries.GetByKey3.GetTestQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(string.Empty);
+
+        var services = new ServiceCollection()
+            .AddSingleton(mediatorMock.Object)
+            .BuildServiceProvider();
+
+        var context = new DefaultHttpContext { RequestServices = services };
+        var request = new RequestsForTests.Test.Queries.GetByKey3.GetTestQuery();
+
+        var del = EndpointsMethods
+            .WithGetParamsAnd3Keys<RequestsForTests.Test.Queries.GetByKey3.GetTestQuery, string, int, int, int>();
+        var result = (ValueTask<IResult>)del.DynamicInvoke(1, 2, 3, context, CancellationToken.None);
+
+        Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<string>>(result.Result);
+    }
+    
+    [Fact]
+    public async Task GetMethod4Keys_ShouldCallMediatorCorrectly()
+    {
+        var mediatorMock = new Mock<IMediator>();
+        mediatorMock.Setup(m => m.SendAsync<RequestsForTests.Test.Queries.GetByKey4.GetTestQuery, string>(
+                It.IsAny<RequestsForTests.Test.Queries.GetByKey4.GetTestQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(string.Empty);
+
+        var services = new ServiceCollection()
+            .AddSingleton(mediatorMock.Object)
+            .BuildServiceProvider();
+
+        var context = new DefaultHttpContext { RequestServices = services };
+        var request = new RequestsForTests.Test.Queries.GetByKey4.GetTestQuery();
+
+        var del = EndpointsMethods
+            .WithGetParamsAnd4Keys<RequestsForTests.Test.Queries.GetByKey4.GetTestQuery, string, int, int, int, int>();
+        var result = (ValueTask<IResult>)del.DynamicInvoke(1, 2, 3, 4, context, CancellationToken.None);
+
+        Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<string>>(result.Result);
+    }
+    
+    [Fact]
+    public async Task GetMethod5Keys_ShouldCallMediatorCorrectly()
+    {
+        var mediatorMock = new Mock<IMediator>();
+        mediatorMock.Setup(m => m.SendAsync<RequestsForTests.Test.Queries.GetByKey5.GetTestQuery, string>(
+                It.IsAny<RequestsForTests.Test.Queries.GetByKey5.GetTestQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(string.Empty);
+
+        var services = new ServiceCollection()
+            .AddSingleton(mediatorMock.Object)
+            .BuildServiceProvider();
+
+        var context = new DefaultHttpContext { RequestServices = services };
+        var request = new RequestsForTests.Test.Queries.GetByKey5.GetTestQuery();
+
+        var del = EndpointsMethods
+            .WithGetParamsAnd5Keys<RequestsForTests.Test.Queries.GetByKey5.GetTestQuery, string, int, int, int, int, int>();
+        var result = (ValueTask<IResult>)del.DynamicInvoke(1, 2, 3, 4, 5, context, CancellationToken.None);
+
+        Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<string>>(result.Result);
+    }
+    
+    [Fact]
+    public async Task GetMethod6Keys_ShouldCallMediatorCorrectly()
+    {
+        var mediatorMock = new Mock<IMediator>();
+        mediatorMock.Setup(m => m.SendAsync<RequestsForTests.Test.Queries.GetByKey6.GetTestQuery, string>(
+                It.IsAny<RequestsForTests.Test.Queries.GetByKey6.GetTestQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(string.Empty);
+
+        var services = new ServiceCollection()
+            .AddSingleton(mediatorMock.Object)
+            .BuildServiceProvider();
+
+        var context = new DefaultHttpContext { RequestServices = services };
+        var request = new RequestsForTests.Test.Queries.GetByKey6.GetTestQuery();
+
+        var del = EndpointsMethods
+            .WithGetParamsAnd6Keys<RequestsForTests.Test.Queries.GetByKey6.GetTestQuery, string, int, int, int, int, int, int>();
+        var result = (ValueTask<IResult>)del.DynamicInvoke(1, 2, 3, 4, 5, 6, context, CancellationToken.None);
+
+        Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<string>>(result.Result);
+    }
+    
+    [Fact]
+    public async Task GetMethod7Keys_ShouldCallMediatorCorrectly()
+    {
+        var mediatorMock = new Mock<IMediator>();
+        mediatorMock.Setup(m => m.SendAsync<RequestsForTests.Test.Queries.GetByKey7.GetTestQuery, string>(
+                It.IsAny<RequestsForTests.Test.Queries.GetByKey7.GetTestQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(string.Empty);
+
+        var services = new ServiceCollection()
+            .AddSingleton(mediatorMock.Object)
+            .BuildServiceProvider();
+
+        var context = new DefaultHttpContext { RequestServices = services };
+        var request = new RequestsForTests.Test.Queries.GetByKey7.GetTestQuery();
+
+        var del = EndpointsMethods
+            .WithGetParamsAnd7Keys<RequestsForTests.Test.Queries.GetByKey7.GetTestQuery, string, int, int, int, int, int, int, int>();
+        var result = (ValueTask<IResult>)del.DynamicInvoke(1, 2, 3, 4, 5, 6, 7, context, CancellationToken.None);
+
+        Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<string>>(result.Result);
+    }
+    
     [Fact]
     public async Task GetMethodWithGetParams_ShouldCallMediatorCorrectly()
     {

@@ -1,9 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
+using MitMediator.AutoApi.Abstractions;
 
 namespace MitMediator.AutoApi.Tests.RequestsForTests.Files.Commands.UpdateFile;
 
+
 [ExcludeFromCodeCoverage]
-public class UpdateFileCommand : IRequest<byte[]>
+[AutoApi(httpMethodType: HttpMethodType.Post, customPattern:"api/files/update")]
+public class UpdateFileCommand : FileRequest, IRequest<byte[]>
 {
-    public byte[] Base64String { get; set; } = null!;
 }

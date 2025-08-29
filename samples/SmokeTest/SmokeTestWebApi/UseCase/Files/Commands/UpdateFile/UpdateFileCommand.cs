@@ -1,8 +1,10 @@
 using MitMediator;
+using MitMediator.AutoApi.Abstractions;
 
 namespace SmokeTestWebApi.UseCase.Files.Commands.UpdateFile;
 
-public class UpdateFileCommand : IRequest<byte[]>
+
+[AutoApi(httpMethodType: HttpMethodType.Post, customPattern:"files/update")]
+public class UpdateFileCommand : FileRequest, IRequest<byte[]>
 {
-    public byte[] Base64String { get; set; }
 }

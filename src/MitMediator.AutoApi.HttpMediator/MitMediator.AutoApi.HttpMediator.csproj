@@ -12,12 +12,12 @@
         <PackageIcon>logo.png</PackageIcon>
         <RepositoryUrl>https://github.com/dzmprt/MitMediator.AutoApi</RepositoryUrl>
         <PackageTags>mediator;request;response;queries;commands;mitmediator;minimalapi;autoapi;cqrs;httpmediator;httpclient</PackageTags>
-        <PackageReleaseNotes>v9.0.0-alfa-3
-Fix nullable properties for open api</PackageReleaseNotes>
+        <PackageReleaseNotes>9.0.0-alfa-4
+Implemented streaming file upload and download support</PackageReleaseNotes>
         <TrimMode>full</TrimMode>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
-        <Version>9.0.0-alfa-3</Version>
+        <Version>9.0.0-alfa-4</Version>
         <LangVersion>13</LangVersion>
     </PropertyGroup>
 
@@ -40,5 +40,9 @@ Fix nullable properties for open api</PackageReleaseNotes>
 
     <ItemGroup>
         <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MitMediator.AutoApi.Abstractions\MitMediator.AutoApi.Abstractions.csproj" />
     </ItemGroup>
 </Project>

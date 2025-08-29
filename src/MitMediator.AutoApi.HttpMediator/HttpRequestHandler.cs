@@ -68,11 +68,25 @@ internal class HttpRequestHandler<TRequest, TResponse> : IClientRequestHandler<T
         {
             case HttpMethodType.PostCreate:
             case HttpMethodType.Post:
-                var postResponse = await httpClient.PostAsync(pattern, new StringContent(
-                    JsonSerializer.Serialize(request),
-                    Encoding.UTF8,
-                    "application/json"), cancellationToken);
-                return (await ConvertResponseAsync<TResponse>(postResponse, cancellationToken)).Item1;
+                HttpResponseMessage response;
+                if (request is IFileRequest fileRequest)
+                {
+                    fileRequest.File.Seek(0, SeekOrigin.Begin);
+                    var streamContent = new StreamContent(fileRequest.File);
+                    var form = new MultipartFormDataContent();
+                    form.Add(streamContent, "formFile", fileRequest.FileName);
+
+                    response = await httpClient.PostAsync(pattern, form, cancellationToken);
+                }
+                else
+                {
+                    response = await httpClient.PostAsync(pattern, new StringContent(
+                        JsonSerializer.Serialize(request),
+                        Encoding.UTF8,
+                        "application/json"), cancellationToken);
+                }
+        
+                return (await ConvertResponseAsync<TResponse>(response, cancellationToken)).Item1;
             case HttpMethodType.Put:
                 var putResponse = await httpClient.PutAsync(pattern, new StringContent(
                     JsonSerializer.Serialize(request),
@@ -119,6 +133,17 @@ internal class HttpRequestHandler<TRequest, TResponse> : IClientRequestHandler<T
             var data = await response.Content.ReadAsByteArrayAsync(cancellationToken);
             var fileName = response.Content.Headers.ContentDisposition?.FileName ?? string.Empty;
             var result = new FileResponse(data, fileName);
+            return ((TResponse)(object)result, response.Headers);
+        }
+        if (typeof(TResponse) == typeof(Stream))
+        {
+            var result = await response.Content.ReadAsStreamAsync(cancellationToken);
+            return ((TResponse)(object)result, response.Headers);
+        }
+        if (typeof(TResponse) == typeof(FileStreamResponse))
+        {
+            var fileName = response.Content.Headers.ContentDisposition?.FileName ?? string.Empty;
+            var result = new FileStreamResponse(await response.Content.ReadAsStreamAsync(cancellationToken), fileName);
             return ((TResponse)(object)result, response.Headers);
         }
         var content = await response.Content.ReadAsStringAsync(cancellationToken);
