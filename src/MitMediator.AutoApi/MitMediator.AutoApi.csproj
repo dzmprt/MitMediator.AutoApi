@@ -42,10 +42,6 @@ Implemented streaming file upload and download support</PackageReleaseNotes>
     
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
-      <PackageReference Include="MitMediator.AutoApi.Abstractions" Version="9.0.0-alfa-3" />
-    </ItemGroup>
-    
-    <ItemGroup>
-      <ProjectReference Include="..\MitMediator.AutoApi.Abstractions\MitMediator.AutoApi.Abstractions.csproj" />
+      <PackageReference Include="MitMediator.AutoApi.Abstractions" Version="9.0.0-alfa-4" />
     </ItemGroup>
 </Project>
