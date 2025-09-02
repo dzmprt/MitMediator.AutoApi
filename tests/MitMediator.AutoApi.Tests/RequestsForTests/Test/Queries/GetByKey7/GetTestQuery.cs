@@ -1,10 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
 using MitMediator.AutoApi.Abstractions;
+using MitMediator.AutoApi.Abstractions.Attributes;
 
 namespace MitMediator.AutoApi.Tests.RequestsForTests.Test.Queries.GetByKey7;
 
 [ExcludeFromCodeCoverage]
-[AutoApi("tests")]
+[Tag("tests")]
 public class GetTestQuery : IRequest<string>, IKeyRequest<int, int, int, int, int, int, int>
 {
     internal int Key1 { get; private set; }

@@ -7,7 +7,7 @@
         <OutputType>Library</OutputType>
         <IsPackable>true</IsPackable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Version>9.0.0-alfa-4</Version>
+        <Version>9.0.0-alfa-5</Version>
         <Title>MitMediator.AutoApi</Title>
         <Authors>Dmitry Protko</Authors>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -18,8 +18,8 @@
         <PackageIcon>logo.png</PackageIcon>
         <RepositoryUrl>https://github.com/dzmprt/MitMediator.AutoApi</RepositoryUrl>
         <PackageTags>mediator;request;response;queries;commands;mitmediator;minimalapi;autoapi;cqrs;</PackageTags>
-        <PackageReleaseNotes>9.0.0-alfa-4
-Implemented streaming file upload and download support</PackageReleaseNotes>
+        <PackageReleaseNotes>9.0.0-alfa-5
+Changed attributes for custom endpoints</PackageReleaseNotes>
         <TrimMode>full</TrimMode>
         <LangVersion>13</LangVersion>
     </PropertyGroup>
@@ -42,6 +42,9 @@ Implemented streaming file upload and download support</PackageReleaseNotes>
     
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
-      <PackageReference Include="MitMediator.AutoApi.Abstractions" Version="9.0.0-alfa-4" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\MitMediator.AutoApi.Abstractions\MitMediator.AutoApi.Abstractions.csproj" />
     </ItemGroup>
 </Project>

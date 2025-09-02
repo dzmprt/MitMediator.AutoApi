@@ -3,7 +3,7 @@ namespace MitMediator.AutoApi.Abstractions;
 /// <summary>
 /// Http methods types.
 /// </summary>
-public enum HttpMethodType
+public enum MethodType
 {
     Get,
     Post,

@@ -1,8 +1,9 @@
 using MitMediator.AutoApi.Abstractions;
+using MitMediator.AutoApi.Abstractions.Attributes;
 
 namespace MitMediator.AutoApi.Tests.RequestsForTests;
 
-[AutoApi("CustomTagWiths")]
+[Tag("CustomTagWiths")]
 public class GetCustomTagWithButRemoveTagFromSuffixQuery : IRequest
 {
     

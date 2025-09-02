@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using MitMediator.AutoApi.HttpMediator.Extensions;
 
 namespace MitMediator.AutoApi.HttpMediator;
 
@@ -10,7 +11,10 @@ public class HttpMediator : IClientMediator
 
     private readonly string? _httpClientName;
 
-    public HttpMediator(IServiceProvider serviceProvider, string? baseUrl, string? httpClientName = null)
+    public HttpMediator(
+        IServiceProvider serviceProvider, 
+        string? baseUrl, 
+        string? httpClientName = null)
     {
         _serviceProvider = serviceProvider;
         _baseUrl = baseUrl;
@@ -33,5 +37,14 @@ public class HttpMediator : IClientMediator
     {
         return SendAsync<TRequest, Unit>(request, cancellationToken);
     }
-    
+
+    public string GetRequestAbsoluteUrl<TRequest, TResponse>(TRequest request) where TRequest : IRequest<TResponse>
+    {
+        return HttpRequestsHelper.GetAbsoluteUrl(request, _baseUrl);
+    }
+
+    public string GetRequestAbsoluteUrl<TRequest>(TRequest request) where TRequest : IRequest
+    {
+        return HttpRequestsHelper.GetAbsoluteUrl(request, _baseUrl);
+    }
 }

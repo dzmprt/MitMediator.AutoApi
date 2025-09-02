@@ -14,7 +14,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\src\MitMediator.AutoApi.HttpMediator\MitMediator.AutoApi.HttpMediator.csproj" />
-      <ProjectReference Include="..\SmokeTestWebApi\SmokeTestWebApi.csproj" />
+      <ProjectReference Include="..\SmokeTest.Application\SmokeTest.Application.csproj" />
     </ItemGroup>
 
 </Project>

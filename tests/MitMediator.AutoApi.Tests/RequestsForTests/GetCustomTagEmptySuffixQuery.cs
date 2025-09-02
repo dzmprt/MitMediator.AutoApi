@@ -1,8 +1,9 @@
 using MitMediator.AutoApi.Abstractions;
+using MitMediator.AutoApi.Abstractions.Attributes;
 
 namespace MitMediator.AutoApi.Tests.RequestsForTests;
 
-[AutoApi("custom-tag-empty-suffix")]
+[Tag("custom-tag-empty-suffix")]
 public class GetCustomTagEmptySuffixQuery : IRequest
 {
     

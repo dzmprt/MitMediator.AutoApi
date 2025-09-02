@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using MitMediator.AutoApi.Abstractions;
+using MitMediator.AutoApi.HttpMediator.Extensions;
 
 namespace MitMediator.AutoApi.HttpMediator;
 
@@ -25,32 +26,8 @@ internal class HttpRequestHandler<TRequest, TResponse> : IClientRequestHandler<T
     
     public async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
     {
-        var typeRequest = typeof(TRequest);
-        var pattern = RequestHelper.GetPattern(typeRequest);
-        var autoApiAttribute = typeRequest.GetCustomAttribute<AutoApiAttribute>();
-        var patternKeys = ExtractKeys(request);
-        if (patternKeys.Any())
-        {
-            if (patternKeys.Length == 1)
-            {
-                pattern = pattern.Replace("{key}", patternKeys[0].ToString());
-            }
-            else
-            {
-                for (var i = 1; i < patternKeys.Length + 1; i++)
-                {
-                    pattern = pattern.Replace($"{{key{i}}}", patternKeys[0].ToString());
-                }
-            }
-        }
-        if (string.IsNullOrWhiteSpace(autoApiAttribute?.CustomPattern))
-        {
-            if (!string.IsNullOrWhiteSpace(_baseUrl))
-            {
-                pattern = string.Concat(_baseUrl, "/" ,pattern);
-            }
-        }
-        var httpMethod = RequestHelper.GetHttpMethod(typeof(TRequest));
+        var requestUrl = HttpRequestsHelper.GetAbsoluteUrl(request, _baseUrl);
+        var requestInfo = new RequestInfo(typeof(TRequest));
         var httpHeaderInjectors = _serviceProvider
             .GetServices<IHttpHeaderInjector<TRequest, TResponse>>();
         var clientFactory = _serviceProvider.GetRequiredService<IHttpClientFactory>();
@@ -64,54 +41,42 @@ internal class HttpRequestHandler<TRequest, TResponse> : IClientRequestHandler<T
             }
         }
 
-        switch (httpMethod)
+        switch (requestInfo.MethodType)
         {
-            case HttpMethodType.PostCreate:
-            case HttpMethodType.Post:
+            case MethodType.PostCreate:
+            case MethodType.Post:
                 HttpResponseMessage response;
                 if (request is IFileRequest fileRequest)
                 {
-                    fileRequest.File.Seek(0, SeekOrigin.Begin);
                     var streamContent = new StreamContent(fileRequest.File);
                     var form = new MultipartFormDataContent();
                     form.Add(streamContent, "formFile", fileRequest.FileName);
 
-                    response = await httpClient.PostAsync(pattern, form, cancellationToken);
+                    response = await httpClient.PostAsync(requestUrl, form, cancellationToken);
                 }
                 else
                 {
-                    response = await httpClient.PostAsync(pattern, new StringContent(
+                    response = await httpClient.PostAsync(requestUrl, new StringContent(
                         JsonSerializer.Serialize(request),
                         Encoding.UTF8,
                         "application/json"), cancellationToken);
                 }
         
                 return (await ConvertResponseAsync<TResponse>(response, cancellationToken)).Item1;
-            case HttpMethodType.Put:
-                var putResponse = await httpClient.PutAsync(pattern, new StringContent(
+            case MethodType.Put:
+                var putResponse = await httpClient.PutAsync(requestUrl, new StringContent(
                     JsonSerializer.Serialize(request),
                     Encoding.UTF8,
                     "application/json"), cancellationToken);
                 return (await ConvertResponseAsync<TResponse>(putResponse, cancellationToken)).Item1;
-            case HttpMethodType.Delete:
-                var deleteResponse = await httpClient.DeleteAsync(pattern + request.ToQueryString(), cancellationToken);
+            case MethodType.Delete:
+                var deleteResponse = await httpClient.DeleteAsync(requestUrl, cancellationToken);
                 return (await ConvertResponseAsync<TResponse>(deleteResponse, cancellationToken)).Item1;
-            case HttpMethodType.Get:
+            case MethodType.Get:
             default:
-                var getResponse = await httpClient.GetAsync(pattern + request.ToQueryString(), cancellationToken);
+                var getResponse = await httpClient.GetAsync(requestUrl, cancellationToken);
                 return (await ConvertResponseAsync<TResponse>(getResponse, cancellationToken)).Item1;
         }
-    }
-
-    private static object[] ExtractKeys(object obj)
-    {
-        var type = obj.GetType();
-        
-        var methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public)
-            .Where(m => m.Name.StartsWith("GetKey"))
-            .OrderBy(m => m.Name == "GetKey" ? 0 : int.TryParse(m.Name.Substring("GetKey".Length), out var index) ? index : 1000);
-
-        return (from method in methods where method.GetParameters().Length == 0 select method.Invoke(obj, null)).ToArray();
     }
     
     private static async ValueTask<(TResponse, HttpResponseHeaders responseHeaders)> ConvertResponseAsync<TResponse>(
@@ -161,11 +126,15 @@ internal class HttpRequestHandler<TRequest, TResponse> : IClientRequestHandler<T
         var responseModel = JsonSerializer.Deserialize<TResponse>(content, opts)!;
         if (responseModel is ITotalCount)
         {
-            var count = response.Headers.GetValues("X-Total-Count").FirstOrDefault();
-            if (!string.IsNullOrWhiteSpace(count))
+            if(response.Headers.TryGetValues("X-Total-Count", out var values))
             {
+                var count = values.First();
                 var totalCount = (ITotalCount)responseModel;
                 totalCount.SetTotalCount(int.Parse(count));
+            }
+            else
+            {
+                throw new Exception("Not fount header \"X-Total-Count\", check server settings.");
             }
         }
         return (responseModel, response.Headers);

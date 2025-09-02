@@ -15,13 +15,13 @@
 
 ```bash
 # for ASP.NET API projects
-dotnet add package MitMediator.AutoApi -v 9.0.0-alfa-4
+dotnet add package MitMediator.AutoApi -v 9.0.0-alfa-5
 
 # for application layer
-dotnet add package MitMediator.AutoApi.Abstractions -v 9.0.0-alfa-4
+dotnet add package MitMediator.AutoApi.Abstractions -v 9.0.0-alfa-5
 
 # for client application (MAUI, Blazor, UWP, etc.)
-dotnet add package MitMediator.AutoApi.HttpMediator -v 9.0.0-alfa-4
+dotnet add package MitMediator.AutoApi.HttpMediator -v 9.0.0-alfa-5
 ```
 
 ### 2. Use extension for IEndpointRouteBuilder
@@ -39,13 +39,48 @@ app.UseAutoApi();
 app.Run();
 ```
 
-To use base path "api", select assemblies to scan and disable antiforgery validation:
-
-```csharp
-app.UseAutoApi("api", new []{typeof(GetQuery).Assembly}, disableAntiforgery: true);
-```
+> To use base path "**api**" and select assemblies to scan: `app.UseAutoApi("api", new []{typeof(GetQuery).Assembly});`
 
 ### 3. Done! All public requests have endpoints
+
+## ⚙️ How It Works
+
+1. Scans all loaded assemblies for `IRequest` types
+2. Dynamically generates and registers endpoints for each match
+3. Maps routes using `MapPost`, `MapGet`, `MapPut`, and `MapDelete`, internally calling `IMediator.SendAsync`
+
+The HTTP method type is determined automatically according to the request name:
+
+| Request name start with | HTTP Method         |
+|-------------------------|---------------------|
+| `get`                   | GET                 |
+| `load`                  | GET                 |
+| `download`              | GET                 |
+| `fetch`                 | GET                 |
+| `update`                | PUT                 |
+| `change`                | PUT                 |
+| `edit`                  | PUT                 |
+| `modify`                | PUT                 |
+| `put`                   | PUT                 |
+| `post`                  | POST                |
+| `import`                | POST                |
+| `upload`                | POST                |
+| `add`                   | POST (201 response) |
+| `create`                | POST (201 response) |
+| `delete`                | DELETE              |
+| `remove`                | DELETE              |
+| `drop`                  | DELETE              |
+
+The first word after the method will be the main tag. Second and other - suffix. For example:
+
+`GetBookCountQuery` - Get - http method GET, Book - main tag (books in url), Count - suffix (/count in url)
+
+`RemoveBookWithAuthorCommand` - Remove - http method DELETE, Book - main tag (books in url), WithAuthor - suffix (
+/with-author in url)
+
+Words `command`, `query`, and `request` in the end of request type name will be deleted from url
+
+If you need to change the generated method, use attributes for the request type
 
 ## 🧪 Examples
 
@@ -54,7 +89,7 @@ app.UseAutoApi("api", new []{typeof(GetQuery).Assembly}, disableAntiforgery: tru
 ```csharp
 // Get - http method
 // Books - main tag
-// Api URL: GET /books?limit=1&offset=1&freeText=clara
+// Api URL: GET /v1/books?limit=1&offset=1&freeText=clara
 public struct GetBooksQuery : IRequest<Book[]>
 {
     public int? Limit { get; init; }
@@ -65,14 +100,14 @@ public struct GetBooksQuery : IRequest<Book[]>
 }
 ```
 
-### `GET` endpoint with key in url
+### `GET` endpoint with suffix and key in url
 
 ```csharp
 // Use IKeyRequest<> to set and get key from ur.
 // Get - http method
 // Book - main tag (books in url)
-// Api URL: GET /books/123
-public struct GetBookQuery : IRequest<Book>, IKeyRequest<int>
+// Api URL: GET /v1/books/123/cover
+public struct GetBookCoverQuery : IRequest<Book>, IKeyRequest<int>
 {
     internal int BookId { get; private set; }
 
@@ -85,25 +120,12 @@ public struct GetBookQuery : IRequest<Book>, IKeyRequest<int>
 }
 ```
 
-### `GET` endpoint with suffix
-
-```csharp
-// Get - http method
-// Books - main tag
-// Count - action suffix
-// Api URL: GET /books/count?freeText=clara
-public struct GetBooksCountQuery : IRequest<int>
-{
-    public string? FreeText { get; init; }
-}
-```
-
 ### `POST` endpoint with 201 response
 
 ```csharp
 // Create - POST http method, return 201
 // Book - main tag (books in url)
-// Api URL: POST /books
+// Api URL: POST /v1/books
 public class CreateBookCommand : IRequest<Book>
 {
     public string Title { get; init; }
@@ -119,7 +141,7 @@ public class CreateBookCommand : IRequest<Book>
 ```csharp
 // Update - PUT http method
 // Book - main tag (books in url)
-// Api URL: PUT /books/123
+// Api URL: PUT /v1/books/123
 public class UpdateBookCommand : IRequest<Book>, IKeyRequest<int>
 {
     internal int BookId { get; private set; }
@@ -139,32 +161,13 @@ public class UpdateBookCommand : IRequest<Book>, IKeyRequest<int>
 }
 ```
 
-### `DELETE` endpoint with a key in url
-
-```csharp
-// Delete - DELETE http method
-// Book - main tag (books in url)
-// Api URL: DELETE /books/123
-public struct DeleteBookCommand : IRequest, IKeyRequest<int>
-{
-    internal int BookId { get; private set; }
-
-    public void SetKey(int key)
-    {
-        BookId = key;
-    }
-    
-    public int GetKey() => BookId;
-}
-```
-
 ### `GET` endpoint text file ("application/octet-stream")
 
 ```csharp
 // Get - GET http method
 // Book - main tag (books in url)
 // Text - action suffix
-// Api URL: GET /books/text/123
+// Api URL: GET /v1/books/123/text
 public class GetBookTextQuery: IRequest<byte[]>, IKeyRequest<int>
 {
     internal int BookId { get; private set; }
@@ -178,34 +181,13 @@ public class GetBookTextQuery: IRequest<byte[]>, IKeyRequest<int>
 }
 ```
 
-### `GET` endpoint png file ("image/png")
-
-```csharp
-// Get - GET http method
-// Book - main tag (books in url)
-// Cover - action suffix
-// Api URL: GET /books/сover/123
-[AutoApi(customResponseContentType:"image/png")]
-public class GetBookCoverQuery: IRequest<byte[]>, IKeyRequest<int>
-{
-    internal int BookId { get; private set; }
-    
-    public void SetKey(int key)
-    {
-        BookId = key;
-    }
-    
-    public int GetKey() => BookId;
-}
-```
-
-### `POST` upload and download file
+### `POST` upload and download file with file name 
 
 ```csharp
 // Import - POST http method
 // Document - main tag (documents in url)
 // Word - action suffix
-// Api URL: POST /documents/words
+// Api URL: POST /v1/documents/word
 public class ImportDocumentWordCommand : FileRequest, IRequest<FileResponse>
 {
 }
@@ -213,16 +195,30 @@ public class ImportDocumentWordCommand : FileRequest, IRequest<FileResponse>
 
 ## Change default mapping
 
-Use the `[AutoApi]` attribute for the request type to change default mapping
+Use attributes for the request type to change default mapping
 
-### `GET` endpoint with a version, custom tag and custom suffix
+Supported attributes:
+
+| Attribute                      | Template                                       | Result                                                    |
+|--------------------------------|------------------------------------------------|-----------------------------------------------------------|
+| `TagAttribute`                 | `[Tag("CustomTag")]`                           | `v1/`**custom-tag**                                       |
+| `VersionAttribute`             | `[Version("v2")]`                              | **v2**`/books`                                            |
+| `SuffixAttribute`              | `[Suffix("cover")]`                            | `v1/books/`**cover**                                      |
+| `PatternAttribute`             | `[Pattern("api/v3/books/{key1}/page/{key2}")]` | `api/v3/books/{key1}/page/{key2}`                         |
+| `MethodAttribute`              | `[Method(MethodType.Post)]`                    | **POST** `v1/books`                                       |
+| `DescriptionAttribute`         | `[Description("My custom description")]`       | See description (in xml doc or swagger)                   |
+| `DisableAntiforgeryAttribute`  | `[DisableAntiforgery]`                         | Antiforgery protection has been disabled for the endpoint |
+| `ResponseContentTypeAttribute` | `[ResponseContentType("image/png")]`           | Result will have selected content type                    |
+| `IgnoreRequestAttribute`       | `[IgnoreRequest]`                              | Request will be ignored 🚫                                |
+
+### `GET` endpoint with custom tag and custom suffix
 
 ```csharp
 // Get - http method
 // Books - main tag (books in url)
-// API version: "v2"
-// Api URL: GET v2/my-books/favorite?limit=1&offset=1&freeText=clara
-[AutoApi("my-books", "v2", PatternSuffix = "favorite")]
+// Api URL: GET v1/my-books/favorite?limit=1&offset=1&freeText=clara
+[Tag("MyBooks")]
+[Suffix("favorite")]
 public struct GetBooksQuery : IRequest<Book[]>
 {
     public int? Limit { get; init; }
@@ -240,7 +236,10 @@ public struct GetBooksQuery : IRequest<Book[]>
 // Base tag: "books"
 // API version: "v3"
 // Custom URL pattern overrides base route: DELETE with-keys/{key1}/field/{key2}
-[AutoApi("books", customPattern: "with-keys/{key1}/field/{key2}", version: "v3", httpMethodType:HttpMethodType.Delete)]
+[Tag("books")]
+[Pattern("with-keys/{key1}/field/{key2}")]
+[Version("v3")]
+[Method(MethodType.Delete)]
 public class DoSomeWithBookAndDeleteCommand : IRequest<Book[]>, IKeyRequest<int, Guid>
 {
     internal int BookId { get; private set; }
@@ -265,17 +264,24 @@ public class DoSomeWithBookAndDeleteCommand : IRequest<Book[]>, IKeyRequest<int,
 
 > Default version is `v1`
 
-### 🚫 Ignore Request
-
-You can disable automatic endpoint generation for a request if you prefer to implement the endpoint manually or exclude
-it from the API surface.
-To do so, apply the `[AutoApiIgnore]` attribute to the request type:
+### `GET` endpoint png file ("image/png")
 
 ```csharp
-[AutoApiIgnore]
-public class MyCustomRequest : IRequest<MyResponse>
+// Get - GET http method
+// Book - main tag (books in url)
+// Cover - action suffix
+// Api URL: GET /v1/books/сover/123
+[ResponseContentType("image/png")]
+public class GetBookCoverQuery: IRequest<byte[]>, IKeyRequest<int>
 {
-    // This request will not be exposed via AutoAPI
+    internal int BookId { get; private set; }
+    
+    public void SetKey(int key)
+    {
+        BookId = key;
+    }
+    
+    public int GetKey() => BookId;
 }
 ```
 
@@ -284,7 +290,7 @@ public class MyCustomRequest : IRequest<MyResponse>
 For requests implementing `IRequest<byte[]>`/`IRequest<Stream>`, or  `IRequest<FileResponse>`/
 `IRequest<FileStreamResponse>`, the response will use `"application/octet-stream"` by default. To specify a download
 file name, use the `FileResponse` or `FileStreamResponse` response.
-Use `[AutoApi(customResponseContentType:"image/png")]` attribute for custom content type
+Use `[ResponseContentType("image/png")]` attribute for custom content type
 
 When requests implementing `IFileRequest` or inheriting from `FileRequest`, the request will be bound using
 `[FromForm]`, and file parameters will be inferred via `IFromFile` by default
@@ -383,45 +389,6 @@ public class AuthorizationHeaderInjection<TRequest, TResponse> : IHttpHeaderInje
 
 ## 📁 See [samples](./samples)
 
-## ⚙️ How It Works
-
-1. Scans all loaded assemblies for `IRequest` types
-2. Dynamically generates and registers endpoints for each match
-3. Maps routes using `MapPost`, `MapGet`, `MapPut`, and `MapDelete`, internally calling `IMediator.SendAsync()`
-
-If you need to change the generated method, use the `[AutoApi]` attribute for the request type
-
-The HTTP method type is determined automatically according to the request name:
-
-| Request name start with | HTTP Method         |
-|-------------------------|---------------------|
-| `get`                   | GET                 |
-| `load`                  | GET                 |
-| `download`              | GET                 |
-| `fetch`                 | GET                 |
-| `update`                | PUT                 |
-| `change`                | PUT                 |
-| `edit`                  | PUT                 |
-| `modify`                | PUT                 |
-| `put`                   | PUT                 |
-| `post`                  | POST                |
-| `import`                | POST                |
-| `upload`                | POST                |
-| `add`                   | POST (201 response) |
-| `create`                | POST (201 response) |
-| `delete`                | DELETE              |
-| `remove`                | DELETE              |
-| `drop`                  | DELETE              |
-
-The first word after the method will be the main tag. Second and other - suffix. For example:
-
-`GetBookCountQuery` - Get - http method GET, Book - main tag (books in url), Count - suffix (/count in url)
-
-`RemoveBookWithAuthorCommand` - Remove - http method DELETE, Book - main tag (books in url), WithAuthor - suffix (
-/with-author in url)
-
-Words `command`, `query`, and `request` in the end of request type name will be deleted from url
-
 ## 💡 Features
 
 * Declarative routing via request class name or attributes
@@ -432,10 +399,7 @@ Words `command`, `query`, and `request` in the end of request type name will be 
 * Supports custom patterns (`custom-route/my-route`, `with-keys/{key1}/{key2}/field/{key3}`)
 * Auto client `HttpMediator` for clients applications
 * File response (`IRequest<byte[]>` or `IRequest<FileResponse>`)
-* Upload file stream:
-```csharp 
-public class UploadCoverCommand: FileRequest {}
-```
+* Upload file stream: `public class UploadCoverCommand: FileRequest {}`
 * `X-Total-Count` header (implement `ITotalCount` in response type)
 
 ## 📜 License
