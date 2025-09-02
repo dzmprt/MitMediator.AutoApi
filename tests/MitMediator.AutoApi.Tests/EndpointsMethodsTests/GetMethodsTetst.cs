@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
+using MitMediator.AutoApi.Abstractions;
 using MitMediator.AutoApi.Tests.RequestsForTests;
 using Moq;
 
@@ -22,10 +23,9 @@ public class GetMethodsTetst
             .BuildServiceProvider();
 
         var context = new DefaultHttpContext { RequestServices = services };
-        var request = new RequestsForTests.Test.Queries.GetByKey.GetTestQuery();
 
         var del = EndpointsMethods
-            .WithGetParamsAnd1Key<RequestsForTests.Test.Queries.GetByKey.GetTestQuery, string, int>();
+            .WithGetParamsAnd1Key<RequestsForTests.Test.Queries.GetByKey.GetTestQuery, string, int>(new RequestInfo(typeof(RequestsForTests.Test.Queries.GetByKey.GetTestQuery)));
         
         var result = (ValueTask<IResult>)del.DynamicInvoke(1, context, CancellationToken.None);
 
@@ -45,10 +45,9 @@ public class GetMethodsTetst
             .BuildServiceProvider();
 
         var context = new DefaultHttpContext { RequestServices = services };
-        var request = new RequestsForTests.Test.Queries.GetByKey2.GetTestQuery();
 
         var del = EndpointsMethods
-            .WithGetParamsAnd2Keys<RequestsForTests.Test.Queries.GetByKey2.GetTestQuery, string, int, int>();
+            .WithGetParamsAnd2Keys<RequestsForTests.Test.Queries.GetByKey2.GetTestQuery, string, int, int>(new RequestInfo(typeof(RequestsForTests.Test.Queries.GetByKey2.GetTestQuery)));
         var result = (ValueTask<IResult>)del.DynamicInvoke(1, 2, context, CancellationToken.None);
 
         Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<string>>(result.Result);
@@ -67,10 +66,9 @@ public class GetMethodsTetst
             .BuildServiceProvider();
 
         var context = new DefaultHttpContext { RequestServices = services };
-        var request = new RequestsForTests.Test.Queries.GetByKey3.GetTestQuery();
 
         var del = EndpointsMethods
-            .WithGetParamsAnd3Keys<RequestsForTests.Test.Queries.GetByKey3.GetTestQuery, string, int, int, int>();
+            .WithGetParamsAnd3Keys<RequestsForTests.Test.Queries.GetByKey3.GetTestQuery, string, int, int, int>(new RequestInfo(typeof(RequestsForTests.Test.Queries.GetByKey3.GetTestQuery)));
         var result = (ValueTask<IResult>)del.DynamicInvoke(1, 2, 3, context, CancellationToken.None);
 
         Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<string>>(result.Result);
@@ -89,10 +87,9 @@ public class GetMethodsTetst
             .BuildServiceProvider();
 
         var context = new DefaultHttpContext { RequestServices = services };
-        var request = new RequestsForTests.Test.Queries.GetByKey4.GetTestQuery();
 
         var del = EndpointsMethods
-            .WithGetParamsAnd4Keys<RequestsForTests.Test.Queries.GetByKey4.GetTestQuery, string, int, int, int, int>();
+            .WithGetParamsAnd4Keys<RequestsForTests.Test.Queries.GetByKey4.GetTestQuery, string, int, int, int, int>(new RequestInfo(typeof(RequestsForTests.Test.Queries.GetByKey4.GetTestQuery)));
         var result = (ValueTask<IResult>)del.DynamicInvoke(1, 2, 3, 4, context, CancellationToken.None);
 
         Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<string>>(result.Result);
@@ -111,10 +108,9 @@ public class GetMethodsTetst
             .BuildServiceProvider();
 
         var context = new DefaultHttpContext { RequestServices = services };
-        var request = new RequestsForTests.Test.Queries.GetByKey5.GetTestQuery();
 
         var del = EndpointsMethods
-            .WithGetParamsAnd5Keys<RequestsForTests.Test.Queries.GetByKey5.GetTestQuery, string, int, int, int, int, int>();
+            .WithGetParamsAnd5Keys<RequestsForTests.Test.Queries.GetByKey5.GetTestQuery, string, int, int, int, int, int>(new RequestInfo(typeof(RequestsForTests.Test.Queries.GetByKey5.GetTestQuery)));
         var result = (ValueTask<IResult>)del.DynamicInvoke(1, 2, 3, 4, 5, context, CancellationToken.None);
 
         Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<string>>(result.Result);
@@ -133,10 +129,9 @@ public class GetMethodsTetst
             .BuildServiceProvider();
 
         var context = new DefaultHttpContext { RequestServices = services };
-        var request = new RequestsForTests.Test.Queries.GetByKey6.GetTestQuery();
 
         var del = EndpointsMethods
-            .WithGetParamsAnd6Keys<RequestsForTests.Test.Queries.GetByKey6.GetTestQuery, string, int, int, int, int, int, int>();
+            .WithGetParamsAnd6Keys<RequestsForTests.Test.Queries.GetByKey6.GetTestQuery, string, int, int, int, int, int, int>(new RequestInfo(typeof(RequestsForTests.Test.Queries.GetByKey6.GetTestQuery)));
         var result = (ValueTask<IResult>)del.DynamicInvoke(1, 2, 3, 4, 5, 6, context, CancellationToken.None);
 
         Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<string>>(result.Result);
@@ -155,10 +150,9 @@ public class GetMethodsTetst
             .BuildServiceProvider();
 
         var context = new DefaultHttpContext { RequestServices = services };
-        var request = new RequestsForTests.Test.Queries.GetByKey7.GetTestQuery();
 
         var del = EndpointsMethods
-            .WithGetParamsAnd7Keys<RequestsForTests.Test.Queries.GetByKey7.GetTestQuery, string, int, int, int, int, int, int, int>();
+            .WithGetParamsAnd7Keys<RequestsForTests.Test.Queries.GetByKey7.GetTestQuery, string, int, int, int, int, int, int, int>(new RequestInfo(typeof(RequestsForTests.Test.Queries.GetByKey7.GetTestQuery)));
         var result = (ValueTask<IResult>)del.DynamicInvoke(1, 2, 3, 4, 5, 6, 7, context, CancellationToken.None);
 
         Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<string>>(result.Result);
@@ -226,7 +220,7 @@ public class GetMethodsTetst
         var stream = new MemoryStream();
         context.Response.Body = stream;
         var del = EndpointsMethods
-            .WithGetParams<GetTestWithQueryParamsQuery, GetTestWithQueryParamsQuery>();
+            .WithGetParams<GetTestWithQueryParamsQuery, GetTestWithQueryParamsQuery>(new RequestInfo(typeof(GetTestWithQueryParamsQuery)));
         var result = await (ValueTask<IResult>)del.DynamicInvoke(context, CancellationToken.None);
         await result.ExecuteAsync(context);
         
@@ -299,7 +293,7 @@ public class GetMethodsTetst
         var stream = new MemoryStream();
         context.Response.Body = stream;
         var del = EndpointsMethods
-            .WithGetParams<GetWithQueryAllNullableParamsQuery, GetWithQueryAllNullableParamsQuery>();
+            .WithGetParams<GetWithQueryAllNullableParamsQuery, GetWithQueryAllNullableParamsQuery>(new RequestInfo(typeof(GetWithQueryAllNullableParamsQuery)));
         var result = await (ValueTask<IResult>)del.DynamicInvoke(context, CancellationToken.None);
         await result.ExecuteAsync(context);
         
@@ -378,7 +372,7 @@ public class GetMethodsTetst
         var stream = new MemoryStream();
         context.Response.Body = stream;
         var del = EndpointsMethods
-            .WithGetParams<GetWithQueryAllNullableParamsQuery, GetWithQueryAllNullableParamsQuery>();
+            .WithGetParams<GetWithQueryAllNullableParamsQuery, GetWithQueryAllNullableParamsQuery>(new RequestInfo(typeof(GetWithQueryAllNullableParamsQuery)));
         var result = await (ValueTask<IResult>)del.DynamicInvoke(context, CancellationToken.None);
         await result.ExecuteAsync(context);
         

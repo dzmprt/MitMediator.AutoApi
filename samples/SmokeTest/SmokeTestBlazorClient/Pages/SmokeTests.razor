@@ -1,0 +1,310 @@
+@page "/smoke-tests"
+@using System.Text
+@using System.Text.Json
+@using MitMediator
+@using MitMediator.AutoApi.Abstractions
+@using MitMediator.AutoApi.HttpMediator
+@using MitMediator.AutoApi.HttpMediator.Extensions
+@using SmokeTest.Application.UseCase.Files.Queries.GetFile
+@using SmokeTest.Application.UseCase.Files.Queries.GetFilePng
+@using SmokeTest.Application.UseCase.Files.Queries.GetFileTxt
+@using SmokeTest.Application.UseCase.Files.Queries.GetFileWithCustomName
+@using SmokeTest.Application.UseCase.Test.Commands.Create
+@using SmokeTest.Application.UseCase.Test.Commands.CreateBy2Keys
+@using SmokeTest.Application.UseCase.Test.Commands.CreateBy6Keys
+@using SmokeTest.Application.UseCase.Test.Commands.CreateByKey
+@using SmokeTest.Application.UseCase.Test.Commands.Delete
+@using SmokeTest.Application.UseCase.Test.Commands.DeleteByKey
+@using SmokeTest.Application.UseCase.Test.Commands.DeleteByKey2
+@using SmokeTest.Application.UseCase.Test.Commands.DeleteByKey7
+@using SmokeTest.Application.UseCase.Test.Commands.Post
+@using SmokeTest.Application.UseCase.Test.Commands.PostBy2Keys
+@using SmokeTest.Application.UseCase.Test.Commands.PostBy7Keys
+@using SmokeTest.Application.UseCase.Test.Commands.PostByKey
+@using SmokeTest.Application.UseCase.Test.Commands.Update
+@using SmokeTest.Application.UseCase.Test.Commands.UpdateBy2Keys
+@using SmokeTest.Application.UseCase.Test.Commands.UpdateBy7Keys
+@using SmokeTest.Application.UseCase.Test.Commands.UpdateByKey
+@using SmokeTest.Application.UseCase.Test.Queries.Get
+@using SmokeTest.Application.UseCase.Test.Queries.GetByKey
+@using SmokeTest.Application.UseCase.Test.Queries.GetByKey2
+@using SmokeTest.Application.UseCase.Test.Queries.GetByKey7
+@using SmokeTest.Application.UseCase.Test.Queries.GetEmpty
+@using SmokeTest.Application.UseCase.Test.Queries.GetList
+@using SmokeTest.Application.UseCase.Test.Queries.GetWithQueryParams
+@using SmokeTest.Application.UseCase.Test.Queries.GetWithSuffix
+@inject IClientMediator ClientMediator
+
+
+<h1>Smoke tests</h1>
+
+@if (_isLoading)
+{
+    <div class="spinner-grow" role="status">
+        <span class="sr-only"></span>
+    </div>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Request type name</th>
+            <th>Request data</th>
+            <th>Response</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var testResult in _testsResults)
+        {
+            <tr>
+                <td>
+                    @testResult.Item1
+                </td>
+                <td>
+                    @testResult.Item2
+                </td>
+                <td class="@(testResult.Item3.StartsWith("Exception") ? "red-text" : "")">
+                    @testResult.Item3
+                </td>
+            </tr>
+        }
+
+        </tbody>
+    </table>
+    <h2>Img</h2>
+    <img src="@(ClientMediator.GetRequestAbsoluteUrl<GetFilePngQuery, byte[]>(new GetFilePngQuery()))"/>
+}
+
+
+@code {
+
+    private bool _isLoading = true;
+
+    private List<(string, string, string)> _testsResults = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _testsResults.Add(await SendRequestAsync<GetEmptyTestQuery, string>(new GetEmptyTestQuery() { TestData = "test" }));
+        
+        _testsResults.Add(await SendRequestAsync<GetTestQuery, string>(new GetTestQuery() { TestData = "test" }));
+        
+        var getTestByKeyQuery = new GetTestByKeyQuery();
+        getTestByKeyQuery.SetKey(123);
+        _testsResults.Add(await SendRequestAsync<GetTestByKeyQuery, string>(getTestByKeyQuery));
+        
+        var getTestByKey2Query = new GetTestByKey2Query();
+        getTestByKey2Query.SetKey1(123);
+        getTestByKey2Query.SetKey2(123);
+        _testsResults.Add(await SendRequestAsync<GetTestByKey2Query, string>(getTestByKey2Query));
+
+        var getTestByKey7Query = new GetTestByKey7Query() { };
+        getTestByKey7Query.SetKey1(123);
+        getTestByKey7Query.SetKey2(123);
+        getTestByKey7Query.SetKey3(123);
+        getTestByKey7Query.SetKey4(123);
+        getTestByKey7Query.SetKey5(123);
+        getTestByKey7Query.SetKey6(123);
+        getTestByKey7Query.SetKey7(123);
+        _testsResults.Add(await SendRequestAsync<GetTestByKey7Query, string>(getTestByKey7Query));
+        
+        var getTestWithSuffixQuery = new GetTestWithSuffixQuery()
+        {
+            TestData = "test"
+        };
+        _testsResults.Add(await SendRequestAsync<GetTestWithSuffixQuery, string>(getTestWithSuffixQuery));
+
+        _testsResults.Add(await SendRequestAsync<CreateTestCommand, CreateTestResponse>(new CreateTestCommand { TestData = "test" }));
+
+        var createTestByKeyCommand = new CreateTestByKeyCommand();
+        createTestByKeyCommand.SetKey(123);
+        _testsResults.Add(await SendRequestAsync<CreateTestByKeyCommand, CreateTestByKeyResponse>(createTestByKeyCommand));
+
+        var createTestBy2KeysCommand = new CreateTestBy2KeysCommand();
+        createTestBy2KeysCommand.SetKey1(123);
+        createTestBy2KeysCommand.SetKey2(123);
+        _testsResults.Add(await SendRequestAsync<CreateTestBy2KeysCommand, CreateTestBy2KeysResponse>(createTestBy2KeysCommand));
+
+        var createTestBy6KeysCommand = new CreateTestBy6KeysCommand
+        {
+            TestData = "test"
+        };
+        createTestBy6KeysCommand.SetKey1(123);
+        createTestBy6KeysCommand.SetKey2(123);
+        createTestBy6KeysCommand.SetKey3(123);
+        createTestBy6KeysCommand.SetKey4(123);
+        createTestBy6KeysCommand.SetKey5(123);
+        createTestBy6KeysCommand.SetKey6(123);
+        _testsResults.Add(await SendRequestAsync<CreateTestBy6KeysCommand, CreateTestBy6KeysResponse>(createTestBy6KeysCommand));
+
+        _testsResults.Add(await SendRequestAsync<PostTestCommand, string>(new PostTestCommand { TestData = "test" }));
+
+
+        var postTestByKeyCommand = new PostTestByKeyCommand();
+        postTestByKeyCommand.SetKey(123);
+        _testsResults.Add(await SendRequestAsync<PostTestByKeyCommand, string>(postTestByKeyCommand));
+
+        var postTestBy2KeysCommand = new PostTestBy2KeysCommand();
+        postTestBy2KeysCommand.SetKey1(123);
+        postTestBy2KeysCommand.SetKey2(123);
+        _testsResults.Add(await SendRequestAsync<PostTestBy2KeysCommand, string>(postTestBy2KeysCommand));
+
+        var postTestBy7KeysCommand = new PostTestBy7KeysCommand
+        {
+            TestData = "test"
+        };
+        postTestBy7KeysCommand.SetKey1(123);
+        postTestBy7KeysCommand.SetKey2(123);
+        postTestBy7KeysCommand.SetKey3(123);
+        postTestBy7KeysCommand.SetKey4(123);
+        postTestBy7KeysCommand.SetKey5(123);
+        postTestBy7KeysCommand.SetKey6(123);
+        postTestBy7KeysCommand.SetKey7(123);
+        _testsResults.Add(await SendRequestAsync<PostTestBy7KeysCommand, string>(postTestBy7KeysCommand));
+
+        _testsResults.Add(await SendRequestAsync<UpdateTestCommand, string>(new UpdateTestCommand { TestData = "test" }));
+        
+        var updateTestByKeyCommand = new UpdateTestByKeyCommand();
+        updateTestByKeyCommand.SetKey(123);
+        _testsResults.Add(await SendRequestAsync<UpdateTestByKeyCommand, string>(updateTestByKeyCommand));
+        
+        var updateTestBy2KeysCommand = new UpdateTestBy2KeysCommand();
+        updateTestBy2KeysCommand.SetKey1(123);
+        updateTestBy2KeysCommand.SetKey2(123);
+        _testsResults.Add(await SendRequestAsync<UpdateTestBy2KeysCommand, string>(updateTestBy2KeysCommand));
+        
+        var updateTestBy7KeysCommand = new UpdateTestBy7KeysCommand
+        {
+            TestData = "test"
+        };
+        updateTestBy7KeysCommand.SetKey1(123);
+        updateTestBy7KeysCommand.SetKey2(123);
+        updateTestBy7KeysCommand.SetKey3(123);
+        updateTestBy7KeysCommand.SetKey4(123);
+        updateTestBy7KeysCommand.SetKey5(123);
+        updateTestBy7KeysCommand.SetKey6(123);
+        updateTestBy7KeysCommand.SetKey7(123);
+        _testsResults.Add(await SendRequestAsync<UpdateTestBy7KeysCommand, string>(updateTestBy7KeysCommand));
+
+        _testsResults.Add(await SendRequestAsync<DeleteTestCommand, Unit>(new DeleteTestCommand { TestData = "test" }));
+
+
+        var deleteTestByKeyCommand = new DeleteTestByKeyCommand()
+        {
+            TestData = "test"
+        };
+        deleteTestByKeyCommand.SetKey(123);
+        _testsResults.Add(await SendRequestAsync<DeleteTestByKeyCommand, Unit>(deleteTestByKeyCommand));
+
+        var deleteTestBy2KeysCommand = new DeleteTestBy2KeysCommand
+        {
+            TestData = "test"
+        };
+        deleteTestBy2KeysCommand.SetKey1(123);
+        deleteTestBy2KeysCommand.SetKey2(123);
+        _testsResults.Add(await SendRequestAsync<DeleteTestBy2KeysCommand, Unit>(deleteTestBy2KeysCommand));
+
+        var deleteTestBy7KeysCommand = new DeleteTestBy7KeysCommand
+        {
+            TestData = "test"
+        };
+        deleteTestBy7KeysCommand.SetKey1(123);
+        deleteTestBy7KeysCommand.SetKey2(123);
+        deleteTestBy7KeysCommand.SetKey3(123);
+        deleteTestBy7KeysCommand.SetKey4(123);
+        deleteTestBy7KeysCommand.SetKey5(123);
+        deleteTestBy7KeysCommand.SetKey6(123);
+        deleteTestBy7KeysCommand.SetKey7(123);
+        _testsResults.Add(await SendRequestAsync<DeleteTestBy7KeysCommand, Unit>(deleteTestBy7KeysCommand));
+        
+        _testsResults.Add(await SendRequestAsync<GetFileQuery, byte[]>(new GetFileQuery { Base64String = Convert.ToBase64String("test"u8.ToArray()) }));
+
+        _testsResults.Add(await SendRequestAsync<GetFileTxtQuery, byte[]>(new GetFileTxtQuery { Base64String = Convert.ToBase64String("test"u8.ToArray()) }));
+        
+        _testsResults.Add(await SendRequestAsync<GetFilePngQuery, byte[]>(new GetFilePngQuery()));
+        
+        _testsResults.Add(await SendRequestAsync<GetFileWithCustomNameQuery, FileResponse>(new GetFileWithCustomNameQuery()));
+
+        _testsResults.Add(await SendRequestAsync<GetListQuery, GetListResponse>(new GetListQuery()));
+        
+        var queryParams = new GetTestWithQueryParamsQuery
+        {
+            TestIntParam = 123,
+            TestStringParam = "TestStringParam",
+            TestNullableIntParam = null,
+            TestNullableIntParam2 = 1234,
+            TestNullableStringParam = null,
+            TestNullableStringParam2 = "TestNullableStringParam2",
+            DateTimeParam = DateTime.Now,
+            DateTimeOffsetParam = DateTimeOffset.Now,
+            ArrayParam = ["1", "2", "3"],
+            ListParam = ["3", "2", "1"],
+            InnerObject = new GetTestWithQueryInnerObject
+            {
+                Name = "Inner object name"
+            },
+            TestEnumParam = GetTestWithQueryParamsEnum.TestEnum2
+        };
+        _testsResults.Add(await SendRequestAsync<GetTestWithQueryParamsQuery, GetTestWithQueryParamsQuery>(queryParams));
+        
+        // var pngBase64 =
+        //     "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAApgAAAKYB3X3/OAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAANCSURBVEiJtZZPbBtFFMZ/M7ubXdtdb1xSFyeilBapySVU8h8OoFaooFSqiihIVIpQBKci6KEg9Q6H9kovIHoCIVQJJCKE1ENFjnAgcaSGC6rEnxBwA04Tx43t2FnvDAfjkNibxgHxnWb2e/u992bee7tCa00YFsffekFY+nUzFtjW0LrvjRXrCDIAaPLlW0nHL0SsZtVoaF98mLrx3pdhOqLtYPHChahZcYYO7KvPFxvRl5XPp1sN3adWiD1ZAqD6XYK1b/dvE5IWryTt2udLFedwc1+9kLp+vbbpoDh+6TklxBeAi9TL0taeWpdmZzQDry0AcO+jQ12RyohqqoYoo8RDwJrU+qXkjWtfi8Xxt58BdQuwQs9qC/afLwCw8tnQbqYAPsgxE1S6F3EAIXux2oQFKm0ihMsOF71dHYx+f3NND68ghCu1YIoePPQN1pGRABkJ6Bus96CutRZMydTl+TvuiRW1m3n0eDl0vRPcEysqdXn+jsQPsrHMquGeXEaY4Yk4wxWcY5V/9scqOMOVUFthatyTy8QyqwZ+kDURKoMWxNKr2EeqVKcTNOajqKoBgOE28U4tdQl5p5bwCw7BWquaZSzAPlwjlithJtp3pTImSqQRrb2Z8PHGigD4RZuNX6JYj6wj7O4TFLbCO/Mn/m8R+h6rYSUb3ekokRY6f/YukArN979jcW+V/S8g0eT/N3VN3kTqWbQ428m9/8k0P/1aIhF36PccEl6EhOcAUCrXKZXXWS3XKd2vc/TRBG9O5ELC17MmWubD2nKhUKZa26Ba2+D3P+4/MNCFwg59oWVeYhkzgN/JDR8deKBoD7Y+ljEjGZ0sosXVTvbc6RHirr2reNy1OXd6pJsQ+gqjk8VWFYmHrwBzW/n+uMPFiRwHB2I7ih8ciHFxIkd/3Omk5tCDV1t+2nNu5sxxpDFNx+huNhVT3/zMDz8usXC3ddaHBj1GHj/As08fwTS7Kt1HBTmyN29vdwAw+/wbwLVOJ3uAD1wi/dUH7Qei66PfyuRj4Ik9is+hglfbkbfR3cnZm7chlUWLdwmprtCohX4HUtlOcQjLYCu+fzGJH2QRKvP3UNz8bWk1qMxjGTOMThZ3kvgLI5AzFfo379UAAAAASUVORK5CYII=";
+        // var bytes = Convert.FromBase64String(pngBase64);
+        // using var stream = new MemoryStream(bytes);
+        // var importFileStreamWithNameCommand = new ImportFileStreamWithNameCommand();
+        // importFileStreamWithNameCommand.SetFile(stream, "img.png");
+        // _testsResults.Add(await SendRequestAsync<ImportFileStreamWithNameCommand, FileStreamResponse>(importFileStreamWithNameCommand));
+        //
+        // using var stream2 = new MemoryStream(bytes);
+        // var importFileStreamCommand = new ImportFileStreamCommand();
+        // importFileStreamCommand.SetFile(stream, "img.png");
+        // _testsResults.Add(await SendRequestAsync<ImportFileStreamCommand, Stream>(importFileStreamCommand));
+        //
+        // using var stream3 = new MemoryStream(bytes);
+        // var importFileBytesWithNameCommand = new ImportFileBytesWithNameCommand();
+        // importFileBytesWithNameCommand.SetFile(stream3, "img.png");
+        // _testsResults.Add(await SendRequestAsync<ImportFileBytesWithNameCommand, FileResponse>(importFileBytesWithNameCommand));
+        //
+        // using var stream4 = new MemoryStream(bytes);
+        // var importFileBytesCommand = new ImportFileBytesCommand();
+        // importFileBytesCommand.SetFile(stream4, "img.png");
+        // _testsResults.Add(await SendRequestAsync<ImportFileBytesCommand, byte[]>(importFileBytesCommand));
+        
+        _isLoading = false;
+    }
+
+    protected async Task<(string, string, string)> SendRequestAsync<TRequest, TResponse>(TRequest request) where TRequest : IRequest<TResponse>
+    {
+        try
+        {
+            var response = await ClientMediator.SendAsync<TRequest, TResponse>(request, CancellationToken.None);
+            if (response is FileResponse fileResponse)
+            {
+                return new(typeof(TRequest).Name,"File stream", $"File with name {fileResponse.FileName} and size {fileResponse.File.Length}");
+            }
+            if (response is FileStreamResponse fileStreamResponse)
+            {
+                return new(typeof(TRequest).Name, "File stream", $"File with name {fileStreamResponse.FileName} and size {fileStreamResponse.File.Length}");
+            }
+            if (response is byte[] file)
+            {
+                return new(typeof(TRequest).Name, "File stream", $"File with size {file.Length}");
+            }
+            if (response is Stream stream)
+            {
+                return new(typeof(TRequest).Name, "File stream", $"File with size {stream.Length}");
+            }
+
+            if (response is ITotalCount totalCount)
+            {
+                return new(typeof(TRequest).Name, JsonSerializer.Serialize(request), $"X-Total-Count: {totalCount.GetTotalCount()}, {JsonSerializer.Serialize(response)}");
+            }
+            return new(typeof(TRequest).Name, JsonSerializer.Serialize(request), JsonSerializer.Serialize(response));
+        }
+        catch (Exception ex)
+        {
+            return new(typeof(TRequest).Name, JsonSerializer.Serialize(request), $"Exception: {ex.Message}");
+        }
+    }
+
+}

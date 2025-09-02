@@ -31,7 +31,7 @@ public class GetFileTests
         context.Response.Body = memoryStream;
 
         var del = EndpointsMethods
-            .WithGetParams<RequestsForTests.Files.Queries.GetFile.GetFileQuery, byte[]>();
+            .WithGetParams<RequestsForTests.Files.Queries.GetFile.GetFileQuery, byte[]>(new RequestInfo(typeof(RequestsForTests.Files.Queries.GetFile.GetFileQuery)));
         var result = await (ValueTask<IResult>)del.DynamicInvoke(context, CancellationToken.None)!;
 
         // Act
@@ -69,7 +69,7 @@ public class GetFileTests
         context.Response.Body = memoryStream;
 
         var del = EndpointsMethods
-            .WithGetParams<RequestsForTests.Files.Queries.GetFileWithCustomName.GetFileWithCustomNameQuery, FileResponse>();
+            .WithGetParams<RequestsForTests.Files.Queries.GetFileWithCustomName.GetFileWithCustomNameQuery, FileResponse>(new RequestInfo(typeof(RequestsForTests.Files.Queries.GetFileWithCustomName.GetFileWithCustomNameQuery)));
         var result = await (ValueTask<IResult>)del.DynamicInvoke(context, CancellationToken.None)!;
 
         // Act
@@ -107,7 +107,7 @@ public class GetFileTests
             .ReturnsAsync(new MemoryStream("test"u8.ToArray()));
         
         var del = EndpointsMethods
-            .WithGetParams<RequestsForTests.Files.Queries.GetFileStream.GetFileStreamQuery, Stream>();
+            .WithGetParams<RequestsForTests.Files.Queries.GetFileStream.GetFileStreamQuery, Stream>(new RequestInfo(typeof(RequestsForTests.Files.Queries.GetFileStream.GetFileStreamQuery)));
         var result = await (ValueTask<IResult>)del.DynamicInvoke(context, CancellationToken.None)!;
 
         // Act
@@ -145,7 +145,7 @@ public class GetFileTests
         context.Response.Body = memoryStream;
 
         var del = EndpointsMethods
-            .WithGetParams<RequestsForTests.Files.Queries.GetFileStreamWithCustomName.GetFileStreamWithCustomNameQuery, FileStreamResponse>();
+            .WithGetParams<RequestsForTests.Files.Queries.GetFileStreamWithCustomName.GetFileStreamWithCustomNameQuery, FileStreamResponse>(new RequestInfo(typeof(RequestsForTests.Files.Queries.GetFileStreamWithCustomName.GetFileStreamWithCustomNameQuery)));
         var result = await (ValueTask<IResult>)del.DynamicInvoke(context, CancellationToken.None)!;
 
         // Act

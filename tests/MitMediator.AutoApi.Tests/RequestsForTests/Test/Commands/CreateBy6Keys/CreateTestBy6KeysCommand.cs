@@ -1,10 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
 using MitMediator.AutoApi.Abstractions;
+using MitMediator.AutoApi.Abstractions.Attributes;
 
 namespace MitMediator.AutoApi.Tests.RequestsForTests.Test.Commands.CreateBy6Keys;
 
 [ExcludeFromCodeCoverage]
-[AutoApi(patternSuffix:"create")]
+[Suffix("by6-keys/create")]
 public class CreateTestBy6KeysCommand : IRequest<string>, IKeyRequest<int, int, int, int, int, int>
 {
     internal int Key1 { get; private set; }
