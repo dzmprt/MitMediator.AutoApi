@@ -42,9 +42,6 @@ Changed attributes for custom endpoints</PackageReleaseNotes>
     
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
-    </ItemGroup>
-    
-    <ItemGroup>
-      <ProjectReference Include="..\MitMediator.AutoApi.Abstractions\MitMediator.AutoApi.Abstractions.csproj" />
+      <PackageReference Include="MitMediator.AutoApi.Abstractions" Version="9.0.0-alfa-5" />
     </ItemGroup>
 </Project>
