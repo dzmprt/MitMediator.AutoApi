@@ -1,13 +1,11 @@
-using BooksCatalog.Domain;
 using MitMediator;
-using MitMediator.AutoApi.Abstractions;
 
 namespace BooksCatalog.Application.UseCase.Books.Queries.GetBooksByFilter;
 
 /// <summary>
 /// Get books query.
 /// </summary>
-public class GetBooksQuery : IRequest<GetBooksResponse>
+public struct GetBooksQuery : IRequest<GetBooksResponse>
 {
     /// <summary>
     /// Limit.

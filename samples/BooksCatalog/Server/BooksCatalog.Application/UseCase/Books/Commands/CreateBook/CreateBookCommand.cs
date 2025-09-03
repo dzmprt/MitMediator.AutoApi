@@ -7,7 +7,7 @@ namespace BooksCatalog.Application.UseCase.Books.Commands.CreateBook;
 /// <summary>
 /// Create book command.
 /// </summary>
-public class CreateBookCommand : IRequest<CreatedBookResponse>
+public struct CreateBookCommand : IRequest<CreatedBookResponse>
 {
     /// <summary>
     /// Title.

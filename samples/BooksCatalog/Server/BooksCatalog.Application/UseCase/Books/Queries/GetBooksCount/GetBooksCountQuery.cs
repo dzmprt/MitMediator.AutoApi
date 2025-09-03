@@ -5,7 +5,7 @@ namespace BooksCatalog.Application.UseCase.Books.Queries.GetBooksCount;
 /// <summary>
 /// Get books count query.
 /// </summary>
-public class GetBooksCountQuery : IRequest<int>
+public struct GetBooksCountQuery : IRequest<int>
 {
     /// <summary>
     /// Free text.

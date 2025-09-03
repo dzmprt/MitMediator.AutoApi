@@ -1,5 +1,7 @@
 using System.Reflection;
 using BooksCatalog.Application.Behaviors;
+using BooksCatalog.Application.Services;
+using BooksCatalog.Domain.Abstractions;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using MitMediator;
@@ -21,6 +23,7 @@ public static class DependencyInjection
         return services
             .AddMitMediator()
             .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly(), includeInternalTypes: true)
-            .AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+            .AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>))
+            .AddScoped<IImagesService, ImagesService>();
     }
 }
