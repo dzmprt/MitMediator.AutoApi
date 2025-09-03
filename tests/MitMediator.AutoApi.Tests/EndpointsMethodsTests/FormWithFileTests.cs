@@ -37,7 +37,7 @@ public class FormWithFileTests
         context.Response.Body = memoryStream;
 
         var del = EndpointsMethods
-            .FormWithFile<RequestsForTests.Files.Commands.ImportFile.ImportFileCommand, FileStreamResponse>();
+            .FormWithFile<RequestsForTests.Files.Commands.ImportFile.ImportFileCommand, FileStreamResponse>(new RequestInfo(typeof(RequestsForTests.Files.Commands.ImportFile.ImportFileCommand)));
         var result = await (ValueTask<IResult>)del.DynamicInvoke(formFile, request, context, CancellationToken.None)!;
 
         // Act
@@ -85,7 +85,7 @@ public class FormWithFileTests
 
         var del = EndpointsMethods
             .FormWithFileAnd1Key<RequestsForTests.Files.Commands.ImportFileWithKeyCommand.ImportFileWithKeyCommand,
-                FileStreamResponse, int>();
+                FileStreamResponse, int>(new RequestInfo(typeof(RequestsForTests.Files.Commands.ImportFileWithKeyCommand.ImportFileWithKeyCommand)));
         var result =
             await (ValueTask<IResult>)del.DynamicInvoke(formFile, request, key, context, CancellationToken.None)!;
 
@@ -135,7 +135,7 @@ public class FormWithFileTests
 
         var del = EndpointsMethods
             .FormWithFileAnd2Key<RequestsForTests.Files.Commands.ImportFileWithKey2Command.ImportFileWithKey2Command,
-                FileStreamResponse, int, int>();
+                FileStreamResponse, int, int>(new RequestInfo(typeof(RequestsForTests.Files.Commands.ImportFileWithKey2Command.ImportFileWithKey2Command)));
         var result =
             await (ValueTask<IResult>)del.DynamicInvoke(formFile, request, key1, key2, context,
                 CancellationToken.None)!;
@@ -187,7 +187,7 @@ public class FormWithFileTests
 
         var del = EndpointsMethods
             .FormWithFileAnd3Key<RequestsForTests.Files.Commands.ImportFileWithKey3Command.ImportFileWithKey3Command,
-                FileStreamResponse, int, int, int>();
+                FileStreamResponse, int, int, int>(new RequestInfo(typeof(RequestsForTests.Files.Commands.ImportFileWithKey3Command.ImportFileWithKey3Command)));
         var result =
             await (ValueTask<IResult>)del.DynamicInvoke(formFile, request, key1, key2, key3, context,
                 CancellationToken.None)!;
@@ -240,7 +240,7 @@ public class FormWithFileTests
 
         var del = EndpointsMethods
             .FormWithFileAnd4Key<RequestsForTests.Files.Commands.ImportFileWithKey4Command.ImportFileWithKey4Command,
-                FileStreamResponse, int, int, int, int>();
+                FileStreamResponse, int, int, int, int>(new RequestInfo(typeof(RequestsForTests.Files.Commands.ImportFileWithKey4Command.ImportFileWithKey4Command)));
         var result =
             await (ValueTask<IResult>)del.DynamicInvoke(formFile, request, key1, key2, key3, key4, context,
                 CancellationToken.None)!;
@@ -294,7 +294,7 @@ public class FormWithFileTests
 
         var del = EndpointsMethods
             .FormWithFileAnd5Key<RequestsForTests.Files.Commands.ImportFileWithKey5Command.ImportFileWithKey5Command,
-                FileStreamResponse, int, int, int, int, int>();
+                FileStreamResponse, int, int, int, int, int>(new RequestInfo(typeof(RequestsForTests.Files.Commands.ImportFileWithKey5Command.ImportFileWithKey5Command)));
         var result =
             await (ValueTask<IResult>)del.DynamicInvoke(formFile, request, key1, key2, key3, key4, key5, context,
                 CancellationToken.None)!;
@@ -349,7 +349,7 @@ public class FormWithFileTests
 
         var del = EndpointsMethods
             .FormWithFileAnd6Key<RequestsForTests.Files.Commands.ImportFileWithKey6Command.ImportFileWithKey6Command,
-                FileStreamResponse, int, int, int, int, int, int>();
+                FileStreamResponse, int, int, int, int, int, int>(new RequestInfo(typeof(RequestsForTests.Files.Commands.ImportFileWithKey6Command.ImportFileWithKey6Command)));
         var result =
             await (ValueTask<IResult>)del.DynamicInvoke(formFile, request, key1, key2, key3, key4, key5, key6, context,
                 CancellationToken.None)!;

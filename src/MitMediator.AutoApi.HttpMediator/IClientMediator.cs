@@ -9,8 +9,8 @@ public interface IClientMediator
     /// Send request from command.
     /// </summary>
     /// <param name="request">Request object.</param>
-    /// <param name="cancellationToken"><see cref="CancellationToken"/></param>
-    /// <typeparam name="TRequest"><see cref="TRequest"/></typeparam>
+    /// <param name="cancellationToken"><see cref="CancellationToken"/>.</param>
+    /// <typeparam name="TRequest"><see cref="TRequest"/>.</typeparam>
     /// <typeparam name="TResponse">Response type.</typeparam>
     /// <returns>Response from server api.</returns>
     ValueTask<TResponse> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken) where TRequest : IRequest<TResponse>;
@@ -19,8 +19,26 @@ public interface IClientMediator
     /// Send request from command.
     /// </summary>
     /// <param name="request">Request object.</param>
-    /// <param name="cancellationToken"><see cref="CancellationToken"/></param>
-    /// <typeparam name="TRequest"><see cref="TRequest"/></typeparam>
+    /// <param name="cancellationToken"><see cref="CancellationToken"/>.</param>
+    /// <typeparam name="TRequest"><see cref="TRequest"/>.</typeparam>
     /// <returns><see cref="Unit"/></returns>
     ValueTask<Unit> SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken) where TRequest : IRequest;
+
+    /// <summary>
+    /// Get request absolute url.
+    /// </summary>
+    /// <param name="request">Request object.</param>
+    /// <typeparam name="TRequest"><see cref="TRequest"/>.</typeparam>
+    /// <typeparam name="TResponse">Response type.</typeparam>
+    /// <returns>Request url.</returns>
+    string GetRequestAbsoluteUrl<TRequest, TResponse>(TRequest request) where TRequest : IRequest<TResponse>;
+    
+    /// <summary>
+    /// Get request absolute url.
+    /// </summary>
+    /// <param name="request">Request object.</param>
+    /// <typeparam name="TRequest"><see cref="TRequest"/>.</typeparam>
+    /// <returns>Request url.</returns>
+    string GetRequestAbsoluteUrl<TRequest>(TRequest request) where TRequest : IRequest;
+
 }

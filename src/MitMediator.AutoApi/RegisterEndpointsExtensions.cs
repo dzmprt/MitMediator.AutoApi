@@ -13,70 +13,57 @@ public static class RegisterEndpointsExtensions
     /// <param name="requestsAssemblies">Assembly to scan.</param>
     /// <param name="disableAntiforgery">Disable antiforgery token validation.</param>
     /// <returns><see cref="IEndpointRouteBuilder"/></returns>
-    public static IEndpointRouteBuilder UseAutoApi(this IEndpointRouteBuilder app, string? basePath = null, Assembly[]? requestsAssemblies = null, bool disableAntiforgery = false)
+    public static IEndpointRouteBuilder UseAutoApi(this IEndpointRouteBuilder app, string? basePath = null, Assembly[]? requestsAssemblies = null)
     {
         requestsAssemblies ??= AppDomain.CurrentDomain.GetAssemblies();
-        var requests = RequestHelper.GetRequestsTypes(requestsAssemblies);
-        foreach (var request in requests)
+        var requestsInfos = RequestHelper.GetRequestsInfos(requestsAssemblies, basePath);
+        foreach (var request in requestsInfos)
         {
-            if (request.GetCustomAttribute<AutoApiIgnoreAttribute>() != null)
+            if (request.IsIgnored)
             {
                 continue;
             }
-            app.MapRequest(request, basePath, disableAntiforgery);
+            app.MapRequest(request);
             
         }
 
         return app;
     }
     
-    private static void MapRequest(this IEndpointRouteBuilder app, Type requestType, string? basePath, bool disableAntiforgery = false)
+    private static void MapRequest(this IEndpointRouteBuilder app, RequestInfo requestInfo)
     {
-        var attribute = requestType.GetCustomAttribute<AutoApiAttribute>();
-        if (!string.IsNullOrWhiteSpace(basePath) && string.IsNullOrWhiteSpace(attribute?.CustomPattern))
-        {
-            RequestHelper.BasePath = basePath;
-        }
         
-        var pattern = RequestHelper.GetPattern(requestType);
-
-        var responseType = RequestHelper.GetResponseType(requestType);
-
         Delegate requestDelegate;
         RouteHandlerBuilder routeHandlerBuilder;
-        var isKeyRequest = RequestHelper.IsKeyRequest(requestType);
 
-        var httpMethod = attribute?.HttpMethodType is HttpMethodType.Auto or null ? 
-            RequestHelper.GetHttpMethod(requestType) : attribute.HttpMethodType;
-
-        if (httpMethod is HttpMethodType.Get or HttpMethodType.Delete)
+        if (requestInfo.MethodType is MethodType.Get or MethodType.Delete)
         {
-            if (isKeyRequest)
+            if (requestInfo.IsKeyRequest)
             {
-                requestDelegate = WithGetParamsAndKeys(requestType, responseType);
+                requestDelegate = WithGetParamsAndKeys(requestInfo);
             }
             else
             {
                 var methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.WithGetParams),
                         BindingFlags.Static | BindingFlags.NonPublic)!
-                    .MakeGenericMethod(requestType, responseType);
+                    .MakeGenericMethod(requestInfo.RequestType, requestInfo.ResponseType);
 
-                requestDelegate = (Delegate)methodInfo.Invoke(null, Array.Empty<object>())!;
+                requestDelegate = (Delegate)methodInfo.Invoke(null, [requestInfo])!;
             }
         }
         else
         {
-            if (isKeyRequest)
+            if (requestInfo.IsKeyRequest)
             {
-                requestDelegate = GetDelegateEndpointWithBodyAndKeys(requestType, responseType, httpMethod);
+                requestDelegate = GetDelegateEndpointWithBodyAndKeys(requestInfo);
             }
             else
             {
                 string methodName;
-                if (typeof(IFileRequest).IsAssignableFrom(requestType))
+                if (typeof(IFileRequest).IsAssignableFrom(requestInfo.RequestType))
                 {
-                    methodName = httpMethod is HttpMethodType.Post or HttpMethodType.PostCreate
+                    methodName = requestInfo.MethodType is  MethodType.Post or MethodType.PostCreate
                         ? nameof(EndpointsMethods.FormWithFile)
                         : throw new NotImplementedException(
                             "IFileRequest can only be used with HTTP POST requests due to multipart/form-data limitations.");
@@ -88,140 +75,138 @@ public static class RegisterEndpointsExtensions
 
                 var methodInfo = typeof(EndpointsMethods)
                     .GetMethod(methodName,  BindingFlags.Static | BindingFlags.NonPublic)!
-                    .MakeGenericMethod(requestType, responseType);
+                    .MakeGenericMethod(requestInfo.RequestType, requestInfo.ResponseType);
 
-                requestDelegate = (Delegate)methodInfo.Invoke(null, Array.Empty<object>())!;
+                requestDelegate = (Delegate)methodInfo.Invoke(null, [requestInfo])!;
             }
         }
-        switch (httpMethod)
+        switch (requestInfo.MethodType)
         {
-            case HttpMethodType.Get:
-                routeHandlerBuilder = app.MapGet(pattern, requestDelegate)
+            case MethodType.Get:
+                routeHandlerBuilder = app.MapGet(requestInfo.Pattern, requestDelegate)
                         .WithOpenApi(op =>
                         {
-                            var queryParams = OpenApiParameterGenerator.GenerateFromType(requestType);
+                            var queryParams = OpenApiParameterGenerator.GenerateFromType(requestInfo.RequestType);
                             foreach (var openApiParameter in queryParams)
                             {
                                 op.Parameters.Add(openApiParameter);
                             }
                             return op;
                         })
-                    .Produces(StatusCodes.Status200OK, responseType)
+                    .Produces(StatusCodes.Status200OK, requestInfo.ResponseType)
                     ;
                 break;
-            case HttpMethodType.Put:
-                routeHandlerBuilder = app.MapPut(pattern, requestDelegate)
-                    .Produces(StatusCodes.Status200OK, responseType);
+            case MethodType.Put:
+                routeHandlerBuilder = app.MapPut(requestInfo.Pattern, requestDelegate)
+                    .Produces(StatusCodes.Status200OK, requestInfo.ResponseType);
                 break;
-            case HttpMethodType.Post:
-            case HttpMethodType.PostCreate:
-                routeHandlerBuilder = app.MapPost(pattern, requestDelegate)
-                    .Produces(StatusCodes.Status200OK, responseType);
+            case MethodType.Post:
+            case MethodType.PostCreate:
+                routeHandlerBuilder = app.MapPost(requestInfo.Pattern, requestDelegate)
+                    .Produces(StatusCodes.Status200OK, requestInfo.ResponseType);
                 break;
-            case HttpMethodType.Delete:
-                routeHandlerBuilder = app.MapDelete(pattern, requestDelegate)
-                    .Produces(StatusCodes.Status200OK, responseType);
+            case MethodType.Delete:
+                routeHandlerBuilder = app.MapDelete(requestInfo.Pattern, requestDelegate)
+                    .Produces(StatusCodes.Status200OK, requestInfo.ResponseType);
                 break;
             default:
-                throw new NotSupportedException($"Http method {httpMethod} is not supported");
+                throw new NotSupportedException($"Http method {requestInfo.MethodType} is not supported");
         }
 
-        var tag = RequestHelper.GetPluralizedTag(requestType);
-        if (!string.IsNullOrWhiteSpace(tag))
+        var pluralizedTag = requestInfo.PluralizedTag;
+        if (!string.IsNullOrWhiteSpace(pluralizedTag))
         {
-            tag = char.ToUpper(tag[0]) + tag[1..];
-            routeHandlerBuilder = routeHandlerBuilder.WithTags(tag);
+            pluralizedTag = char.ToUpper(pluralizedTag[0]) + pluralizedTag[1..];
+            routeHandlerBuilder = routeHandlerBuilder.WithTags(pluralizedTag);
         }
 
-        routeHandlerBuilder.WithDescription(!string.IsNullOrWhiteSpace(attribute?.Description)
-            ? attribute.Description
-            : $"{RequestHelper.GetHttpMethod(requestType).ToString().ToUpperInvariant()} {RequestHelper.GetPattern(requestType)}");
+        routeHandlerBuilder.WithDescription(!string.IsNullOrWhiteSpace(requestInfo.Description)
+            ? requestInfo.Description
+            : $"{requestInfo.MethodType.ToString().ToUpperInvariant()} {requestInfo.Pattern}");
 
-        routeHandlerBuilder.WithGroupName(!string.IsNullOrWhiteSpace(attribute?.Version) ? attribute.Version : "v1");
+        routeHandlerBuilder.WithGroupName(requestInfo.Version);
 
-        if (disableAntiforgery)
+        if (requestInfo.IsDisableAntiforgery)
         {
             routeHandlerBuilder.DisableAntiforgery();
         }
     }
 
-    private static Delegate WithGetParamsAndKeys(Type requestType, Type responseType)
+    private static Delegate WithGetParamsAndKeys(RequestInfo requestInfo)
     {
         MethodInfo methodInfo = null;
-        var keysCount = RequestHelper.GetKeysCount(requestType);
-        switch (keysCount)
+        switch (requestInfo.KeysCount)
         {
             case 1:
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.WithGetParamsAnd1Key),
                         BindingFlags.Static | BindingFlags.NonPublic)!
-                    .MakeGenericMethod(requestType, responseType, RequestHelper.GetKeyType(requestType));
+                    .MakeGenericMethod(requestInfo.RequestType, requestInfo.ResponseType, RequestInfo.GetKeyType(requestInfo.RequestType));
                 break;
             case 2:
-                var keys2 = RequestHelper.GetKey2Type(requestType);
+                var keys2 = RequestInfo.GetKey2Type(requestInfo.RequestType);
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.WithGetParamsAnd2Keys),
                         BindingFlags.Static | BindingFlags.NonPublic)!
-                    .MakeGenericMethod(requestType, responseType, keys2.Item1, keys2.Item2);
+                    .MakeGenericMethod(requestInfo.RequestType, requestInfo.ResponseType, keys2.Item1, keys2.Item2);
                 break;
             case 3:
-                var keys3 = RequestHelper.GetKey3Type(requestType);
+                var keys3 = RequestInfo.GetKey3Type(requestInfo.RequestType);
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.WithGetParamsAnd3Keys),
                         BindingFlags.Static | BindingFlags.NonPublic)!
-                    .MakeGenericMethod(requestType, responseType, keys3.Item1, keys3.Item2, keys3.Item3);
+                    .MakeGenericMethod(requestInfo.RequestType, requestInfo.ResponseType, keys3.Item1, keys3.Item2, keys3.Item3);
                 break;
             case 4:
-                var keys4 = RequestHelper.GetKey4Type(requestType);
+                var keys4 = RequestInfo.GetKey4Type(requestInfo.RequestType);
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.WithGetParamsAnd4Keys),
                         BindingFlags.Static | BindingFlags.NonPublic)!
-                    .MakeGenericMethod(requestType, responseType, keys4.Item1, keys4.Item2, keys4.Item3, keys4.Item4);
+                    .MakeGenericMethod(requestInfo.RequestType, requestInfo.ResponseType, keys4.Item1, keys4.Item2, keys4.Item3, keys4.Item4);
                 break;
             case 5:
-                var keys5 = RequestHelper.GetKey5Type(requestType);
+                var keys5 = RequestInfo.GetKey5Type(requestInfo.RequestType);
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.WithGetParamsAnd5Keys),
                         BindingFlags.Static | BindingFlags.NonPublic)!
-                    .MakeGenericMethod(requestType, responseType, keys5.Item1, keys5.Item2, keys5.Item3, keys5.Item4,
+                    .MakeGenericMethod(requestInfo.RequestType, requestInfo.ResponseType, keys5.Item1, keys5.Item2, keys5.Item3, keys5.Item4,
                         keys5.Item5);
                 break;
             case 6:
-                var keys6 = RequestHelper.GetKey6Type(requestType);
+                var keys6 = RequestInfo.GetKey6Type(requestInfo.RequestType);
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.WithGetParamsAnd6Keys),
                         BindingFlags.Static | BindingFlags.NonPublic)!
-                    .MakeGenericMethod(requestType, responseType, keys6.Item1, keys6.Item2, keys6.Item3, keys6.Item4,
+                    .MakeGenericMethod(requestInfo.RequestType, requestInfo.ResponseType, keys6.Item1, keys6.Item2, keys6.Item3, keys6.Item4,
                         keys6.Item5, keys6.Item6);
                 break;
             case 7:
-                var keys7 = RequestHelper.GetKey7Type(requestType);
+                var keys7 = RequestInfo.GetKey7Type(requestInfo.RequestType);
                 methodInfo = typeof(EndpointsMethods)
                     .GetMethod(nameof(EndpointsMethods.WithGetParamsAnd7Keys),
                         BindingFlags.Static | BindingFlags.NonPublic)!
-                    .MakeGenericMethod(requestType, responseType, keys7.Item1, keys7.Item2, keys7.Item3, keys7.Item4,
+                    .MakeGenericMethod(requestInfo.RequestType, requestInfo.ResponseType, keys7.Item1, keys7.Item2, keys7.Item3, keys7.Item4,
                         keys7.Item5, keys7.Item6, keys7.Item7);
                 break;
         }
 
-        var requestDelegate = (Delegate)methodInfo.Invoke(null, Array.Empty<object>())!;
+        var requestDelegate = (Delegate)methodInfo.Invoke(null, [requestInfo])!;
         return requestDelegate;
     }
 
-    private static Delegate GetDelegateEndpointWithBodyAndKeys(Type requestType, Type responseType, HttpMethodType httpMethodType)
+    private static Delegate GetDelegateEndpointWithBodyAndKeys(RequestInfo requestInfo)
     {
         MethodInfo methodInfo = null;
-        var keysCount = RequestHelper.GetKeysCount(requestType);
-        switch (keysCount)
+        switch (requestInfo.KeysCount)
         {
             case 1:
-                if (typeof(IFileRequest).IsAssignableFrom(requestType))
+                if (typeof(IFileRequest).IsAssignableFrom(requestInfo.RequestType))
                 {
-                    methodInfo = httpMethodType is HttpMethodType.Post or HttpMethodType.PostCreate
+                    methodInfo = requestInfo.MethodType is MethodType.Post or MethodType.PostCreate
                         ? typeof(EndpointsMethods)
                             .GetMethod(nameof(EndpointsMethods.FormWithFileAnd1Key),
                                 BindingFlags.Static | BindingFlags.NonPublic)!
-                            .MakeGenericMethod(requestType, responseType, RequestHelper.GetKeyType(requestType))
+                            .MakeGenericMethod(requestInfo.RequestType, requestInfo.ResponseType, RequestInfo.GetKeyType(requestInfo.RequestType))
                         : throw new NotImplementedException(
                             "IFileRequest can only be used with HTTP POST requests due to multipart/form-data limitations.");
                 }
@@ -230,19 +215,19 @@ public static class RegisterEndpointsExtensions
                     methodInfo = typeof(EndpointsMethods)
                         .GetMethod(nameof(EndpointsMethods.WithBodyAnd1Key),
                             BindingFlags.Static | BindingFlags.NonPublic)!
-                        .MakeGenericMethod(requestType, responseType, RequestHelper.GetKeyType(requestType));
+                        .MakeGenericMethod(requestInfo.RequestType, requestInfo.ResponseType, RequestInfo.GetKeyType(requestInfo.RequestType));
                 }
                 
                 break;
             case 2:
-                var keys2 = RequestHelper.GetKey2Type(requestType);
-                if (typeof(IFileRequest).IsAssignableFrom(requestType))
+                var keys2 = RequestInfo.GetKey2Type(requestInfo.RequestType);
+                if (typeof(IFileRequest).IsAssignableFrom(requestInfo.RequestType))
                 {
-                    methodInfo = httpMethodType is HttpMethodType.Post or HttpMethodType.PostCreate
+                    methodInfo = requestInfo.MethodType is MethodType.Post or MethodType.PostCreate
                         ? typeof(EndpointsMethods)
                             .GetMethod(nameof(EndpointsMethods.FormWithFileAnd2Key),
                                 BindingFlags.Static | BindingFlags.NonPublic)!
-                            .MakeGenericMethod(requestType, responseType, keys2.Item1, keys2.Item2)
+                            .MakeGenericMethod(requestInfo.RequestType, requestInfo.ResponseType, keys2.Item1, keys2.Item2)
                         : throw new NotImplementedException(
                             "IFileRequest can only be used with HTTP POST requests due to multipart/form-data limitations.");
                 }
@@ -251,18 +236,18 @@ public static class RegisterEndpointsExtensions
                     methodInfo = typeof(EndpointsMethods)
                         .GetMethod(nameof(EndpointsMethods.WithBodyAnd2Keys),
                             BindingFlags.Static | BindingFlags.NonPublic)!
-                        .MakeGenericMethod(requestType, responseType, keys2.Item1, keys2.Item2);
+                        .MakeGenericMethod(requestInfo.RequestType, requestInfo.ResponseType, keys2.Item1, keys2.Item2);
                 }
                 break;
             case 3:
-                var keys3 = RequestHelper.GetKey3Type(requestType);
-                if (typeof(IFileRequest).IsAssignableFrom(requestType))
+                var keys3 = RequestInfo.GetKey3Type(requestInfo.RequestType);
+                if (typeof(IFileRequest).IsAssignableFrom(requestInfo.RequestType))
                 {
-                    methodInfo = httpMethodType is HttpMethodType.Post or HttpMethodType.PostCreate
+                    methodInfo = requestInfo.MethodType is MethodType.Post or MethodType.PostCreate
                         ? typeof(EndpointsMethods)
                             .GetMethod(nameof(EndpointsMethods.FormWithFileAnd3Key),
                                 BindingFlags.Static | BindingFlags.NonPublic)!
-                            .MakeGenericMethod(requestType, responseType, keys3.Item1, keys3.Item2, keys3.Item3)
+                            .MakeGenericMethod(requestInfo.RequestType, requestInfo.ResponseType, keys3.Item1, keys3.Item2, keys3.Item3)
                         : throw new NotImplementedException(
                             "IFileRequest can only be used with HTTP POST requests due to multipart/form-data limitations.");
                 }
@@ -271,19 +256,19 @@ public static class RegisterEndpointsExtensions
                     methodInfo = typeof(EndpointsMethods)
                         .GetMethod(nameof(EndpointsMethods.WithBodyAnd3Keys),
                             BindingFlags.Static | BindingFlags.NonPublic)!
-                        .MakeGenericMethod(requestType, responseType, keys3.Item1, keys3.Item2, keys3.Item3);
+                        .MakeGenericMethod(requestInfo.RequestType, requestInfo.ResponseType, keys3.Item1, keys3.Item2, keys3.Item3);
                 }
 
                 break;
             case 4:
-                var keys4 = RequestHelper.GetKey4Type(requestType);
-                if (typeof(IFileRequest).IsAssignableFrom(requestType))
+                var keys4 = RequestInfo.GetKey4Type(requestInfo.RequestType);
+                if (typeof(IFileRequest).IsAssignableFrom(requestInfo.RequestType))
                 {
-                    methodInfo = httpMethodType is HttpMethodType.Post or HttpMethodType.PostCreate
+                    methodInfo = requestInfo.MethodType is MethodType.Post or MethodType.PostCreate
                         ? typeof(EndpointsMethods)
                             .GetMethod(nameof(EndpointsMethods.FormWithFileAnd4Key),
                                 BindingFlags.Static | BindingFlags.NonPublic)!
-                            .MakeGenericMethod(requestType, responseType, keys4.Item1, keys4.Item2, keys4.Item3,
+                            .MakeGenericMethod(requestInfo.RequestType, requestInfo.ResponseType, keys4.Item1, keys4.Item2, keys4.Item3,
                                 keys4.Item4)
                         : throw new NotImplementedException(
                             "IFileRequest can only be used with HTTP POST requests due to multipart/form-data limitations.");
@@ -293,20 +278,20 @@ public static class RegisterEndpointsExtensions
                     methodInfo = typeof(EndpointsMethods)
                         .GetMethod(nameof(EndpointsMethods.WithBodyAnd4Keys),
                             BindingFlags.Static | BindingFlags.NonPublic)!
-                        .MakeGenericMethod(requestType, responseType, keys4.Item1, keys4.Item2, keys4.Item3,
+                        .MakeGenericMethod(requestInfo.RequestType, requestInfo.ResponseType, keys4.Item1, keys4.Item2, keys4.Item3,
                             keys4.Item4);
                 }
 
                 break;
             case 5:
-                var keys5 = RequestHelper.GetKey5Type(requestType);
-                if (typeof(IFileRequest).IsAssignableFrom(requestType))
+                var keys5 = RequestInfo.GetKey5Type(requestInfo.RequestType);
+                if (typeof(IFileRequest).IsAssignableFrom(requestInfo.RequestType))
                 {
-                    methodInfo = httpMethodType is HttpMethodType.Post or HttpMethodType.PostCreate
+                    methodInfo = requestInfo.MethodType is MethodType.Post or MethodType.PostCreate
                         ? typeof(EndpointsMethods)
                             .GetMethod(nameof(EndpointsMethods.FormWithFileAnd5Key),
                                 BindingFlags.Static | BindingFlags.NonPublic)!
-                            .MakeGenericMethod(requestType, responseType, keys5.Item1, keys5.Item2, keys5.Item3,
+                            .MakeGenericMethod(requestInfo.RequestType, requestInfo.ResponseType, keys5.Item1, keys5.Item2, keys5.Item3,
                                 keys5.Item4, keys5.Item5)
                         : throw new NotImplementedException(
                             "IFileRequest can only be used with HTTP POST requests due to multipart/form-data limitations.");
@@ -316,21 +301,21 @@ public static class RegisterEndpointsExtensions
                     methodInfo = typeof(EndpointsMethods)
                         .GetMethod(nameof(EndpointsMethods.WithBodyAnd5Keys),
                             BindingFlags.Static | BindingFlags.NonPublic)!
-                        .MakeGenericMethod(requestType, responseType, keys5.Item1, keys5.Item2, keys5.Item3,
+                        .MakeGenericMethod(requestInfo.RequestType, requestInfo.ResponseType, keys5.Item1, keys5.Item2, keys5.Item3,
                             keys5.Item4,
                             keys5.Item5);
                 }
 
                 break;
             case 6:
-                var keys6 = RequestHelper.GetKey6Type(requestType);
-                if (typeof(IFileRequest).IsAssignableFrom(requestType))
+                var keys6 = RequestInfo.GetKey6Type(requestInfo.RequestType);
+                if (typeof(IFileRequest).IsAssignableFrom(requestInfo.RequestType))
                 {
-                    methodInfo = httpMethodType is HttpMethodType.Post or HttpMethodType.PostCreate
+                    methodInfo = requestInfo.MethodType is MethodType.Post or MethodType.PostCreate
                         ? typeof(EndpointsMethods)
                             .GetMethod(nameof(EndpointsMethods.FormWithFileAnd6Key),
                                 BindingFlags.Static | BindingFlags.NonPublic)!
-                            .MakeGenericMethod(requestType, responseType, keys6.Item1, keys6.Item2, keys6.Item3,
+                            .MakeGenericMethod(requestInfo.RequestType, requestInfo.ResponseType, keys6.Item1, keys6.Item2, keys6.Item3,
                                 keys6.Item4, keys6.Item5, keys6.Item6)
                         : throw new NotImplementedException(
                             "IFileRequest can only be used with HTTP POST requests due to multipart/form-data limitations.");
@@ -340,21 +325,21 @@ public static class RegisterEndpointsExtensions
                     methodInfo = typeof(EndpointsMethods)
                         .GetMethod(nameof(EndpointsMethods.WithBodyAnd6Keys),
                             BindingFlags.Static | BindingFlags.NonPublic)!
-                        .MakeGenericMethod(requestType, responseType, keys6.Item1, keys6.Item2, keys6.Item3,
+                        .MakeGenericMethod(requestInfo.RequestType, requestInfo.ResponseType, keys6.Item1, keys6.Item2, keys6.Item3,
                             keys6.Item4,
                             keys6.Item5, keys6.Item6);
                 }
 
                 break;
             case 7:
-                var keys7 = RequestHelper.GetKey7Type(requestType);
-                if (typeof(IFileRequest).IsAssignableFrom(requestType))
+                var keys7 = RequestInfo.GetKey7Type(requestInfo.RequestType);
+                if (typeof(IFileRequest).IsAssignableFrom(requestInfo.RequestType))
                 {
-                    methodInfo = httpMethodType is HttpMethodType.Post or HttpMethodType.PostCreate
+                    methodInfo = requestInfo.MethodType is MethodType.Post or MethodType.PostCreate
                         ? typeof(EndpointsMethods)
                             .GetMethod(nameof(EndpointsMethods.FormWithFileAnd7Key),
                                 BindingFlags.Static | BindingFlags.NonPublic)!
-                            .MakeGenericMethod(requestType, responseType, keys7.Item1, keys7.Item2, keys7.Item3,
+                            .MakeGenericMethod(requestInfo.RequestType, requestInfo.ResponseType, keys7.Item1, keys7.Item2, keys7.Item3,
                                 keys7.Item4, keys7.Item5, keys7.Item6, keys7.Item7)
                         : throw new NotImplementedException(
                             "IFileRequest can only be used with HTTP POST requests due to multipart/form-data limitations.");
@@ -364,7 +349,7 @@ public static class RegisterEndpointsExtensions
                     methodInfo = typeof(EndpointsMethods)
                         .GetMethod(nameof(EndpointsMethods.WithBodyAnd7Keys),
                             BindingFlags.Static | BindingFlags.NonPublic)!
-                        .MakeGenericMethod(requestType, responseType, keys7.Item1, keys7.Item2, keys7.Item3,
+                        .MakeGenericMethod(requestInfo.RequestType, requestInfo.ResponseType, keys7.Item1, keys7.Item2, keys7.Item3,
                             keys7.Item4,
                             keys7.Item5, keys7.Item6, keys7.Item7);
                 }
@@ -372,7 +357,7 @@ public static class RegisterEndpointsExtensions
                 break;
         }
 
-        var requestDelegate = (Delegate)methodInfo.Invoke(null, Array.Empty<object>())!;
+        var requestDelegate = (Delegate)methodInfo.Invoke(null, [requestInfo])!;
         return requestDelegate;
     }
 }

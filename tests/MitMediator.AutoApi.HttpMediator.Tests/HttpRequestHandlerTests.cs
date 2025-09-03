@@ -66,7 +66,7 @@ public class PostCreateCommand : IRequest<string>
 
 public class HttpRequestHandlerTests
 {
-    private static HttpRequestHandler<TReq, TResponse> BuildHandler<TReq, TResponse>(HttpMethodType method,
+    private static HttpRequestHandler<TReq, TResponse> BuildHandler<TReq, TResponse>(MethodType method,
         TResponse? responseContent,
         Action<HttpRequestMessage>? capture = null, bool customPattern = false, bool throwError = false,
         string? errorMessage = null)
@@ -157,13 +157,13 @@ public class HttpRequestHandlerTests
         services.AddSingleton(clientFactory.Object);
         services.AddSingleton<IEnumerable<IHttpHeaderInjector<TReq, TResponse>>>(new[] { headerMock.Object });
 
-        return new HttpRequestHandler<TReq, TResponse>(services.BuildServiceProvider(), "https://base");
+        return new HttpRequestHandler<TReq, TResponse>(services.BuildServiceProvider(), "https://base", httpClient);
     }
 
     [Fact]
     public async Task Get_ShouldReturn_Response()
     {
-        var handler = BuildHandler<GetCommand, string>(HttpMethodType.Get, "\"get-value\"");
+        var handler = BuildHandler<GetCommand, string>(MethodType.Get, "\"get-value\"");
         var result = await handler.HandleAsync(new GetCommand(), CancellationToken.None);
         Assert.Equal("get-value", result);
     }
@@ -171,7 +171,7 @@ public class HttpRequestHandlerTests
     [Fact]
     public async Task Post_ShouldReturn_Response()
     {
-        var handler = BuildHandler<PostCommand, string>(HttpMethodType.Post, "\"post-value\"");
+        var handler = BuildHandler<PostCommand, string>(MethodType.Post, "\"post-value\"");
         var result = await handler.HandleAsync(new PostCommand(), CancellationToken.None);
         Assert.Equal("post-value", result);
     }
@@ -179,7 +179,7 @@ public class HttpRequestHandlerTests
     [Fact]
     public async Task Put_ShouldReturn_Response()
     {
-        var handler = BuildHandler<PutCommand, string>(HttpMethodType.Put, "\"put-value\"");
+        var handler = BuildHandler<PutCommand, string>(MethodType.Put, "\"put-value\"");
         var result = await handler.HandleAsync(new PutCommand(), CancellationToken.None);
         Assert.Equal("put-value", result);
     }
@@ -187,7 +187,7 @@ public class HttpRequestHandlerTests
     [Fact]
     public async Task Delete_ShouldReturn_Response()
     {
-        var handler = BuildHandler<DeleteCommand, string>(HttpMethodType.Delete, "\"delete-value\"");
+        var handler = BuildHandler<DeleteCommand, string>(MethodType.Delete, "\"delete-value\"");
         var result = await handler.HandleAsync(new DeleteCommand(), CancellationToken.None);
         Assert.Equal("delete-value", result);
     }
@@ -195,7 +195,7 @@ public class HttpRequestHandlerTests
     [Fact]
     public async Task PostCreate_ShouldReturn_Response()
     {
-        var handler = BuildHandler<PostCreateCommand, string>(HttpMethodType.PostCreate, "\"create-value\"");
+        var handler = BuildHandler<PostCreateCommand, string>(MethodType.PostCreate, "\"create-value\"");
         var result = await handler.HandleAsync(new PostCreateCommand(), CancellationToken.None);
         Assert.Equal("create-value", result);
     }
@@ -204,7 +204,7 @@ public class HttpRequestHandlerTests
     public async Task ShouldThrow_HttpRequestException_WhenStatusCodeIsError()
     {
         var handler = BuildHandler<DeleteCommand, string>(
-            HttpMethodType.Delete,
+            MethodType.Delete,
             null,
             throwError: true);
 
@@ -219,7 +219,7 @@ public class HttpRequestHandlerTests
     public async Task ShouldThrow_HttpRequestException_WhenStatusCodeIsErrorAndBodyHaveErrorMessage()
     {
         var handler = BuildHandler<DeleteCommand, string>(
-            HttpMethodType.Delete,
+            MethodType.Delete,
             null,
             throwError: true,
             errorMessage: "{error:\"error message\"}");
@@ -234,7 +234,7 @@ public class HttpRequestHandlerTests
     [Fact]
     public async Task GetFileQuery_ShouldReturn_Response()
     {
-        var handler = BuildHandler<GetFileQuery, byte[]>(HttpMethodType.PostCreate, "test"u8.ToArray());
+        var handler = BuildHandler<GetFileQuery, byte[]>(MethodType.PostCreate, "test"u8.ToArray());
         var result = await handler.HandleAsync(new GetFileQuery(), CancellationToken.None);
         Assert.Equal("test", Encoding.UTF8.GetString(result));
     }
@@ -243,7 +243,7 @@ public class HttpRequestHandlerTests
     public async Task GetFileWithNameQuery_ShouldReturn_Response()
     {
         var handler = BuildHandler<GetFileWithNameQuery,
-            FileResponse>(HttpMethodType.PostCreate,
+            FileResponse>(MethodType.PostCreate,
             new FileResponse("test"u8.ToArray(), "testfile.txt"));
         var result = await handler.HandleAsync(new GetFileWithNameQuery(), CancellationToken.None);
         Assert.Equal("test", Encoding.UTF8.GetString(result.File));
@@ -256,7 +256,7 @@ public class HttpRequestHandlerTests
        using var memoryStream = new MemoryStream("test"u8.ToArray());
 
         var handler = BuildHandler<GetFileStreamWithNameQuery,
-            FileStreamResponse>(HttpMethodType.PostCreate,
+            FileStreamResponse>(MethodType.PostCreate,
             new FileStreamResponse(memoryStream, "testfile.txt"));
         var result = await handler.HandleAsync(new GetFileStreamWithNameQuery(), CancellationToken.None);
         memoryStream.Seek(0, SeekOrigin.Begin);
@@ -269,7 +269,7 @@ public class HttpRequestHandlerTests
     {
         using var memoryStream = new MemoryStream("test"u8.ToArray());
 
-        var handler = BuildHandler<GetFileStreamQuery, Stream>(HttpMethodType.PostCreate, memoryStream);
+        var handler = BuildHandler<GetFileStreamQuery, Stream>(MethodType.PostCreate, memoryStream);
         var result = await handler.HandleAsync(new GetFileStreamQuery(), CancellationToken.None);
         memoryStream.Seek(0, SeekOrigin.Begin);
         using var reader = new StreamReader(result, Encoding.UTF8, leaveOpen: true);
@@ -285,7 +285,7 @@ public class HttpRequestHandlerTests
             Items = Enumerable.Range(0, 3).Select(x => $"Record #{x}").ToArray()
         };
         response.SetTotalCount(100);
-        var handler = BuildHandler<GetListQuery, GetListResponse>(HttpMethodType.Get, response);
+        var handler = BuildHandler<GetListQuery, GetListResponse>(MethodType.Get, response);
         var result = await handler.HandleAsync(new GetListQuery(), CancellationToken.None);
         Assert.Equal(3, result.Items.Length);
         Assert.Equal(100, result.GetTotalCount());

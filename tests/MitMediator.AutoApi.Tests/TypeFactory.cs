@@ -11,6 +11,8 @@ public static class TypeFactory
             .DefineDynamicAssembly(new AssemblyName("DynamicAssembly"), AssemblyBuilderAccess.Run)
             .DefineDynamicModule("Main")
             .DefineType(name, TypeAttributes.Public);
+            
+        typeBuilder.AddInterfaceImplementation(typeof(IRequest<int>));
 
         return typeBuilder.CreateTypeInfo();
     }

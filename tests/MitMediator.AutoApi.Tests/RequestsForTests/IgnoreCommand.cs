@@ -1,9 +1,11 @@
 using MitMediator.AutoApi.Abstractions;
+using MitMediator.AutoApi.Abstractions.Attributes;
 
 namespace MitMediator.AutoApi.Tests.RequestsForTests;
 
-[AutoApi(customPattern:"TestIgnore", httpMethodType:HttpMethodType.Post)]
-[AutoApiIgnore]
+[Method(MethodType.Post)]
+[Tag("TestIgnore")]
+[IgnoreRequest]
 public class IgnoreCommand : IRequest
 {
 }

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using MitMediator.AutoApi.Abstractions;
 using Moq;
 
 namespace MitMediator.AutoApi.Tests.EndpointsMethodsTests;
@@ -22,7 +23,7 @@ public class WithBodyMethodsTests
         var request = new RequestsForTests.Test.Queries.GetByKey.GetTestQuery();
 
         var del = EndpointsMethods
-            .WithBodyAnd1Key<RequestsForTests.Test.Queries.GetByKey.GetTestQuery, string, int>();
+            .WithBodyAnd1Key<RequestsForTests.Test.Queries.GetByKey.GetTestQuery, string, int>(new RequestInfo(typeof(RequestsForTests.Test.Queries.GetByKey.GetTestQuery)));
         
         var result = (ValueTask<IResult>)del.DynamicInvoke(request, 1, context, CancellationToken.None);
 
@@ -45,7 +46,7 @@ public class WithBodyMethodsTests
         var request = new RequestsForTests.Test.Queries.GetByKey2.GetTestQuery();
 
         var del = EndpointsMethods
-            .WithBodyAnd2Keys<RequestsForTests.Test.Queries.GetByKey2.GetTestQuery, string, int, int>();
+            .WithBodyAnd2Keys<RequestsForTests.Test.Queries.GetByKey2.GetTestQuery, string, int, int>(new RequestInfo(typeof(RequestsForTests.Test.Queries.GetByKey2.GetTestQuery)));
         var result = (ValueTask<IResult>)del.DynamicInvoke(request, 1, 2, context, CancellationToken.None);
 
         Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<string>>(result.Result);
@@ -67,7 +68,7 @@ public class WithBodyMethodsTests
         var request = new RequestsForTests.Test.Queries.GetByKey3.GetTestQuery();
 
         var del = EndpointsMethods
-            .WithBodyAnd3Keys<RequestsForTests.Test.Queries.GetByKey3.GetTestQuery, string, int, int, int>();
+            .WithBodyAnd3Keys<RequestsForTests.Test.Queries.GetByKey3.GetTestQuery, string, int, int, int>(new RequestInfo(typeof(RequestsForTests.Test.Queries.GetByKey3.GetTestQuery)));
         var result = (ValueTask<IResult>)del.DynamicInvoke(request, 1, 2, 3, context, CancellationToken.None);
 
         Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<string>>(result.Result);
@@ -89,7 +90,7 @@ public class WithBodyMethodsTests
         var request = new RequestsForTests.Test.Queries.GetByKey4.GetTestQuery();
 
         var del = EndpointsMethods
-            .WithBodyAnd4Keys<RequestsForTests.Test.Queries.GetByKey4.GetTestQuery, string, int, int, int, int>();
+            .WithBodyAnd4Keys<RequestsForTests.Test.Queries.GetByKey4.GetTestQuery, string, int, int, int, int>(new RequestInfo(typeof(RequestsForTests.Test.Queries.GetByKey4.GetTestQuery)));
         var result = (ValueTask<IResult>)del.DynamicInvoke(request, 1, 2, 3, 4, context, CancellationToken.None);
 
         Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<string>>(result.Result);
@@ -111,7 +112,7 @@ public class WithBodyMethodsTests
         var request = new RequestsForTests.Test.Queries.GetByKey5.GetTestQuery();
 
         var del = EndpointsMethods
-            .WithBodyAnd5Keys<RequestsForTests.Test.Queries.GetByKey5.GetTestQuery, string, int, int, int, int, int>();
+            .WithBodyAnd5Keys<RequestsForTests.Test.Queries.GetByKey5.GetTestQuery, string, int, int, int, int, int>(new RequestInfo(typeof(RequestsForTests.Test.Queries.GetByKey5.GetTestQuery)));
         var result = (ValueTask<IResult>)del.DynamicInvoke(request, 1, 2, 3, 4, 5, context, CancellationToken.None);
 
         Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<string>>(result.Result);
@@ -133,7 +134,7 @@ public class WithBodyMethodsTests
         var request = new RequestsForTests.Test.Queries.GetByKey6.GetTestQuery();
 
         var del = EndpointsMethods
-            .WithBodyAnd6Keys<RequestsForTests.Test.Queries.GetByKey6.GetTestQuery, string, int, int, int, int, int, int>();
+            .WithBodyAnd6Keys<RequestsForTests.Test.Queries.GetByKey6.GetTestQuery, string, int, int, int, int, int, int>(new RequestInfo(typeof(RequestsForTests.Test.Queries.GetByKey6.GetTestQuery)));
         var result = (ValueTask<IResult>)del.DynamicInvoke(request, 1, 2, 3, 4, 5, 6, context, CancellationToken.None);
 
         Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<string>>(result.Result);
@@ -155,7 +156,7 @@ public class WithBodyMethodsTests
         var request = new RequestsForTests.Test.Queries.GetByKey7.GetTestQuery();
 
         var del = EndpointsMethods
-            .WithBodyAnd7Keys<RequestsForTests.Test.Queries.GetByKey7.GetTestQuery, string, int, int, int, int, int, int, int>();
+            .WithBodyAnd7Keys<RequestsForTests.Test.Queries.GetByKey7.GetTestQuery, string, int, int, int, int, int, int, int>(new RequestInfo(typeof(RequestsForTests.Test.Queries.GetByKey7.GetTestQuery)));
         var result = (ValueTask<IResult>)del.DynamicInvoke(request, 1, 2, 3, 4, 5, 6, 7, context, CancellationToken.None);
 
         Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<string>>(result.Result);

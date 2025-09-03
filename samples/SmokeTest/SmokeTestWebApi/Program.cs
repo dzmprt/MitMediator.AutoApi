@@ -1,8 +1,8 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
-using SmokeTestWebApi.UseCase.Test.Queries.GetEmpty;
 using Microsoft.OpenApi.Models;
 using MitMediator.AutoApi;
+using SmokeTest.Application.UseCase.Test.Queries.GetEmpty;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,8 +20,21 @@ builder.Services.AddSwaggerGen(options =>
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .WithExposedHeaders("Content-Disposition")
+            .WithExposedHeaders("X-Total-Count");
+    });
+});
+
 var app = builder.Build();
-app.UseAutoApi("api", [typeof(GetEmptyTestQuery).Assembly], disableAntiforgery: true);
+app.UseCors();
+app.UseAutoApi("api", [typeof(GetEmptyTestQuery).Assembly]);
 
 // Configure the HTTP request pipeline.
 app.UseSwagger(c => { c.RouteTemplate = "swagger/{documentname}/swagger.json"; })
