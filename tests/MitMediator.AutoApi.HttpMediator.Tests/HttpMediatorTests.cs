@@ -126,4 +126,71 @@ public class HttpMediatorTests
         Assert.Equal(Unit.Value, result);
         behaviorMock.Verify(b => b.HandleAsync(It.IsAny<SampleVoidRequest>(), It.IsAny<IClientRequestHandlerNext<SampleVoidRequest, Unit>>(), cancellationToken), Times.Once);
     }
+    
+    [Fact]
+    public void GetRequestAbsoluteUrl_WithGenericResponse_WhenBaseAddressIsNull_ReturnsCorrectUrl()
+    {
+        // Arrange
+        var request = new SampleRequest();
+        var serviceProviderMock = new Mock<IServiceProvider>();
+        var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+        var httpClient = new HttpClient() ;
+        httpClientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(httpClient);
+        serviceProviderMock
+            .Setup(sp => sp.GetService(typeof(IHttpClientFactory)))
+            .Returns(httpClientFactoryMock.Object);
+        var httpMediator = new HttpMediator(serviceProviderMock.Object, "api", "defaultClient");
+
+
+        // Act
+        var result = httpMediator.GetRequestAbsoluteUrl<SampleRequest, string>(request);
+
+        // Assert
+        Assert.Equal("api/v1/samples", result);
+    }
+    
+    [Fact]
+    public void GetRequestAbsoluteUrl_WithGenericResponse_ReturnsCorrectUrl()
+    {
+        // Arrange
+        var request = new SampleRequest();
+        var serviceProviderMock = new Mock<IServiceProvider>();
+        var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+        var httpClient = new HttpClient { BaseAddress = new Uri("https://api.example.com/") };
+        httpClientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(httpClient);
+        serviceProviderMock
+            .Setup(sp => sp.GetService(typeof(IHttpClientFactory)))
+            .Returns(httpClientFactoryMock.Object);
+        var httpMediator = new HttpMediator(serviceProviderMock.Object, "api", "defaultClient");
+
+
+        // Act
+        var result = httpMediator.GetRequestAbsoluteUrl<SampleRequest, string>(request);
+
+        // Assert
+        Assert.Equal("https://api.example.com/api/v1/samples", result);
+    }
+
+    [Fact]
+    public void GetRequestAbsoluteUrl_WithoutGenericResponse_ReturnsCorrectUrl()
+    {
+        // Arrange
+        var request = new SampleVoidRequest();
+        var serviceProviderMock = new Mock<IServiceProvider>();
+        var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+        var httpClient = new HttpClient { BaseAddress = new Uri("https://api.example.com/") };
+        httpClientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(httpClient);
+        serviceProviderMock
+            .Setup(sp => sp.GetService(typeof(IHttpClientFactory)))
+            .Returns(httpClientFactoryMock.Object);
+        var httpMediator = new HttpMediator(serviceProviderMock.Object, "api", "defaultClient");
+
+
+        // Act
+        var result = httpMediator.GetRequestAbsoluteUrl(request);
+
+        // Assert
+        Assert.Equal("https://api.example.com/api/v1/samples/void", result);
+    }
+    
 }

@@ -4,7 +4,7 @@ namespace MitMediator.AutoApi.Abstractions;
 /// Key for url.
 /// </summary>
 /// <typeparam name="TKey">Key.</typeparam>
-public interface IKeyRequest<TKey>
+public interface IKeyRequest<TKey> where TKey : notnull
 {
     /// <summary>
     /// Set key.

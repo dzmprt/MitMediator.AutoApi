@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using MitMediator.AutoApi.Abstractions.Attributes;
 
 namespace MitMediator.AutoApi.Abstractions.Tests;
@@ -29,13 +30,13 @@ public class RequestInfoTests
         Assert.True(info.IsDisableAntiforgery);
         Assert.Equal(1, info.KeysCount);
     }
-    
+
     [Fact]
     public void Constructor_ShouldInitializeAllProperties_WhenSuffix()
     {
         // Arrange
         var requestType = typeof(SuffixRequest);
-        
+
         // Act
         var info = new RequestInfo(requestType, "api");
 
@@ -52,6 +53,17 @@ public class RequestInfoTests
         // Act & Assert
         var ex = Assert.Throws<Exception>(() => new RequestInfo(requestType));
         Assert.Equal("Suffix can't be specified when a custom pattern is provided.", ex.Message);
+    }
+    
+    [Fact]
+    public void Constructor_ShouldThrow_WhenTypeIsNotIRequest()
+    {
+        // Arrange
+        var requestType = typeof(string);
+
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentException>(() => new RequestInfo(requestType));
+        Assert.Equal("requestType must implement IRequest<T> (Parameter 'requestType')", ex.Message);
     }
 
     [Theory]
@@ -89,16 +101,16 @@ public class RequestInfoTests
         var responseType = RequestInfo.GetResponseType(typeof(ReachSampleRequest));
         Assert.Equal(typeof(SampleResponse), responseType);
     }
-    
+
     [Fact]
     public void Constructor_ShouldInitializeAllProperties_WhenRequestDontHaveAttributes()
     {
         // Arrange
         var requestType = typeof(AddBookRequest);
-        
+
         // Act
         var info = new RequestInfo(requestType, "api");
-        
+
         // Assert
         Assert.Equal("api", info.BasePath);
         Assert.Equal("book", info.Tag);
@@ -115,7 +127,8 @@ public class RequestInfoTests
         Assert.False(info.IsDisableAntiforgery);
         Assert.Null(info.KeysCount);
     }
-    
+
+    [ExcludeFromCodeCoverage]
     [Tag("Sample")]
     [Version("v2")]
     [Description("Test description")]
@@ -135,23 +148,28 @@ public class RequestInfoTests
             throw new NotImplementedException();
         }
     }
-    
+
+    [ExcludeFromCodeCoverage]
     public class AddBookRequest : IRequest;
 
+    [ExcludeFromCodeCoverage]
     public class SampleResponse { }
-    
-    
+
+
+    [ExcludeFromCodeCoverage]
     [Suffix("TestSuffix")]
     public class SuffixRequest : IRequest<string>
     {
     }
-    
+
+    [ExcludeFromCodeCoverage]
     [Pattern("api/custom")]
     [Suffix("conflict")]
     public class ConflictingSuffixRequest : IRequest<string>
     {
     }
 
+    [ExcludeFromCodeCoverage]
     [Pattern("api/missing")]
     public class BadPatternRequest : IRequest<string>, IKeyRequest<int>
     {
@@ -166,8 +184,11 @@ public class RequestInfoTests
         }
     }
 
+    [ExcludeFromCodeCoverage]
     public class GetUserRequest : IRequest<string> { }
 
+
+    [ExcludeFromCodeCoverage]
     public class KeyRequest1 : IRequest<string>, IKeyRequest<int>
     {
         public void SetKey(int key)
@@ -180,6 +201,8 @@ public class RequestInfoTests
             throw new NotImplementedException();
         }
     }
+
+    [ExcludeFromCodeCoverage]
     public class KeyRequest2 : IRequest<string>, IKeyRequest<int, int>
     {
         public void SetKey1(int key)
@@ -202,6 +225,8 @@ public class RequestInfoTests
             throw new NotImplementedException();
         }
     }
+
+    [ExcludeFromCodeCoverage]
     public class KeyRequest3 : IRequest<string>, IKeyRequest<int, int, int>
     {
         public void SetKey1(int key)
@@ -234,6 +259,8 @@ public class RequestInfoTests
             throw new NotImplementedException();
         }
     }
+
+    [ExcludeFromCodeCoverage]
     public class KeyRequest4 : IRequest<string>, IKeyRequest<int, int, int, int>
     {
         public void SetKey1(int key)
@@ -276,6 +303,8 @@ public class RequestInfoTests
             throw new NotImplementedException();
         }
     }
+
+    [ExcludeFromCodeCoverage]
     public class KeyRequest5 : IRequest<string>, IKeyRequest<int, int, int, int, int>
     {
         public void SetKey1(int key)
@@ -328,6 +357,8 @@ public class RequestInfoTests
             throw new NotImplementedException();
         }
     }
+
+    [ExcludeFromCodeCoverage]
     public class KeyRequest6 : IRequest<string>, IKeyRequest<int, int, int, int, int, int>
     {
         public void SetKey1(int key)
@@ -390,6 +421,8 @@ public class RequestInfoTests
             throw new NotImplementedException();
         }
     }
+
+    [ExcludeFromCodeCoverage]
     public class KeyRequest7 : IRequest<string>, IKeyRequest<int, int, int, int, int, int, int>
     {
         public void SetKey1(int key)

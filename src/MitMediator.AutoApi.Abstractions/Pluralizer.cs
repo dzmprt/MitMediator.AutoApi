@@ -69,6 +69,7 @@ internal static class Pluralizer
             case "sheep":
             case "fish":
             case "series":
+            case "single":
             case "species":
             case "moose":
             case "aircraft":

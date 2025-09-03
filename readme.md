@@ -5,9 +5,18 @@
 
 # MitMediator.AutoApi
 
-## Minimal API registration and http client for MitMediator
+## Minimal API registration and http client for [MitMediator](https://github.com/dzmprt/MitMediator)
 
-### 🔗 Extension for [MitMediator](https://github.com/dzmprt/MitMediator)
+- [🚀 Installation](#-Installation)
+- [⚙️ How It Works](#-how-it-works)
+- [🧪 Examples](#-examples)
+- [🛠️ Change default mapping](#-change-default-mapping)
+- [📥 Upload and download files](#-upload-and-download-files)
+- [🔢 X-Total-Count Header](#-x-total-count-header)
+- [📍 Location header](#-location-header)
+- [🎯 Auto client HttpMediator](#-auto-client-httpmediator)
+- [📝 Samples](./samples)
+- [📜 License](LICENSE)
 
 ## 🚀 Installation
 
@@ -15,13 +24,13 @@
 
 ```bash
 # for ASP.NET API projects
-dotnet add package MitMediator.AutoApi -v 9.0.0-alfa-6
+dotnet add package MitMediator.AutoApi -v 9.0.0-alfa-7
 
 # for application layer
-dotnet add package MitMediator.AutoApi.Abstractions -v 9.0.0-alfa-6
+dotnet add package MitMediator.AutoApi.Abstractions -v 9.0.0-alfa-7
 
 # for client application (MAUI, Blazor, UWP, etc.)
-dotnet add package MitMediator.AutoApi.HttpMediator -v 9.0.0-alfa-6
+dotnet add package MitMediator.AutoApi.HttpMediator -v 9.0.0-alfa-7
 ```
 
 ### 2. Use extension for IEndpointRouteBuilder
@@ -49,7 +58,9 @@ app.Run();
 2. Dynamically generates and registers endpoints for each match
 3. Maps routes using `MapPost`, `MapGet`, `MapPut`, and `MapDelete`, internally calling `IMediator.SendAsync`
 
-The HTTP method type is determined automatically according to the request name:
+### 🔧 Transformation Logic
+
+HTTP Method is inferred from the leading verb in the type name:
 
 | Request name start with | HTTP Method         |
 |-------------------------|---------------------|
@@ -71,24 +82,36 @@ The HTTP method type is determined automatically according to the request name:
 | `remove`                | DELETE              |
 | `drop`                  | DELETE              |
 
-The first word after the method will be the main tag. Second and other - suffix. For example:
+Resource Name (main tag) is derived from the first noun after the verb, and pluralized:
 
-`GetBookCountQuery` - Get - http method GET, Book - main tag (books in url), Count - suffix (/count in url)
+- Book → /books 
+- Author → /authors
 
-`RemoveBookWithAuthorCommand` - Remove - http method DELETE, Book - main tag (books in url), WithAuthor - suffix (
-/with-author in url)
+Route suffix includes any remaining parts of the type name, converted to lowercase and kebab-case:
 
-Words `command`, `query`, and `request` in the end of request type name will be deleted from url
+- Count → /count
+- WithAuthor → /with-author
 
-If you need to change the generated method, use attributes for the request type
+> Custom suffix will be added as is
+
+Suffixes `Command`, `Query`, and `Request` are automatically removed from the end
+
+Version prefix (v1, v2, etc.) is prepended to the route as part of the base path
+
+> Default version is `v1`
 
 ## 🧪 Examples
 
-### `GET` endpoint
+| Request name                | Endpoint                       |
+|-----------------------------|--------------------------------|
+| GetBookCountQuery           | `GET /v1/books/count`          |
+| CreateBookCommand           | `POST /v1/book`                |
+| RemoveBookWithAuthorCommand | `DELETE /v1/books/with-author` |
+| UpdateAuthorBioRequest      | `PUT /v1/authors/bio`          |
+
+### `GET` endpoint with query params
 
 ```csharp
-// Get - http method
-// Books - main tag
 // Api URL: GET /v1/books?limit=1&offset=1&freeText=clara
 public struct GetBooksQuery : IRequest<Book[]>
 {
@@ -100,13 +123,26 @@ public struct GetBooksQuery : IRequest<Book[]>
 }
 ```
 
+### `POST` endpoint with 201 response
+
+```csharp
+// Api URL: POST /v1/books
+public class CreateBookCommand : IRequest<Book>
+{
+    public string Title { get; init; }
+    
+    public int AuthorId { get; init; }
+
+    public string GenreName { get; init; }
+}
+```
+
+If you need to use rout parameter, implement one of interfaces `IKeyRequest<TKey>`, `IKeyRequest<TKey1,TKey2>`, etc. (max 7 keys)
+
 ### `GET` endpoint with suffix and key in url
 
 ```csharp
-// Use IKeyRequest<> to set and get key from ur.
-// Get - http method
-// Book - main tag (books in url)
-// Api URL: GET /v1/books/123/cover
+// URL: GET /v1/books/123/cover
 public struct GetBookCoverQuery : IRequest<Book>, IKeyRequest<int>
 {
     internal int BookId { get; private set; }
@@ -120,105 +156,32 @@ public struct GetBookCoverQuery : IRequest<Book>, IKeyRequest<int>
 }
 ```
 
-### `POST` endpoint with 201 response
-
-```csharp
-// Create - POST http method, return 201
-// Book - main tag (books in url)
-// Api URL: POST /v1/books
-public class CreateBookCommand : IRequest<Book>
-{
-    public string Title { get; init; }
-    
-    public int AuthorId { get; init; }
-
-    public string GenreName { get; init; }
-}
-```
-
-### `PUT` endpoint with key in url
-
-```csharp
-// Update - PUT http method
-// Book - main tag (books in url)
-// Api URL: PUT /v1/books/123
-public class UpdateBookCommand : IRequest<Book>, IKeyRequest<int>
-{
-    internal int BookId { get; private set; }
-    
-    public string Title { get; init; }
-    
-    public int AuthorId { get; init; }
-
-    public string GenreName { get; init; }
-
-    public void SetKey(int key)
-    {
-        BookId = key;
-    }
-    
-    public int GetKey() => BookId;
-}
-```
-
-### `GET` endpoint text file ("application/octet-stream")
-
-```csharp
-// Get - GET http method
-// Book - main tag (books in url)
-// Text - action suffix
-// Api URL: GET /v1/books/123/text
-public class GetBookTextQuery: IRequest<byte[]>, IKeyRequest<int>
-{
-    internal int BookId { get; private set; }
-    
-    public void SetKey(int key)
-    {
-        BookId = key;
-    }
-    
-    public int GetKey() => BookId;
-}
-```
-
-### `POST` upload and download file with file name 
-
-```csharp
-// Import - POST http method
-// Document - main tag (documents in url)
-// Word - action suffix
-// Api URL: POST /v1/documents/word
-public class ImportDocumentWordCommand : FileRequest, IRequest<FileResponse>
-{
-}
-```
-
-## Change default mapping
+## 🛠️ Change default mapping
 
 Use attributes for the request type to change default mapping
 
 Supported attributes:
 
-| Attribute                      | Template                                       | Result                                                    |
+| Attribute                      | Template                                       | Result for `GetBookRequest`                               |
 |--------------------------------|------------------------------------------------|-----------------------------------------------------------|
-| `TagAttribute`                 | `[Tag("CustomTag")]`                           | `v1/`**custom-tag**                                       |
-| `VersionAttribute`             | `[Version("v2")]`                              | **v2**`/books`                                            |
-| `SuffixAttribute`              | `[Suffix("cover")]`                            | `v1/books/`**cover**                                      |
-| `PatternAttribute`             | `[Pattern("api/v3/books/{key1}/page/{key2}")]` | `api/v3/books/{key1}/page/{key2}`                         |
-| `MethodAttribute`              | `[Method(MethodType.Post)]`                    | **POST** `v1/books`                                       |
+| `TagAttribute`                 | `[Tag("CustomTag")]`                           | `GET v1/custom-tag`                                       |
+| `VersionAttribute`             | `[Version("v2")]`                              | `GET v2/books`                                            |
+| `SuffixAttribute`              | `[Suffix("cover")]`                            | `GET v1/books/cover`                                      |
+| `PatternAttribute`             | `[Pattern("api/v3/books/{key1}/page/{key2}")]` | `GET api/v3/books/{key1}/page/{key2}`                     |
+| `MethodAttribute`              | `[Method(MethodType.Post)]`                    | `POST v1/books`                                           |
 | `DescriptionAttribute`         | `[Description("My custom description")]`       | See description (in xml doc or swagger)                   |
 | `DisableAntiforgeryAttribute`  | `[DisableAntiforgery]`                         | Antiforgery protection has been disabled for the endpoint |
 | `ResponseContentTypeAttribute` | `[ResponseContentType("image/png")]`           | Result will have selected content type                    |
 | `IgnoreRequestAttribute`       | `[IgnoreRequest]`                              | Request will be ignored 🚫                                |
+
+When `[PatternAttribute]` is applied, it overrides the entire route. The base route, version attribute, and tag attribute will be ignored
 
 ### Examples
 
 ### `GET` endpoint with custom tag and custom suffix
 
 ```csharp
-// Get - http method
-// Books - main tag (books in url)
-// Api URL: GET v1/my-books/favorite?limit=1&offset=1&freeText=clara
+// URL: GET /v1/my-books/favorite?limit=1&offset=1&freeText=clara
 [Tag("MyBooks")]
 [Suffix("favorite")]
 public struct GetBooksQuery : IRequest<Book[]>
@@ -234,10 +197,8 @@ public struct GetBooksQuery : IRequest<Book[]>
 ### `GET` endpoint with version, custom tag, URL pattern and specified HTTP method
 
 ```csharp
-// Auto-generated DELETE endpoint.
-// Base tag: "books"
-// API version: "v3"
-// Custom URL pattern overrides base route: DELETE with-keys/{key1}/field/{key2}
+// Custom URL pattern overrides base route
+// URL: DELETE /with-keys/{key1}/field/{key2}
 [Tag("books")]
 [Pattern("with-keys/{key1}/field/{key2}")]
 [Version("v3")]
@@ -264,14 +225,9 @@ public class DoSomeWithBookAndDeleteCommand : IRequest<Book[]>, IKeyRequest<int,
 }
 ```
 
-> Default version is `v1`
-
 ### `GET` endpoint png file ("image/png")
 
 ```csharp
-// Get - GET http method
-// Book - main tag (books in url)
-// Cover - action suffix
 // Api URL: GET /v1/books/123/сover
 [ResponseContentType("image/png")]
 public class GetBookCoverQuery: IRequest<byte[]>, IKeyRequest<int>
@@ -287,17 +243,47 @@ public class GetBookCoverQuery: IRequest<byte[]>, IKeyRequest<int>
 }
 ```
 
-### 📄 Upload and download files
+## 📥 Upload and download files
 
 For requests implementing `IRequest<byte[]>`/`IRequest<Stream>`, or  `IRequest<FileResponse>`/
 `IRequest<FileStreamResponse>`, the response will use `"application/octet-stream"` by default. To specify a download
 file name, use the `FileResponse` or `FileStreamResponse` response.
 Use `[ResponseContentType("image/png")]` attribute for custom content type
 
-When requests implementing `IFileRequest` or inheriting from `FileRequest`, the request will be bound using
-`[FromForm]`, and file parameters will be inferred via `IFromFile` by default
+When a request implements `IFileRequest` or inherits from `FileRequest`, it will be bound using `[FromForm]`.
+File parameters fron `IFileRequest` will be automatically inferred via `IFromFile`. Apply `[DisableAntiforgery]` to skip 
+CSRF protection for file upload endpoints or non-browser clients
 
-### 🔢 `X-Total-Count` Header
+### Examples
+
+### `GET` endpoint text file ("application/octet-stream")
+
+```csharp
+// Api URL: GET /v1/books/123/text
+[DisableAntiforgery]
+public class GetBookTextQuery: IRequest<byte[]>, IKeyRequest<int>
+{
+    internal int BookId { get; private set; }
+    
+    public void SetKey(int key)
+    {
+        BookId = key;
+    }
+    
+    public int GetKey() => BookId;
+}
+```
+
+### `POST` upload and download file with file name
+
+```csharp
+// Api URL: POST /v1/documents/word
+public class ImportDocumentWordCommand : FileRequest, IRequest<FileResponse>
+{
+}
+```
+
+## 🔢 X-Total-Count Header
 
 To include the `X-Total-Count` header in the HTTP response, implement the `ITotalCount` interface in your response type.
 This is useful for paginated endpoints or any scenario where the client needs to know the total number of items
@@ -322,7 +308,7 @@ public class GetBooksResponse : ITotalCount
 When this interface is implemented, MitMediator.AutoApi will automatically include the `X-Total-Count` header in the
 response, reflecting the value returned by `GetTotalCount()`
 
-### 📍 Resource ID in `Location` header for `201 Created` responses
+## 📍 Location header
 
 To insert the correct ID into the Location header of a 201 Created response, implement the `IResourceKey` interface in
 your response type:
@@ -348,7 +334,7 @@ public class CreatedBookResponse : IResourceKey
 If you do not implement the `IResourceKey` interface, the Location header will default to the format `/books/{key}`,
 where `{key}` is a placeholder string
 
-## 🎯 Use auto client: HttpMediator
+# 🎯 Auto client HttpMediator
 
 You can reuse your `IRequest` types to seamlessly send HTTP requests to a server-side API using `HttpMediator`
 
@@ -391,19 +377,4 @@ public class AuthorizationHeaderInjection<TRequest, TResponse> : IHttpHeaderInje
 
 ## 📁 See [samples](./samples)
 
-## 💡 Features
-
-* Declarative routing via request class name or attributes
-* Automatic tag and version grouping
-* Built-in handling of `Unit` results (no payload responses)
-* Custom route patterns with up to 7 composite keys
-* Key binding via IKeyRequest<TKey1, TKey2, ...> (pattern `{key1}/{key2}/.../{key7}`)
-* Supports custom patterns (`custom-route/my-route`, `with-keys/{key1}/{key2}/field/{key3}`)
-* Auto client `HttpMediator` for clients applications
-* File response (`IRequest<byte[]>` or `IRequest<FileResponse>`)
-* Upload file stream: `public class UploadCoverCommand: FileRequest {}`
-* `X-Total-Count` header (implement `ITotalCount` in response type)
-
-## 📜 License
-
-MIT
+## 📜 MIT [License](LICENSE)
