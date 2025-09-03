@@ -157,7 +157,7 @@ public class HttpRequestHandlerTests
         services.AddSingleton(clientFactory.Object);
         services.AddSingleton<IEnumerable<IHttpHeaderInjector<TReq, TResponse>>>(new[] { headerMock.Object });
 
-        return new HttpRequestHandler<TReq, TResponse>(services.BuildServiceProvider(), "https://base");
+        return new HttpRequestHandler<TReq, TResponse>(services.BuildServiceProvider(), "https://base", httpClient);
     }
 
     [Fact]

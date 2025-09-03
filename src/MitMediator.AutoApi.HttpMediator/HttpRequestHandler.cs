@@ -15,29 +15,27 @@ internal class HttpRequestHandler<TRequest, TResponse> : IClientRequestHandler<T
     
     private readonly string? _baseUrl;
 
-    private readonly string? _httpClientName;
+    private readonly HttpClient _httpClient;
 
-    public HttpRequestHandler(IServiceProvider serviceProvider, string? baseUrl = null, string? httpClientName = null)
+    public HttpRequestHandler(IServiceProvider serviceProvider, string? baseUrl, HttpClient httpClient)
     {
         _serviceProvider = serviceProvider;
         _baseUrl = baseUrl;
-        _httpClientName = httpClientName;
+        _httpClient = httpClient;
     }
     
     public async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
     {
-        var requestUrl = HttpRequestsHelper.GetAbsoluteUrl(request, _baseUrl);
+        var requestUrl = HttpRequestsHelper.GetUrl(request, _baseUrl);
         var requestInfo = new RequestInfo(typeof(TRequest));
         var httpHeaderInjectors = _serviceProvider
             .GetServices<IHttpHeaderInjector<TRequest, TResponse>>();
-        var clientFactory = _serviceProvider.GetRequiredService<IHttpClientFactory>();
-        var httpClient = _httpClientName is null ? clientFactory.CreateClient() :  clientFactory.CreateClient(_httpClientName);
         foreach (var httpHeaderInjector in httpHeaderInjectors)
         {
             var header = await httpHeaderInjector.GetHeadersAsync(cancellationToken);
             if (header.HasValue)
             {
-                httpClient.DefaultRequestHeaders.Add(header.Value.Item1, header.Value.Item2);   
+                _httpClient.DefaultRequestHeaders.Add(header.Value.Item1, header.Value.Item2);   
             }
         }
 
@@ -52,11 +50,11 @@ internal class HttpRequestHandler<TRequest, TResponse> : IClientRequestHandler<T
                     var form = new MultipartFormDataContent();
                     form.Add(streamContent, "formFile", fileRequest.FileName);
 
-                    response = await httpClient.PostAsync(requestUrl, form, cancellationToken);
+                    response = await _httpClient.PostAsync(requestUrl, form, cancellationToken);
                 }
                 else
                 {
-                    response = await httpClient.PostAsync(requestUrl, new StringContent(
+                    response = await _httpClient.PostAsync(requestUrl, new StringContent(
                         JsonSerializer.Serialize(request),
                         Encoding.UTF8,
                         "application/json"), cancellationToken);
@@ -64,17 +62,17 @@ internal class HttpRequestHandler<TRequest, TResponse> : IClientRequestHandler<T
         
                 return (await ConvertResponseAsync<TResponse>(response, cancellationToken)).Item1;
             case MethodType.Put:
-                var putResponse = await httpClient.PutAsync(requestUrl, new StringContent(
+                var putResponse = await _httpClient.PutAsync(requestUrl, new StringContent(
                     JsonSerializer.Serialize(request),
                     Encoding.UTF8,
                     "application/json"), cancellationToken);
                 return (await ConvertResponseAsync<TResponse>(putResponse, cancellationToken)).Item1;
             case MethodType.Delete:
-                var deleteResponse = await httpClient.DeleteAsync(requestUrl, cancellationToken);
+                var deleteResponse = await _httpClient.DeleteAsync(requestUrl, cancellationToken);
                 return (await ConvertResponseAsync<TResponse>(deleteResponse, cancellationToken)).Item1;
             case MethodType.Get:
             default:
-                var getResponse = await httpClient.GetAsync(requestUrl, cancellationToken);
+                var getResponse = await _httpClient.GetAsync(requestUrl, cancellationToken);
                 return (await ConvertResponseAsync<TResponse>(getResponse, cancellationToken)).Item1;
         }
     }

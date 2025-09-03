@@ -116,11 +116,17 @@ else
 
         _testsResults.Add(await SendRequestAsync<CreateTestCommand, CreateTestResponse>(new CreateTestCommand { TestData = "test" }));
 
-        var createTestByKeyCommand = new CreateTestByKeyCommand();
+        var createTestByKeyCommand = new CreateTestByKeyCommand()
+        {
+            TestData = "test"
+        };
         createTestByKeyCommand.SetKey(123);
         _testsResults.Add(await SendRequestAsync<CreateTestByKeyCommand, CreateTestByKeyResponse>(createTestByKeyCommand));
 
-        var createTestBy2KeysCommand = new CreateTestBy2KeysCommand();
+        var createTestBy2KeysCommand = new CreateTestBy2KeysCommand()
+        {
+            TestData = "test"
+        };
         createTestBy2KeysCommand.SetKey1(123);
         createTestBy2KeysCommand.SetKey2(123);
         _testsResults.Add(await SendRequestAsync<CreateTestBy2KeysCommand, CreateTestBy2KeysResponse>(createTestBy2KeysCommand));
@@ -140,11 +146,17 @@ else
         _testsResults.Add(await SendRequestAsync<PostTestCommand, string>(new PostTestCommand { TestData = "test" }));
 
 
-        var postTestByKeyCommand = new PostTestByKeyCommand();
+        var postTestByKeyCommand = new PostTestByKeyCommand()
+        {
+            TestData = "test"
+        };
         postTestByKeyCommand.SetKey(123);
         _testsResults.Add(await SendRequestAsync<PostTestByKeyCommand, string>(postTestByKeyCommand));
 
-        var postTestBy2KeysCommand = new PostTestBy2KeysCommand();
+        var postTestBy2KeysCommand = new PostTestBy2KeysCommand()
+        {
+            TestData = "test"
+        };
         postTestBy2KeysCommand.SetKey1(123);
         postTestBy2KeysCommand.SetKey2(123);
         _testsResults.Add(await SendRequestAsync<PostTestBy2KeysCommand, string>(postTestBy2KeysCommand));
@@ -164,11 +176,17 @@ else
 
         _testsResults.Add(await SendRequestAsync<UpdateTestCommand, string>(new UpdateTestCommand { TestData = "test" }));
         
-        var updateTestByKeyCommand = new UpdateTestByKeyCommand();
+        var updateTestByKeyCommand = new UpdateTestByKeyCommand()
+        {
+            TestData = "test"
+        };
         updateTestByKeyCommand.SetKey(123);
         _testsResults.Add(await SendRequestAsync<UpdateTestByKeyCommand, string>(updateTestByKeyCommand));
         
-        var updateTestBy2KeysCommand = new UpdateTestBy2KeysCommand();
+        var updateTestBy2KeysCommand = new UpdateTestBy2KeysCommand()
+        {
+            TestData = "test"
+        };
         updateTestBy2KeysCommand.SetKey1(123);
         updateTestBy2KeysCommand.SetKey2(123);
         _testsResults.Add(await SendRequestAsync<UpdateTestBy2KeysCommand, string>(updateTestBy2KeysCommand));

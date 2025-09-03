@@ -9,7 +9,7 @@ public class HttpMediator : IClientMediator
     
     private readonly string? _baseUrl;
 
-    private readonly string? _httpClientName;
+    private readonly HttpClient _httpClient;
 
     public HttpMediator(
         IServiceProvider serviceProvider, 
@@ -18,7 +18,8 @@ public class HttpMediator : IClientMediator
     {
         _serviceProvider = serviceProvider;
         _baseUrl = baseUrl;
-        _httpClientName = httpClientName;
+        var clientFactory = _serviceProvider.GetRequiredService<IHttpClientFactory>();
+        _httpClient = httpClientName is null ? clientFactory.CreateClient() :  clientFactory.CreateClient(httpClientName);
     }
     
     public ValueTask<TResponse> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken) where TRequest : IRequest<TResponse>
@@ -26,7 +27,7 @@ public class HttpMediator : IClientMediator
         var behaviors = _serviceProvider
             .GetServices<IClientPipelineBehavior<TRequest, TResponse>>();
         
-        var handler = new HttpRequestHandler<TRequest, TResponse>(_serviceProvider, _baseUrl, _httpClientName);
+        var handler = new HttpRequestHandler<TRequest, TResponse>(_serviceProvider, _baseUrl, _httpClient);
         
         using var behaviorEnumerator = behaviors.GetEnumerator();
         var pipeline = new ClientRequestPipeline<TRequest, TResponse>(behaviorEnumerator, handler);
@@ -40,11 +41,11 @@ public class HttpMediator : IClientMediator
 
     public string GetRequestAbsoluteUrl<TRequest, TResponse>(TRequest request) where TRequest : IRequest<TResponse>
     {
-        return HttpRequestsHelper.GetAbsoluteUrl(request, _baseUrl);
+        return $"{_httpClient.BaseAddress}{HttpRequestsHelper.GetUrl(request, _baseUrl)}";
     }
 
     public string GetRequestAbsoluteUrl<TRequest>(TRequest request) where TRequest : IRequest
     {
-        return HttpRequestsHelper.GetAbsoluteUrl(request, _baseUrl);
+        return $"{_httpClient.BaseAddress}{HttpRequestsHelper.GetUrl(request, _baseUrl)}";
     }
 }

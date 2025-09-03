@@ -5,7 +5,7 @@ namespace MitMediator.AutoApi.HttpMediator.Extensions;
 
 internal static class HttpRequestsHelper
 {
-    public static string GetAbsoluteUrl<TRequest>(TRequest request, string? baseUrl = null)
+    public static string GetUrl<TRequest>(TRequest request, string? baseUrl = null)
     {
         var requestType = typeof(TRequest);
         var requestInfo = new RequestInfo(requestType);
