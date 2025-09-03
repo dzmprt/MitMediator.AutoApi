@@ -7,7 +7,7 @@
         <OutputType>Library</OutputType>
         <IsPackable>true</IsPackable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Version>9.0.0-alfa-5</Version>
+        <Version>9.0.0-alfa-6</Version>
         <Title>MitMediator.AutoApi</Title>
         <Authors>Dmitry Protko</Authors>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -18,8 +18,8 @@
         <PackageIcon>logo.png</PackageIcon>
         <RepositoryUrl>https://github.com/dzmprt/MitMediator.AutoApi</RepositoryUrl>
         <PackageTags>mediator;request;response;queries;commands;mitmediator;minimalapi;autoapi;cqrs;</PackageTags>
-        <PackageReleaseNotes>9.0.0-alfa-5
-Changed attributes for custom endpoints</PackageReleaseNotes>
+        <PackageReleaseNotes>9.0.0-alfa-6
+Fix IClientPipelineBehavior</PackageReleaseNotes>
         <TrimMode>full</TrimMode>
         <LangVersion>13</LangVersion>
     </PropertyGroup>

@@ -12,12 +12,12 @@
         <PackageIcon>logo.png</PackageIcon>
         <RepositoryUrl>https://github.com/dzmprt/MitMediator.AutoApi</RepositoryUrl>
         <PackageTags>mediator;request;response;queries;commands;mitmediator;minimalapi;autoapi;cqrs;httpmediator;httpclient</PackageTags>
-        <PackageReleaseNotes>9.0.0-alfa-5
-Changed attributes for custom endpoints</PackageReleaseNotes>
+        <PackageReleaseNotes>9.0.0-alfa-6
+Fix IClientPipelineBehavior</PackageReleaseNotes>
         <TrimMode>full</TrimMode>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
-        <Version>9.0.0-alfa-5</Version>
+        <Version>9.0.0-alfa-6</Version>
         <LangVersion>13</LangVersion>
     </PropertyGroup>
 
