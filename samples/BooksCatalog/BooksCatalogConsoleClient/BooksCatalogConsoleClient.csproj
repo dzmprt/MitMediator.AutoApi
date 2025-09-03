@@ -13,7 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="MitMediator.AutoApi.HttpMediator" Version="9.0.0-alfa-5" />
+      <PackageReference Include="MitMediator.AutoApi.HttpMediator" Version="9.0.0-alfa-6" />
     </ItemGroup>
 
     <PropertyGroup>
