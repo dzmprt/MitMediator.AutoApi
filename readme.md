@@ -211,6 +211,8 @@ Supported attributes:
 | `ResponseContentTypeAttribute` | `[ResponseContentType("image/png")]`           | Result will have selected content type                    |
 | `IgnoreRequestAttribute`       | `[IgnoreRequest]`                              | Request will be ignored 🚫                                |
 
+### Examples
+
 ### `GET` endpoint with custom tag and custom suffix
 
 ```csharp
@@ -270,7 +272,7 @@ public class DoSomeWithBookAndDeleteCommand : IRequest<Book[]>, IKeyRequest<int,
 // Get - GET http method
 // Book - main tag (books in url)
 // Cover - action suffix
-// Api URL: GET /v1/books/сover/123
+// Api URL: GET /v1/books/123/сover
 [ResponseContentType("image/png")]
 public class GetBookCoverQuery: IRequest<byte[]>, IKeyRequest<int>
 {
