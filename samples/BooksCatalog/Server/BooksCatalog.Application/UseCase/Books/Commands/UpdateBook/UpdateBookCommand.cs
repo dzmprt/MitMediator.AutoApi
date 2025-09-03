@@ -7,7 +7,7 @@ namespace BooksCatalog.Application.UseCase.Books.Commands.UpdateBook;
 /// <summary>
 /// Update book command.
 /// </summary>
-public class UpdateBookCommand : IRequest<Book>, IKeyRequest<int>
+public struct UpdateBookCommand : IRequest<Book>, IKeyRequest<int>
 {
     /// <summary>
     /// Book id.

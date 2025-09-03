@@ -1,4 +1,6 @@
-﻿namespace BooksCatalog.Domain;
+﻿using BooksCatalog.Domain.Abstractions;
+
+namespace BooksCatalog.Domain;
 
 /// <summary>
 /// Book.
@@ -29,6 +31,11 @@ public class Book
     /// Genre.
     /// </summary>
     public Genre Genre { get; private set; }
+    
+    /// <summary>
+    /// Book cover.
+    /// </summary>
+    public byte[]? Cover { get; private set; }
 
     private Book(){}
     
@@ -81,5 +88,20 @@ public class Book
             throw new ArgumentException($"{nameof(title)} cannot exceed {MaxTitleLength} characters.", nameof(title));
         }
         Title = title.Trim().ToUpperInvariant();
+    }
+
+    public void SetCover(IImagesService imagesService, byte[] coverPng)
+    {
+        if (coverPng is null)
+        {
+            throw new ArgumentException($"{nameof(coverPng)} is empty", nameof(coverPng));
+        }
+
+        if (!imagesService.IsPngImage(coverPng))
+        {
+            throw new ArgumentException("Only PNG images are allowed", nameof(coverPng));
+        }
+
+        Cover = coverPng;
     }
 }

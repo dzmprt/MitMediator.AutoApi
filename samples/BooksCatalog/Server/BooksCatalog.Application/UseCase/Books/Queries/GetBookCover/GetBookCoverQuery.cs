@@ -1,13 +1,14 @@
-using BooksCatalog.Domain;
 using MitMediator;
 using MitMediator.AutoApi.Abstractions;
+using MitMediator.AutoApi.Abstractions.Attributes;
 
-namespace BooksCatalog.Application.UseCase.Books.Queries.GetBook;
+namespace BooksCatalog.Application.UseCase.Books.Queries.GetBookCover;
 
 /// <summary>
-/// Get book query.
+/// Get book cover.
 /// </summary>
-public struct GetBookQuery : IRequest<Book>, IKeyRequest<int>
+[ResponseContentType("image/png")]
+public struct GetBookCoverQuery : IRequest<FileStreamResponse>, IKeyRequest<int>
 {
     /// <summary>
     /// Book id.

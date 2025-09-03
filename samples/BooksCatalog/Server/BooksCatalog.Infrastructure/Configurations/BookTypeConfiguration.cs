@@ -15,6 +15,8 @@ public class BookTypeConfiguration : IEntityTypeConfiguration<Book>
     {
         builder.HasKey(e => e.BookId);
         builder.Property(e => e.Title).IsRequired().HasMaxLength(Book.MaxTitleLength);
+        builder.Property(e => e.Cover).HasMaxLength(80_000);
+
         builder.Navigation(e => e.Author).IsRequired().AutoInclude();
         builder.Navigation(e => e.Genre).IsRequired().AutoInclude();
     }

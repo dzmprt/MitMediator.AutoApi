@@ -6,7 +6,7 @@ namespace BooksCatalog.Application.UseCase.Authors.Commands.DeleteAuthor;
 /// <summary>
 /// Delete author command.
 /// </summary>
-public class DeleteAuthorCommand : IRequest, IKeyRequest<int>
+public struct DeleteAuthorCommand : IRequest, IKeyRequest<int>
 {
     /// <summary>
     /// Author id.
