@@ -42,6 +42,6 @@ Fix IClientPipelineBehavior</PackageReleaseNotes>
     
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
-      <PackageReference Include="MitMediator.AutoApi.Abstractions" Version="9.0.0-alfa-5" />
+      <PackageReference Include="MitMediator.AutoApi.Abstractions" Version="9.0.0-alfa-6" />
     </ItemGroup>
 </Project>
