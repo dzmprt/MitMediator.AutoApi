@@ -16,7 +16,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="MitMediator.AutoApi" Version="9.0.0-alfa-5" />
+        <PackageReference Include="MitMediator.AutoApi" Version="9.0.0-alfa-6" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.3" />
     </ItemGroup>
 

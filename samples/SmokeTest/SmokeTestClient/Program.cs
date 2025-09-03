@@ -37,12 +37,14 @@ using SmokeTest.Application.UseCase.Test.Queries.GetEmpty;
 using SmokeTest.Application.UseCase.Test.Queries.GetList;
 using SmokeTest.Application.UseCase.Test.Queries.GetWithQueryParams;
 using SmokeTest.Application.UseCase.Test.Queries.GetWithSuffix;
+using SmokeTestClient;
 using MemoryStream = System.IO.MemoryStream;
 
 var baseApiUrl = "api";
 var httpClientName = "baseHttpClient";
 var serviceCollection = new ServiceCollection();
 serviceCollection.AddHttpClient(httpClientName, client => { client.BaseAddress = new Uri("http://localhost:5035/"); });
+serviceCollection.AddScoped(typeof(IHttpHeaderInjector<,>), typeof(AuthorizationHeaderInjection<,>));
 serviceCollection.AddScoped<IClientMediator, HttpMediator>(c => new HttpMediator(c, baseApiUrl, httpClientName));
 
 var provider = serviceCollection.BuildServiceProvider();
