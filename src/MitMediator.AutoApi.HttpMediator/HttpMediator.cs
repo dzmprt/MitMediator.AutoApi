@@ -51,7 +51,7 @@ public class HttpMediator : IClientMediator
 
     public string GetRequestAbsoluteUrl<TRequest>(TRequest request) where TRequest : IRequest
     {
-        return $"{CreateHttpClient().BaseAddress}{HttpRequestsHelper.GetUrl(request, _baseUrl)}";
+        return GetRequestAbsoluteUrl<TRequest, Unit>(request);
     }
 
     private HttpClient CreateHttpClient()

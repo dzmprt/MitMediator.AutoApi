@@ -1,9 +1,7 @@
 namespace SmokeTest.Application.UseCase.Test.Queries.GetWithQueryParams;
 
-public class GetTestWithQueryInnerObject
+public class GetTestWithQueryInnerInnerObject
 {
     public string Name { get; set; }
-    
-    public GetTestWithQueryInnerInnerObject DeepInner { get; set; }
 
 }

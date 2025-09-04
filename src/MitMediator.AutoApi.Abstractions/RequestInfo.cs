@@ -36,9 +36,9 @@ public class RequestInfo
     /// </summary>
     public string Pattern { get; }
 
-    // /// <summary>
-    // /// Pattern suffix. Example ACTION in "api/tag/action"
-    // /// </summary>
+    /// <summary>
+    /// Pattern suffix. Example ACTION in "api/tag/action"
+    /// </summary>
     public string? Suffix { get; set; }
 
     /// <summary>
@@ -69,6 +69,17 @@ public class RequestInfo
     // /// <exception cref="Exception">Suffix can't be specified when a custom pattern is provided.</exception>
     public RequestInfo(Type requestType, string? basePath = null)
     {
+        var implementsIRequest = requestType
+            .GetInterfaces()
+            .Any(i => i.IsGenericType && 
+                      (i.GetGenericTypeDefinition() == typeof(IRequest<>))
+                      );
+
+        if (!implementsIRequest)
+        {
+            throw new ArgumentException($"{nameof(requestType)} must implement IRequest<T>", nameof(requestType));
+        }
+        
         BasePath = basePath;
         RequestType = requestType;
         Tag = GetTag(requestType);

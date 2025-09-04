@@ -61,6 +61,8 @@ public class PluralizerTests
     [InlineData("thief", "thieves")]
     [InlineData("wolf", "wolves")]
     [InlineData("scarf", "scarves")]
+    [InlineData("hero", "heroes")]
+    [InlineData("potato", "potatoes")]
     [InlineData("Life", "Lives")]
     [InlineData("curriculum", "curricula")]
     [InlineData("basis", "bases")]
@@ -75,6 +77,7 @@ public class PluralizerTests
     [InlineData("volcano", "volcanoes")]
     [InlineData("embargo", "embargoes")]
     [InlineData("deer", "deer")]
+    [InlineData("aircraft", "aircraft")]
     public void Pluralize_IrregularCases_ReturnsCorrectPlural(string input, string expected)
     {
         // Act & Assert

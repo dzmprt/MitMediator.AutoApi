@@ -8,27 +8,22 @@ internal static class HttpRequestsHelper
     public static string GetUrl<TRequest>(TRequest request, string? baseUrl = null)
     {
         var requestType = typeof(TRequest);
-        var requestInfo = new RequestInfo(requestType);
+        var requestInfo = new RequestInfo(requestType, baseUrl);
         var url = requestInfo.Pattern;
         var patternKeys = ExtractKeys(request);
         if (patternKeys.Any())
         {
             if (patternKeys.Length == 1)
             {
-                url = url.Replace("{key}", patternKeys[0].ToString());
+                url = url.Replace("{key}", patternKeys[0]?.ToString() ?? "null");
             }
             else
             {
-                for (var i = 1; i < patternKeys.Length + 1; i++)
+                for (var i = 0; i < patternKeys.Length; i++)
                 {
-                    url = url.Replace($"{{key{i}}}", patternKeys[0].ToString());
+                    url = url.Replace($"{{key{i+1}}}", patternKeys[i]?.ToString() ?? "null");
                 }
             }
-        }
-        
-        if (!string.IsNullOrWhiteSpace(baseUrl))
-        {
-            url = string.Concat(baseUrl, "/" ,url);
         }
 
         if (requestInfo.MethodType == MethodType.Delete || requestInfo.MethodType == MethodType.Get)
