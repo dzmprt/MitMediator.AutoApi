@@ -5,7 +5,7 @@
 
 # MitMediator.AutoApi
 
-## Minimal API registration and http client for [MitMediator](https://github.com/dzmprt/MitMediator)
+## An extension for [MitMediator](https://github.com/dzmprt/MitMediator) that automatically registers API endpoints and generates strongly-typed HTTP clients from mediator request types, with customizable behavior driven by attributes
 
 - [🚀 Installation](#-Installation)
 - [⚙️ How It Works](#-how-it-works)
