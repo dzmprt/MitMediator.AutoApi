@@ -375,6 +375,6 @@ public class AuthorizationHeaderInjection<TRequest, TResponse> : IHttpHeaderInje
 }
 ```
 
-## 📁 See [samples](./samples)
+## See [samples](./samples)
 
-## 📜 MIT [License](LICENSE)
+## MIT [License](LICENSE)
