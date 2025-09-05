@@ -8,13 +8,13 @@
 ## An extension for [MitMediator](https://github.com/dzmprt/MitMediator) that automatically registers API endpoints and generates strongly-typed HTTP clients from mediator request types, with customizable behavior driven by attributes
 
 - [🚀 Installation](#-Installation)
-- [How It Works](#-how-it-works)
-- [Examples](#-examples)
-- [Change default mapping](#-change-default-mapping)
-- [Upload and download files](#-upload-and-download-files)
-- [X-Total-Count Header](#-x-total-count-header)
-- [Location header](#-location-header)
-- [Auto client HttpMediator](#-auto-client-httpmediator)
+- [How It Works](#how-it-works)
+- [Examples](#examples)
+- [Change default mapping](#change-default-mapping)
+- [Upload and download files](#upload-and-download-files)
+- [X-Total-Count Header](#x-total-count-header)
+- [Location header](#location-header)
+- [Auto client HttpMediator](#auto-client-httpmediator)
 - [Samples](./samples)
 - [License](LICENSE)
 
