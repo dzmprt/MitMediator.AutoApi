@@ -8,15 +8,15 @@
 ## An extension for [MitMediator](https://github.com/dzmprt/MitMediator) that automatically registers API endpoints and generates strongly-typed HTTP clients from mediator request types, with customizable behavior driven by attributes
 
 - [🚀 Installation](#-Installation)
-- [⚙️ How It Works](#-how-it-works)
-- [🧪 Examples](#-examples)
-- [🛠️ Change default mapping](#-change-default-mapping)
-- [📥 Upload and download files](#-upload-and-download-files)
-- [🔢 X-Total-Count Header](#-x-total-count-header)
-- [📍 Location header](#-location-header)
-- [🎯 Auto client HttpMediator](#-auto-client-httpmediator)
-- [📝 Samples](./samples)
-- [📜 License](LICENSE)
+- [How It Works](#-how-it-works)
+- [Examples](#-examples)
+- [Change default mapping](#-change-default-mapping)
+- [Upload and download files](#-upload-and-download-files)
+- [X-Total-Count Header](#-x-total-count-header)
+- [Location header](#-location-header)
+- [Auto client HttpMediator](#-auto-client-httpmediator)
+- [Samples](./samples)
+- [License](LICENSE)
 
 ## 🚀 Installation
 
@@ -52,13 +52,13 @@ app.Run();
 
 ### 3. Done! All public requests have endpoints
 
-## ⚙️ How It Works
+## How It Works
 
 1. Scans all loaded assemblies for `IRequest` types
 2. Dynamically generates and registers endpoints for each match
 3. Maps routes using `MapPost`, `MapGet`, `MapPut`, and `MapDelete`, internally calling `IMediator.SendAsync`
 
-### 🔧 Transformation Logic
+### Transformation Logic
 
 HTTP Method is inferred from the leading verb in the type name:
 
@@ -100,7 +100,7 @@ Version prefix (v1, v2, etc.) is prepended to the route as part of the base path
 
 > Default version is `v1`
 
-## 🧪 Examples
+## Examples
 
 | Request name                | Endpoint                       |
 |-----------------------------|--------------------------------|
@@ -156,7 +156,7 @@ public struct GetBookCoverQuery : IRequest<Book>, IKeyRequest<int>
 }
 ```
 
-## 🛠️ Change default mapping
+## Change default mapping
 
 Use attributes for the request type to change default mapping
 
@@ -243,7 +243,7 @@ public class GetBookCoverQuery: IRequest<byte[]>, IKeyRequest<int>
 }
 ```
 
-## 📥 Upload and download files
+## Upload and download files
 
 For requests implementing `IRequest<byte[]>`/`IRequest<Stream>`, or  `IRequest<FileResponse>`/
 `IRequest<FileStreamResponse>`, the response will use `"application/octet-stream"` by default. To specify a download
@@ -283,7 +283,7 @@ public class ImportDocumentWordCommand : FileRequest, IRequest<FileResponse>
 }
 ```
 
-## 🔢 X-Total-Count Header
+## X-Total-Count Header
 
 To include the `X-Total-Count` header in the HTTP response, implement the `ITotalCount` interface in your response type.
 This is useful for paginated endpoints or any scenario where the client needs to know the total number of items
@@ -308,7 +308,7 @@ public class GetBooksResponse : ITotalCount
 When this interface is implemented, MitMediator.AutoApi will automatically include the `X-Total-Count` header in the
 response, reflecting the value returned by `GetTotalCount()`
 
-## 📍 Location header
+## Location header
 
 To insert the correct ID into the Location header of a 201 Created response, implement the `IResourceKey` interface in
 your response type:
@@ -334,21 +334,21 @@ public class CreatedBookResponse : IResourceKey
 If you do not implement the `IResourceKey` interface, the Location header will default to the format `/books/{key}`,
 where `{key}` is a placeholder string
 
-# 🎯 Auto client HttpMediator
+# Auto client HttpMediator
 
 You can reuse your `IRequest` types to seamlessly send HTTP requests to a server-side API using `HttpMediator`
 
 `HttpMediator` supports `IClientPipelineBehavior<TRequest, TResponse>` for middleware-like extensibility, and
 `IHttpHeaderInjector<TRequest, TResponse>` for injecting custom headers per request
 
-### 🔧 Sample usage:
+### Sample usage:
 
 ```csharp
 var mediator = new HttpMediator(serviceProvider, baseUrl: "https://api.example.com");
 var response = await mediator.SendAsync<MyRequest, MyResponse>(new MyRequest(), cancellationToken);
 ```
 
-### 🔧 More
+### More
 
 ```csharp
 var baseApiUrl = "api";
