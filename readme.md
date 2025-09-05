@@ -105,7 +105,7 @@ Version prefix (v1, v2, etc.) is prepended to the route as part of the base path
 | Request name                | Endpoint                       |
 |-----------------------------|--------------------------------|
 | GetBookCountQuery           | `GET /v1/books/count`          |
-| CreateBookCommand           | `POST /v1/book`                |
+| CreateBookCommand           | `POST /v1/books`                |
 | RemoveBookWithAuthorCommand | `DELETE /v1/books/with-author` |
 | UpdateAuthorBioRequest      | `PUT /v1/authors/bio`          |
 
