@@ -4,7 +4,7 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Version>9.0.0-alfa-7</Version>
+        <Version>9.0.0-alfa-8</Version>
         <Title>MitMediator.AutoApi.Abstractions</Title>
         <Description>Minimal API registration for MitMediator</Description>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -16,8 +16,8 @@
         <PackageIcon>logo.png</PackageIcon>
         <RepositoryUrl>https://github.com/dzmprt/MitMediator.AutoApi</RepositoryUrl>
         <PackageTags>mediator;request;response;queries;commands;mitmediator;minimalapi;autoapi;cqrs;</PackageTags>
-        <PackageReleaseNotes>9.0.0-alfa-7
-Fix multi keys requests</PackageReleaseNotes>
+        <PackageReleaseNotes>9.0.0-alfa-8
+- Support handlers with task result.</PackageReleaseNotes>
         <TrimMode>full</TrimMode>
         <LangVersion>13</LangVersion>
     </PropertyGroup>
@@ -39,7 +39,7 @@ Fix multi keys requests</PackageReleaseNotes>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="MitMediator" Version="9.0.0" />
+      <PackageReference Include="MitMediator" Version="9.0.1" />
     </ItemGroup>
 
 </Project>
