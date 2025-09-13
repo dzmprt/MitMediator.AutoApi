@@ -12,11 +12,39 @@ namespace MitMediator.AutoApi.Tests;
 
 public class EndpointsRegistrationsTests
 {
+    public class DummyRequestHandler<TRequest, TResponse> : IRequestHandler<TRequest, TResponse>
+        where TRequest : IRequest<TResponse>
+    {
+        public ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    
     [Fact]
     public void UseAutoApi_RegistersAllExpectedRoutes()
     {
         var builder = WebApplication.CreateBuilder();
-        builder.Services.AddMitMediator(typeof(GetTestQuery).Assembly);
+        builder.Services.AddOnlyMitMediator();
+        
+        var requestTypes = typeof(GetTestQuery).Assembly
+            .GetTypes()
+            .Where(t => t.GetInterfaces()
+                .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRequest<>)))
+            .ToList();
+        
+        foreach (var requestType in requestTypes)
+        {
+            var responseType = requestType
+                .GetInterfaces()
+                .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRequest<>))
+                .GetGenericArguments()[0];
+
+            var handlerInterface = typeof(IRequestHandler<,>).MakeGenericType(requestType, responseType);
+            var dummyHandlerType = typeof(DummyRequestHandler<,>).MakeGenericType(requestType, responseType);
+
+            builder.Services.AddTransient(handlerInterface, dummyHandlerType);
+        }
 
         var app = builder.Build();
         app.UseAutoApi("api");
