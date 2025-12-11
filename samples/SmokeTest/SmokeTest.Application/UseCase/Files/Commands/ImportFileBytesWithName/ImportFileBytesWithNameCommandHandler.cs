@@ -8,7 +8,7 @@ public class ImportFileBytesWithNameCommandHandler : IRequestHandler<ImportFileB
     public async ValueTask<FileResponse> HandleAsync(ImportFileBytesWithNameCommand request, CancellationToken cancellationToken)
     {
         var stream = new MemoryStream();
-        await request.File.CopyToAsync(stream, cancellationToken);
-        return new FileResponse(await request.ReadToEndAsync(cancellationToken), request.FileName) ;
+        await request.GetFileStream().CopyToAsync(stream, cancellationToken);
+        return new FileResponse(await request.ReadToEndAsync(cancellationToken), request.GetFileName()) ;
     }
 }

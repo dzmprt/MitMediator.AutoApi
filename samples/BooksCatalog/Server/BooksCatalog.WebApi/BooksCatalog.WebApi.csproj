@@ -17,7 +17,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
-        <PackageReference Include="MitMediator.AutoApi" Version="9.0.0-alfa-8" />
+        <PackageReference Include="MitMediator.AutoApi" Version="10.0.0-alfa" />
         <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.0.1" />
     </ItemGroup>
 
