@@ -24,13 +24,13 @@
 
 ```bash
 # for ASP.NET API projects
-dotnet add package MitMediator.AutoApi -v 10.0.0-alfa
+dotnet add package MitMediator.AutoApi -v 10.0.0-alfa-2
 
 # for application layer
-dotnet add package MitMediator.AutoApi.Abstractions -v 10.0.0-alfa
+dotnet add package MitMediator.AutoApi.Abstractions -v 10.0.0-alfa-2
 
 # for client application (MAUI, Blazor, UWP, etc.)
-dotnet add package MitMediator.AutoApi.HttpMediator -v 10.0.0-alfa
+dotnet add package MitMediator.AutoApi.HttpMediator -v 10.0.0-alfa-2
 ```
 
 ### 2. Use extension for IEndpointRouteBuilder
