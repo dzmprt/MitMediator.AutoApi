@@ -241,9 +241,9 @@ else
         deleteTestBy7KeysCommand.SetKey7(7);
         _testsResults.Add(await SendRequestAsync<DeleteTestBy7KeysCommand, Unit>(deleteTestBy7KeysCommand));
         
-        _testsResults.Add(await SendRequestAsync<GetFileQuery, byte[]>(new GetFileQuery { Base64String = Convert.ToBase64String("test"u8.ToArray()) }));
+        _testsResults.Add(await SendRequestAsync<GetFileQuery, byte[]>(new GetFileQuery { Base64String = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("test")) }));
 
-        _testsResults.Add(await SendRequestAsync<GetFileTxtQuery, byte[]>(new GetFileTxtQuery { Base64String = Convert.ToBase64String("test"u8.ToArray()) }));
+        _testsResults.Add(await SendRequestAsync<GetFileTxtQuery, byte[]>(new GetFileTxtQuery { Base64String = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("test")) }));
         
         _testsResults.Add(await SendRequestAsync<GetFilePngQuery, byte[]>(new GetFilePngQuery()));
         

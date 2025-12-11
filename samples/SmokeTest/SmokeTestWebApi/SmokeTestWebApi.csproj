@@ -1,10 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <LangVersion>13</LangVersion>
+        <LangVersion>14</LangVersion>
+        <InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.AspNetCore.OpenApi.Generated</InterceptorsNamespaces>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -16,13 +17,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.3" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\..\..\src\MitMediator.AutoApi.Abstractions\MitMediator.AutoApi.Abstractions.csproj" />
       <ProjectReference Include="..\..\..\src\MitMediator.AutoApi\MitMediator.AutoApi.csproj" />
       <ProjectReference Include="..\SmokeTest.Application\SmokeTest.Application.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
+      <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.0.1" />
     </ItemGroup>
 
     <PropertyGroup>

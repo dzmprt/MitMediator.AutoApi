@@ -2,21 +2,31 @@ namespace MitMediator.AutoApi.Abstractions;
 
 public class FileRequest : IFileRequest
 {
-    public Stream File { get; private set; }
-    
-    public string FileName { get; private set; }
+    private Stream _file;
+
+    private string _fileName;
     
     public void SetFile(Stream file, string fileName)
     {
-        File = file;
-        FileName = fileName;
+        _file = file;
+        _fileName = fileName;
+    }
+
+    public Stream GetFileStream()
+    {
+        return _file;
+    }
+    
+    public string GetFileName()
+    {
+        return _fileName;
     }
     
     public async Task<byte[]> ReadToEndAsync(CancellationToken cancellationToken)
     {
-        File.Seek(0, SeekOrigin.Begin);
+        _file.Seek(0, SeekOrigin.Begin);
         using var memoryStream = new MemoryStream();
-        await File.CopyToAsync(memoryStream, cancellationToken);
+        await _file.CopyToAsync(memoryStream, cancellationToken);
         return memoryStream.ToArray();
     }
 }

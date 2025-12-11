@@ -46,9 +46,9 @@ internal class HttpRequestHandler<TRequest, TResponse> : IClientRequestHandler<T
                 HttpResponseMessage response;
                 if (request is IFileRequest fileRequest)
                 {
-                    var streamContent = new StreamContent(fileRequest.File);
+                    var streamContent = new StreamContent(fileRequest.GetFileStream());
                     var form = new MultipartFormDataContent();
-                    form.Add(streamContent, "formFile", fileRequest.FileName);
+                    form.Add(streamContent, "formFile", fileRequest.GetFileName());
 
                     response = await _httpClient.PostAsync(requestUrl, form, cancellationToken);
                 }

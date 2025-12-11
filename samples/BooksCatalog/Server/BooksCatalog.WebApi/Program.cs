@@ -1,8 +1,6 @@
-using System.Reflection;
 using BooksCatalog.Application;
 using BooksCatalog.Domain;
 using BooksCatalog.Infrastructure;
-using Microsoft.OpenApi.Models;
 using MitMediator.AutoApi;
 using BooksCatalog.WebApi.Middlewares;
 
@@ -13,12 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Books api", Version = "v1", Description = "Sample API project" });
-    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
-});
+builder.Services.AddOpenApi();
 
 builder.Services.AddApplicationServices();
 builder.Services.AddPersistenceServices();
@@ -30,12 +23,12 @@ InitDatabase(app);
 app.UseCustomExceptionsHandler();
 app.UseAutoApi("api");
 
-app.UseSwagger(c => { c.RouteTemplate = "swagger/{documentname}/swagger.json"; })
-    .UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
-        options.RoutePrefix = "swagger";
-    });
+app.MapOpenApi();
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/openapi/v1.json", "v1");
+    options.SwaggerEndpoint("/openapi/v1.json", "v2");
+});
 
 app.UseHttpsRedirection();
 

@@ -24,9 +24,9 @@ public class FileRequestTests
 
         // Assert
         Assert.Equal(contentBytes, result);
-        Assert.Equal("greeting.txt", fileRequest.FileName);
-        Assert.NotNull(fileRequest.File);
-        Assert.True(fileRequest.File.CanRead);
+        Assert.Equal("greeting.txt", fileRequest.GetFileName());
+        Assert.NotNull(fileRequest.GetFileName());
+        Assert.True(fileRequest.GetFileStream().CanRead);
     }
 
     [Fact]

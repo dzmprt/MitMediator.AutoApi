@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Version>9.0.0-alfa-8</Version>
+        <Version>10.0.0-alfa-2</Version>
         <Title>MitMediator.AutoApi.Abstractions</Title>
-        <Description>Minimal API registration for MitMediator</Description>
+        <Description>Attribute-driven Minimal API registration for MitMediator  </Description>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Authors>Dmitry Protko</Authors>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -16,10 +16,11 @@
         <PackageIcon>logo.png</PackageIcon>
         <RepositoryUrl>https://github.com/dzmprt/MitMediator.AutoApi</RepositoryUrl>
         <PackageTags>mediator;request;response;queries;commands;mitmediator;minimalapi;autoapi;cqrs;</PackageTags>
-        <PackageReleaseNotes>9.0.0-alfa-8
-- Support handlers with task result.</PackageReleaseNotes>
+        <PackageReleaseNotes>10.0.0-alfa-2
+- Up dotnet version
+- Changed file request interface </PackageReleaseNotes>
         <TrimMode>full</TrimMode>
-        <LangVersion>13</LangVersion>
+        <LangVersion>14</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -39,7 +40,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="MitMediator" Version="9.0.1" />
+      <PackageReference Include="MitMediator" Version="10.0.0-rc" />
     </ItemGroup>
 
 </Project>

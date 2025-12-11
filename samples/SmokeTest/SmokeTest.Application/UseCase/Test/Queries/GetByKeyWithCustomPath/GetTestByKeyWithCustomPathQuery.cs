@@ -6,16 +6,16 @@ namespace SmokeTest.Application.UseCase.Test.Queries.GetByKeyWithCustomPath;
 
 
 [Pattern("my_custom_path/{key}/some_field")]
-public class GetTestByKeyWithCustomPathQuery : IRequest<string>, IKeyRequest<int>
+public class GetTestByKeyWithCustomPathQuery : IRequest<string>, IKeyRequest<long>
 {
-    internal int Key { get; private set; }
+    internal long Key { get; private set; }
 
-    public void SetKey(int key)
+    public void SetKey(long key)
     {
         Key = key;
     }
 
-    public int GetKey()
+    public long GetKey()
     {
         return Key;
     }

@@ -7,7 +7,7 @@ public class ImportFileStreamCommandHandler : IRequestHandler<ImportFileStreamCo
     public async ValueTask<Stream> HandleAsync(ImportFileStreamCommand request, CancellationToken cancellationToken)
     {
         var stream = new MemoryStream();
-        await request.File.CopyToAsync(stream, cancellationToken);
+        await request.GetFileStream().CopyToAsync(stream, cancellationToken);
         return stream;
     }
 }
