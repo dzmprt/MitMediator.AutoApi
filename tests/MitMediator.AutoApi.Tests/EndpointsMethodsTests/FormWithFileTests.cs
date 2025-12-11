@@ -22,7 +22,7 @@ public class FormWithFileTests
                 It.IsAny<CancellationToken>()))
             .Callback<RequestsForTests.Files.Commands.ImportFile.ImportFileCommand, CancellationToken>((cmd, _) =>
                 capturedCommand = cmd)
-            .ReturnsAsync(() => new FileStreamResponse(capturedCommand.File, capturedCommand.FileName));
+            .ReturnsAsync(() => new FileStreamResponse(capturedCommand.GetFileStream(), capturedCommand.GetFileName()));
 
         var services = new ServiceCollection()
             .AddSingleton(mediatorMock.Object)
@@ -68,7 +68,7 @@ public class FormWithFileTests
                     It.IsAny<CancellationToken>()))
             .Callback<RequestsForTests.Files.Commands.ImportFileWithKeyCommand.ImportFileWithKeyCommand,
                 CancellationToken>((cmd, _) => capturedCommand = cmd)
-            .ReturnsAsync(() => new FileStreamResponse(capturedCommand.File, capturedCommand.FileName));
+            .ReturnsAsync(() => new FileStreamResponse(capturedCommand.GetFileStream(), capturedCommand.GetFileName()));
 
         var services = new ServiceCollection()
             .AddSingleton(mediatorMock.Object)
@@ -117,7 +117,7 @@ public class FormWithFileTests
                     It.IsAny<CancellationToken>()))
             .Callback<RequestsForTests.Files.Commands.ImportFileWithKey2Command.ImportFileWithKey2Command,
                 CancellationToken>((cmd, _) => capturedCommand = cmd)
-            .ReturnsAsync(() => new FileStreamResponse(capturedCommand.File, capturedCommand.FileName));
+            .ReturnsAsync(() => new FileStreamResponse(capturedCommand.GetFileStream(), capturedCommand.GetFileName()));
 
         var services = new ServiceCollection()
             .AddSingleton(mediatorMock.Object)
@@ -168,7 +168,7 @@ public class FormWithFileTests
                     It.IsAny<CancellationToken>()))
             .Callback<RequestsForTests.Files.Commands.ImportFileWithKey3Command.ImportFileWithKey3Command,
                 CancellationToken>((cmd, _) => capturedCommand = cmd)
-            .ReturnsAsync(() => new FileStreamResponse(capturedCommand.File, capturedCommand.FileName));
+            .ReturnsAsync(() => new FileStreamResponse(capturedCommand.GetFileStream(), capturedCommand.GetFileName()));
 
         var services = new ServiceCollection()
             .AddSingleton(mediatorMock.Object)
@@ -220,7 +220,7 @@ public class FormWithFileTests
                     It.IsAny<CancellationToken>()))
             .Callback<RequestsForTests.Files.Commands.ImportFileWithKey4Command.ImportFileWithKey4Command,
                 CancellationToken>((cmd, _) => capturedCommand = cmd)
-            .ReturnsAsync(() => new FileStreamResponse(capturedCommand.File, capturedCommand.FileName));
+            .ReturnsAsync(() => new FileStreamResponse(capturedCommand.GetFileStream(), capturedCommand.GetFileName()));
 
         var services = new ServiceCollection()
             .AddSingleton(mediatorMock.Object)
@@ -273,7 +273,7 @@ public class FormWithFileTests
                     It.IsAny<CancellationToken>()))
             .Callback<RequestsForTests.Files.Commands.ImportFileWithKey5Command.ImportFileWithKey5Command,
                 CancellationToken>((cmd, _) => capturedCommand = cmd)
-            .ReturnsAsync(() => new FileStreamResponse(capturedCommand.File, capturedCommand.FileName));
+            .ReturnsAsync(() => new FileStreamResponse(capturedCommand.GetFileStream(), capturedCommand.GetFileName()));
 
         var services = new ServiceCollection()
             .AddSingleton(mediatorMock.Object)
@@ -327,7 +327,7 @@ public class FormWithFileTests
                     It.IsAny<CancellationToken>()))
             .Callback<RequestsForTests.Files.Commands.ImportFileWithKey6Command.ImportFileWithKey6Command,
                 CancellationToken>((cmd, _) => capturedCommand = cmd)
-            .ReturnsAsync(() => new FileStreamResponse(capturedCommand.File, capturedCommand.FileName));
+            .ReturnsAsync(() => new FileStreamResponse(capturedCommand.GetFileStream(), capturedCommand.GetFileName()));
 
         var services = new ServiceCollection()
             .AddSingleton(mediatorMock.Object)

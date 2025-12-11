@@ -16,7 +16,7 @@
         <PackageIcon>logo.png</PackageIcon>
         <RepositoryUrl>https://github.com/dzmprt/MitMediator.AutoApi</RepositoryUrl>
         <PackageTags>mediator;request;response;queries;commands;mitmediator;minimalapi;autoapi;cqrs;</PackageTags>
-        <PackageReleaseNotes>10.0.0-alfa-1
+        <PackageReleaseNotes>10.0.0-alfa-2
 - Up dotnet version
 - Changed file request interface </PackageReleaseNotes>
         <TrimMode>full</TrimMode>
