@@ -1,8 +1,7 @@
 using System.Collections;
-using System.ComponentModel.DataAnnotations;
 using System.Reflection;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+using System.Text.Json.Nodes;
+using Microsoft.OpenApi;
 
 namespace MitMediator.AutoApi;
 
@@ -33,10 +32,10 @@ internal static class OpenApiParameterGenerator
                     Required = !isNullable,
                     Schema = new OpenApiSchema
                     {
-                        Type = "string",
+                        Type = JsonSchemaType.String,
                         Enum = Enum.GetNames(actualType)
-                            .Select(n => new OpenApiString(n))
-                            .ToList<IOpenApiAny>()
+                            .Select(n => (JsonNode)JsonValue.Create(n)!)
+                            .ToList()
                     }
                 });
             }
@@ -67,7 +66,7 @@ internal static class OpenApiParameterGenerator
                     Required = !isNullable,
                     Schema = new OpenApiSchema
                     {
-                        Type = "array",
+                        Type = JsonSchemaType.Array,
                         Items = CreateItemSchema(actualItemType)
                     },
                     Style = ParameterStyle.Form,
@@ -86,7 +85,7 @@ internal static class OpenApiParameterGenerator
                     Required = !isNullable,
                     Schema = new OpenApiSchema
                     {
-                        Type = "array",
+                        Type = JsonSchemaType.Array,
                         Items = CreateItemSchema(actualItemType)
                     },
                     Style = ParameterStyle.Form,
@@ -104,15 +103,17 @@ internal static class OpenApiParameterGenerator
             }
         }
     }
-    
+
     private static OpenApiSchema CreateItemSchema(Type type)
     {
         if (type.IsEnum)
         {
             return new OpenApiSchema
             {
-                Type = "string",
-                Enum = Enum.GetNames(type).Select(n => new OpenApiString(n)).ToList<IOpenApiAny>()
+                Type = JsonSchemaType.String,
+                Enum = Enum.GetNames(type)
+                    .Select(n => (JsonNode)JsonValue.Create(n)!)
+                    .ToList()
             };
         }
 
@@ -133,17 +134,15 @@ internal static class OpenApiParameterGenerator
                && !type.IsEnum;
     }
 
-    private static string MapToOpenApiType(Type type)
+    private static JsonSchemaType MapToOpenApiType(Type type)
     {
         return type switch
         {
-            var t when t == typeof(string) => "string",
-            var t when t == typeof(int) || t == typeof(long) || t == typeof(short) => "integer",
-            var t when t == typeof(float) || t == typeof(double) || t == typeof(decimal) => "number",
-            var t when t == typeof(bool) => "boolean",
-            var t when t == typeof(DateTime) || t == typeof(DateTimeOffset) => "string",
-            var t when t == typeof(Guid) => "string",
-            _ => "string"
+            var t when t == typeof(string) => JsonSchemaType.String,
+            var t when t == typeof(int) || t == typeof(long) || t == typeof(short) => JsonSchemaType.Integer,
+            var t when t == typeof(float) || t == typeof(double) || t == typeof(decimal) => JsonSchemaType.Number,
+            var t when t == typeof(bool) => JsonSchemaType.Boolean,
+            _ => JsonSchemaType.String
         };
     }
 

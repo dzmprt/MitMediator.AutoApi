@@ -1,6 +1,6 @@
 [![Build and Test](https://github.com/dzmprt/MitMediator/actions/workflows/dotnet.yml/badge.svg)](https://github.com/dzmprt/MitMediator/actions/workflows/dotnet.yml)
 ![NuGet](https://img.shields.io/nuget/v/MitMediator.AutoApi)
-![.NET 9.0](https://img.shields.io/badge/Version-.NET%209.0-informational?style=flat&logo=dotnet)
+![.NET 10.0](https://img.shields.io/badge/Version-.NET%2010-informational?style=flat&logo=dotnet)
 ![License](https://img.shields.io/github/license/dzmprt/MitMediator.AutoApi)
 
 # MitMediator.AutoApi
@@ -24,13 +24,13 @@
 
 ```bash
 # for ASP.NET API projects
-dotnet add package MitMediator.AutoApi -v 9.0.0-alfa-8
+dotnet add package MitMediator.AutoApi -v 10.0.0-alfa
 
 # for application layer
-dotnet add package MitMediator.AutoApi.Abstractions -v 9.0.0-alfa-8
+dotnet add package MitMediator.AutoApi.Abstractions -v 10.0.0-alfa
 
 # for client application (MAUI, Blazor, UWP, etc.)
-dotnet add package MitMediator.AutoApi.HttpMediator -v 9.0.0-alfa-8
+dotnet add package MitMediator.AutoApi.HttpMediator -v 10.0.0-alfa
 ```
 
 ### 2. Use extension for IEndpointRouteBuilder
