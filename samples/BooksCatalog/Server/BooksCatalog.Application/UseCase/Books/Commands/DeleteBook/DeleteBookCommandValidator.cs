@@ -1,4 +1,3 @@
-using BooksCatalog.Application.UseCase.Authors.Commands.DeleteAuthor;
 using FluentValidation;
 
 namespace BooksCatalog.Application.UseCase.Books.Commands.DeleteBook;
@@ -13,6 +12,6 @@ internal sealed class DeleteBookCommandValidator : AbstractValidator<DeleteBookC
     /// </summary>
     public DeleteBookCommandValidator()
     {
-        RuleFor(x => x.BookId).GreaterThan(0);
+        RuleFor(x => x.GetKey()).GreaterThan(0);
     }
 }

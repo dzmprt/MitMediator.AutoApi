@@ -9,19 +9,9 @@ namespace BooksCatalog.Application.UseCase.Books.Queries.GetBooksByFilter;
 /// <summary>
 /// Handler for <see cref="GetBooksQuery"/>.
 /// </summary>
-internal sealed class GetBooksQueryHandler : IRequestHandler<GetBooksQuery, GetBooksResponse>
+/// <param name="booksProvider">Books provider.</param>
+internal sealed class GetBooksQueryHandler(IBaseProvider<Book> booksProvider) : IRequestHandler<GetBooksQuery, GetBooksResponse>
 {
-    private readonly IBaseProvider<Book> _booksProvider;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="GetAuthorsQueryHandler"/>.
-    /// </summary>
-    /// <param name="booksProvider">Books provider.</param>
-    public GetBooksQueryHandler(IBaseProvider<Book> booksProvider)
-    {
-        _booksProvider = booksProvider;
-    }
-
     /// <inheritdoc/>
     public async ValueTask<GetBooksResponse> HandleAsync(GetBooksQuery request, CancellationToken cancellationToken)
     {
@@ -31,14 +21,15 @@ internal sealed class GetBooksQueryHandler : IRequestHandler<GetBooksQuery, GetB
                                                               q.Author.LastName.Contains(freeText) ||
                                                               q.Title.Contains(freeText) ||
                                                               q.Genre.GenreName.Contains(freeText);
-        var items = await _booksProvider.SearchAsync(searchExpression,
+        
+        var items = await booksProvider.SearchAsync(searchExpression,
             o => o.BookId,
             request.Limit,
             request.Offset,
             cancellationToken
         );
         
-        var totalCount = await _booksProvider.CountAsync(searchExpression, cancellationToken);
+        var totalCount = await booksProvider.CountAsync(searchExpression, cancellationToken);
         var response = new GetBooksResponse()
         {
             Items = items,

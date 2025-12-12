@@ -7,13 +7,8 @@ namespace BooksCatalog.Application.UseCase.Books.Commands.UpdateBook;
 /// <summary>
 /// Update book command.
 /// </summary>
-public struct UpdateBookCommand : IRequest<Book>, IKeyRequest<int>
+public class UpdateBookCommand : KeyRequest<int>, IRequest<Book>
 {
-    /// <summary>
-    /// Book id.
-    /// </summary>
-    internal int BookId { get; private set; }
-    
     /// <summary>
     /// Title.
     /// </summary>
@@ -28,11 +23,4 @@ public struct UpdateBookCommand : IRequest<Book>, IKeyRequest<int>
     /// Genre.
     /// </summary>
     public string GenreName { get; init; }
-
-    public void SetKey(int key)
-    {
-        BookId = key;
-    }
-    
-    public int GetKey() => BookId;
 }

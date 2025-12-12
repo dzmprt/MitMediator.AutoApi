@@ -8,24 +8,14 @@ namespace BooksCatalog.Application.UseCase.Books.Queries.GetBooksCount;
 /// <summary>
 /// Handler for <see cref="GetBooksQuery"/>.
 /// </summary>
-internal sealed class GetBooksCountQueryHandler : IRequestHandler<GetBooksCountQuery, int>
+/// <param name="booksProvider">Books provider.</param>
+internal sealed class GetBooksCountQueryHandler(IBaseProvider<Book> booksProvider) : IRequestHandler<GetBooksCountQuery, int>
 {
-    private readonly IBaseProvider<Book> _booksProvider;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="GetBooksCountQueryHandler"/>.
-    /// </summary>
-    /// <param name="booksProvider">Books provider.</param>
-    public GetBooksCountQueryHandler(IBaseProvider<Book> booksProvider)
-    {
-        _booksProvider = booksProvider;
-    }
-    
     /// <inheritdoc/>
     public ValueTask<int> HandleAsync(GetBooksCountQuery request, CancellationToken cancellationToken)
     {
         var freeText = request.FreeText?.Trim().ToUpperInvariant();
-        return _booksProvider.CountAsync(
+        return booksProvider.CountAsync(
             freeText is null
                 ? null
                 : q => q.Author.FirstName.Contains(freeText) || 

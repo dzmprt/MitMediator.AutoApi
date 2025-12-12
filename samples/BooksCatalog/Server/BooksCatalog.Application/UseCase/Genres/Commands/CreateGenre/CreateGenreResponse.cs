@@ -2,7 +2,7 @@ using MitMediator.AutoApi.Abstractions;
 
 namespace BooksCatalog.Application.UseCase.Genres.Commands.CreateGenre;
 
-public class CreateGenreResponse //: IResourceKey
+public class CreateGenreResponse : IResourceKey
 {
     /// <summary>
     /// Genre name.

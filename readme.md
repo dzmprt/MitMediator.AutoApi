@@ -137,7 +137,7 @@ public class CreateBookCommand : IRequest<Book>
 }
 ```
 
-If you need to use a route parameter, inherit from one of the classes `IKeyRequest<TKey>`
+If you need to use a route parameter, inherit from one of the classes `KeyRequest<TKey>`
 or implement one of the interfaces `IKeyRequest<TKey>`, `IKeyRequest<TKey1,TKey2>`, etc.
 (up to 7 keys).
 
@@ -147,7 +147,7 @@ or implement one of the interfaces `IKeyRequest<TKey>`, `IKeyRequest<TKey1,TKey2
 // URL: GET /v1/books/123/cover
 public class GetBookCoverQuery : KeyRequest<int>, IRequest<Book>;
 ```
-> Use interface `IKeyRequest<int>` for structs:
+> Use interface `IKeyRequest<int>` for structs or when you can't inherit KeyRequest:
 > ```csharp 
 > // URL: GET /v1/books/123/cover
 > public struct GetBookCoverQuery : KeyRequest<int>, IRequest<Book>

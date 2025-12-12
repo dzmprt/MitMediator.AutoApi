@@ -12,6 +12,6 @@ internal sealed class GetAuthorQueryValidator : AbstractValidator<GetAuthorQuery
     /// </summary>
     public GetAuthorQueryValidator()
     {
-        RuleFor(q => q.AuthorId).GreaterThan(0);
+        RuleFor(q => q.GetKey()).GreaterThan(0);
     }
 }

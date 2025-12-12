@@ -14,7 +14,7 @@ public class GetBookCoverQueryHandler(IBaseProvider<Book> booksProvider) : IRequ
 {
     public async ValueTask<FileStreamResponse> HandleAsync(GetBookCoverQuery request, CancellationToken cancellationToken)
     {
-        var book = await booksProvider.FirstOrDefaultAsync(q => q.BookId == request.BookId, cancellationToken);
+        var book = await booksProvider.FirstOrDefaultAsync(q => q.BookId == request.GetKey(), cancellationToken);
         if (book is null || book.Cover is null)
         {
             throw new NotFoundException();
