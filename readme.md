@@ -150,7 +150,7 @@ public class GetBookCoverQuery : KeyRequest<int>, IRequest<Book>;
 > Use interface `IKeyRequest<int>` for structs or when you can't inherit KeyRequest:
 > ```csharp 
 > // URL: GET /v1/books/123/cover
-> public struct GetBookCoverQuery : KeyRequest<int>, IRequest<Book>
+> public struct GetBookCoverQuery : IKeyRequest<int>, IRequest<Book>
 > {
 >     internal int BookId { get; private set; }
 >
