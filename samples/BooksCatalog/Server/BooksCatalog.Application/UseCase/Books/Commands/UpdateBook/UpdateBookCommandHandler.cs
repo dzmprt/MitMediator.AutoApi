@@ -9,45 +9,29 @@ namespace BooksCatalog.Application.UseCase.Books.Commands.UpdateBook;
 /// <summary>
 /// Handler for <see cref="CreateBookCommand"/>
 /// </summary>
-public class UpdateBookCommandHandler : IRequestHandler<UpdateBookCommand, Book>
+/// <param name="booksRepository">Books repository.</param>
+/// <param name="authorsRepository">Authors repository.</param>
+/// <param name="genresRepository">Genres repository.</param>
+public class UpdateBookCommandHandler(
+    IBaseRepository<Book> booksRepository, 
+    IBaseRepository<Author> authorsRepository,
+    IBaseRepository<Genre> genresRepository) : IRequestHandler<UpdateBookCommand, Book>
 {
-    private readonly IBaseRepository<Book> _booksRepository;
-    
-    private readonly IBaseRepository<Author> _authorsRepository;
-    
-    private readonly IBaseRepository<Genre> _genresRepository;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CreateBookCommandHandler"/>.
-    /// </summary>
-    /// <param name="booksRepository">Books repository.</param>
-    /// <param name="authorsRepository">Authors repository.</param>
-    /// <param name="genresRepository">Genres repository.</param>
-    public UpdateBookCommandHandler(
-        IBaseRepository<Book> booksRepository, 
-        IBaseRepository<Author> authorsRepository,
-        IBaseRepository<Genre> genresRepository)
-    {
-        _booksRepository = booksRepository;
-        _authorsRepository = authorsRepository;
-        _genresRepository = genresRepository;
-    }
-    
     /// <inheritdoc/>
     public async ValueTask<Book> HandleAsync(UpdateBookCommand request, CancellationToken cancellationToken)
     {
-        var book = await _booksRepository.FirstOrDefaultAsync(b => b.BookId == request.BookId, cancellationToken);
+        var book = await booksRepository.FirstOrDefaultAsync(b => b.BookId == request.GetKey(), cancellationToken);
         if (book is null)
         {
             throw new NotFoundException();
         }
         
-        var author = await _authorsRepository.FirstOrDefaultAsync(a => a.AuthorId == request.AuthorId, cancellationToken);
+        var author = await authorsRepository.FirstOrDefaultAsync(a => a.AuthorId == request.AuthorId, cancellationToken);
         if (author is null)
         {
             throw new BadOperationException("Author not found");
         }
-        var genre = await _genresRepository.FirstOrDefaultAsync(g => g.GenreName == request.GenreName.Trim().ToUpperInvariant(), cancellationToken);
+        var genre = await genresRepository.FirstOrDefaultAsync(g => g.GenreName == request.GenreName.Trim().ToUpperInvariant(), cancellationToken);
         if (genre is null)
         {
             throw new BadOperationException("Genre not found");
@@ -57,7 +41,7 @@ public class UpdateBookCommandHandler : IRequestHandler<UpdateBookCommand, Book>
         book.SetAuthor(author);
         book.SetGenre(genre);
 
-        await _booksRepository.UpdateAsync(book, cancellationToken);
+        await booksRepository.UpdateAsync(book, cancellationToken);
         return book;
     }
 }

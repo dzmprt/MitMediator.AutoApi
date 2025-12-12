@@ -7,13 +7,8 @@ namespace BooksCatalog.Application.UseCase.Authors.Commands.UpdateAuthor;
 /// <summary>
 /// Update author.
 /// </summary>
-public struct UpdateAuthorCommand : IRequest<Author>, IKeyRequest<int>
+public class UpdateAuthorCommand : KeyRequest<int>, IRequest<Author>
 {
-    /// <summary>
-    /// Author id.
-    /// </summary>
-    internal int AuthorId { get; private set; }
-    
     /// <summary>
     /// First name.
     /// </summary>
@@ -23,11 +18,4 @@ public struct UpdateAuthorCommand : IRequest<Author>, IKeyRequest<int>
     /// Last name.
     /// </summary>
     public string LastName { get; init; }
-
-    public void SetKey(int key)
-    {
-        AuthorId = key;
-    }
-    
-    public int GetKey() => AuthorId;
 }

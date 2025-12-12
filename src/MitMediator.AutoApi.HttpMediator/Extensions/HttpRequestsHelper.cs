@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Reflection;
 using MitMediator.AutoApi.Abstractions;
 
@@ -21,7 +22,7 @@ internal static class HttpRequestsHelper
             {
                 for (var i = 0; i < patternKeys.Length; i++)
                 {
-                    url = url.Replace($"{{key{i+1}}}", patternKeys[i]?.ToString() ?? "null");
+                    url = url.Replace($"{{key{i + 1}}}", ToRouteString(patternKeys[i]));
                 }
             }
         }
@@ -33,15 +34,37 @@ internal static class HttpRequestsHelper
 
         return url;
     }
-    
+
     private static object[] ExtractKeys(object obj)
     {
         var type = obj.GetType();
-        
+
         var methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public)
             .Where(m => m.Name.StartsWith("GetKey"))
-            .OrderBy(m => m.Name == "GetKey" ? 0 : int.TryParse(m.Name.Substring("GetKey".Length), out var index) ? index : 1000);
+            .OrderBy(m =>
+                m.Name == "GetKey" ? 0 : int.TryParse(m.Name.Substring("GetKey".Length), out var index) ? index : 1000);
 
-        return (from method in methods where method.GetParameters().Length == 0 select method.Invoke(obj, null)).ToArray();
+        return (from method in methods where method.GetParameters().Length == 0 select method.Invoke(obj, null))
+            .ToArray();
+    }
+
+    public static string ToRouteString(object? value)
+    {
+        if (value == null)
+            return "null";
+
+        return value switch
+        {
+            int i => i.ToString(CultureInfo.InvariantCulture),
+            long l => l.ToString(CultureInfo.InvariantCulture),
+            float f => f.ToString(CultureInfo.InvariantCulture),
+            double d => d.ToString(CultureInfo.InvariantCulture),
+            decimal m => m.ToString(CultureInfo.InvariantCulture),
+            short s => s.ToString(CultureInfo.InvariantCulture),
+            byte b => b.ToString(CultureInfo.InvariantCulture),
+            DateTime dt => dt.ToString("O", CultureInfo.InvariantCulture), // ISO 8601 (round-trip)
+            DateTimeOffset dto => dto.ToString("O", CultureInfo.InvariantCulture),
+            _ => value?.ToString() ?? "null"
+        };
     }
 }

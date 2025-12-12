@@ -24,13 +24,13 @@
 
 ```bash
 # for ASP.NET API projects
-dotnet add package MitMediator.AutoApi -v 10.0.0-alfa-2
+dotnet add package MitMediator.AutoApi -v 10.0.0-alfa-3
 
 # for application layer
-dotnet add package MitMediator.AutoApi.Abstractions -v 10.0.0-alfa-2
+dotnet add package MitMediator.AutoApi.Abstractions -v 10.0.0-alfa-3
 
 # for client application (MAUI, Blazor, UWP, etc.)
-dotnet add package MitMediator.AutoApi.HttpMediator -v 10.0.0-alfa-2
+dotnet add package MitMediator.AutoApi.HttpMediator -v 10.0.0-alfa-3
 ```
 
 ### 2. Use extension for IEndpointRouteBuilder
@@ -137,24 +137,31 @@ public class CreateBookCommand : IRequest<Book>
 }
 ```
 
-If you need to use rout parameter, implement one of interfaces `IKeyRequest<TKey>`, `IKeyRequest<TKey1,TKey2>`, etc. (max 7 keys)
+If you need to use a route parameter, inherit from one of the classes `KeyRequest<TKey>`
+or implement one of the interfaces `IKeyRequest<TKey>`, `IKeyRequest<TKey1,TKey2>`, etc.
+(up to 7 keys).
 
 ### `GET` endpoint with suffix and key in url
 
 ```csharp
 // URL: GET /v1/books/123/cover
-public struct GetBookCoverQuery : IRequest<Book>, IKeyRequest<int>
-{
-    internal int BookId { get; private set; }
-
-    public void SetKey(int key)
-    {
-        BookId = key;
-    }
-    
-    public int GetKey() => BookId;
-}
+public class GetBookCoverQuery : KeyRequest<int>, IRequest<Book>;
 ```
+> Use interface `IKeyRequest<int>` for structs or when you can't inherit KeyRequest:
+> ```csharp 
+> // URL: GET /v1/books/123/cover
+> public struct GetBookCoverQuery : KeyRequest<int>, IRequest<Book>
+> {
+>     internal int BookId { get; private set; }
+>
+>     public void SetKey(int key)
+>     {
+>         BookId = key;
+>     }
+>     
+>     public int GetKey() => BookId;
+> }
+> ```
 
 ## Change default mapping
 
@@ -203,26 +210,7 @@ public struct GetBooksQuery : IRequest<Book[]>
 [Pattern("with-keys/{key1}/field/{key2}")]
 [Version("v3")]
 [Method(MethodType.Delete)]
-public class DoSomeWithBookAndDeleteCommand : IRequest<Book[]>, IKeyRequest<int, Guid>
-{
-    internal int BookId { get; private set; }
-    
-    internal Guid GuidId { get; private set; }
-
-    public void SetKey1(int key)
-    {
-        BookId = key;
-    }
-    
-    public int GetKey1() => BookId;
-    
-    public void SetKey2(Guid key)
-    {
-        GuidId = key;
-    }
-    
-    public Guid GetKey2() => GuidId;
-}
+public class DoSomeWithBookAndDeleteCommand : KeyRequest<int, Guid>, IRequest<Book[]>;
 ```
 
 ### `GET` endpoint png file ("image/png")
@@ -230,17 +218,7 @@ public class DoSomeWithBookAndDeleteCommand : IRequest<Book[]>, IKeyRequest<int,
 ```csharp
 // Api URL: GET /v1/books/123/сover
 [ResponseContentType("image/png")]
-public class GetBookCoverQuery: IRequest<byte[]>, IKeyRequest<int>
-{
-    internal int BookId { get; private set; }
-    
-    public void SetKey(int key)
-    {
-        BookId = key;
-    }
-    
-    public int GetKey() => BookId;
-}
+public class GetBookCoverQuery: KeyRequest<int>, IRequest<byte[]>;
 ```
 
 ## Upload and download files
@@ -260,26 +238,15 @@ CSRF protection for file upload endpoints or non-browser clients
 
 ```csharp
 // Api URL: GET /v1/books/123/text
-[DisableAntiforgery]
-public class GetBookTextQuery: IRequest<byte[]>, IKeyRequest<int>
-{
-    internal int BookId { get; private set; }
-    
-    public void SetKey(int key)
-    {
-        BookId = key;
-    }
-    
-    public int GetKey() => BookId;
-}
+public class GetBookTextQuery: KeyRequest<int>, IRequest<byte[]>;
 ```
 
 ### `POST` upload and download file with file name
 
 ```csharp
 // Api URL: POST /v1/documents/word
-public class ImportDocumentWordCommand : FileRequest, IRequest<FileResponse>
-{
+[DisableAntiforgery]
+public class ImportDocumentWordCommand : FileRequest, IRequest<FileResponse>;
 }
 ```
 

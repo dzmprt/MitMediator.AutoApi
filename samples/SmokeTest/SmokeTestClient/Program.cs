@@ -3,6 +3,7 @@
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using MitMediator;
 using MitMediator.AutoApi.Abstractions;
 using MitMediator.AutoApi.HttpMediator;
 using SmokeTest.Application.UseCase.Files.Commands.ImportFileBytes;
@@ -33,6 +34,7 @@ using SmokeTest.Application.UseCase.Test.Queries.Get;
 using SmokeTest.Application.UseCase.Test.Queries.GetByKey;
 using SmokeTest.Application.UseCase.Test.Queries.GetByKey2;
 using SmokeTest.Application.UseCase.Test.Queries.GetByKey7;
+using SmokeTest.Application.UseCase.Test.Queries.GetByKey7WithDifferentTypes;
 using SmokeTest.Application.UseCase.Test.Queries.GetByKeyWithCustomPath;
 using SmokeTest.Application.UseCase.Test.Queries.GetEmpty;
 using SmokeTest.Application.UseCase.Test.Queries.GetList;
@@ -55,144 +57,172 @@ Console.WriteLine(await httpMediator.SendAsync<GetEmptyTestQuery, string>(new Ge
     CancellationToken.None));
 
 
-Console.WriteLine(await httpMediator.SendAsync<SmokeTest.Application.UseCase.Test.Queries.GetV2.GetTestQuery, string>(new SmokeTest.Application.UseCase.Test.Queries.GetV2.GetTestQuery { TestData = "test v2" }, CancellationToken.None));
+Console.WriteLine(await httpMediator.SendAsync<SmokeTest.Application.UseCase.Test.Queries.GetV2.GetTestQuery, string>(
+    new SmokeTest.Application.UseCase.Test.Queries.GetV2.GetTestQuery { TestData = "test v2" },
+    CancellationToken.None));
 
 Console.WriteLine(
     await httpMediator.SendAsync<GetTestQuery, string>(new GetTestQuery { TestData = "test" }, CancellationToken.None));
-var getTestByKeyQuery = new GetTestByKeyQuery();
-getTestByKeyQuery.SetKey(123);
+var getTestByKeyQuery = new GetTestByKeyQuery
+{
+    Key = 123
+};
 Console.WriteLine(await httpMediator.SendAsync<GetTestByKeyQuery, string>(getTestByKeyQuery, CancellationToken.None));
-var getTestByKey2Query = new GetTestByKey2Query();
-getTestByKey2Query.SetKey1(1);
-getTestByKey2Query.SetKey2(2);
+var getTestByKey2Query = new GetTestByKey2Query
+{
+    Key1 = 1,
+    Key2 = 2
+};
 Console.WriteLine(await httpMediator.SendAsync<GetTestByKey2Query, string>(getTestByKey2Query, CancellationToken.None));
-var getTestByKey7Query = new GetTestByKey7Query() { };
-getTestByKey7Query.SetKey1(1);
-getTestByKey7Query.SetKey2(2);
-getTestByKey7Query.SetKey3(3);
-getTestByKey7Query.SetKey4(4);
-getTestByKey7Query.SetKey5(5);
-getTestByKey7Query.SetKey6(6);
-getTestByKey7Query.SetKey7(7);
+var getTestByKey7Query = new GetTestByKey7Query
+{
+    Key1 = 1,
+    Key2 = 2,
+    Key3 = 3,
+    Key4 = 4,
+    Key5 = 5,
+    Key6 = 6,
+    Key7 = 7
+};
 Console.WriteLine(await httpMediator.SendAsync<GetTestByKey7Query, string>(getTestByKey7Query, CancellationToken.None));
 Console.WriteLine(
     await httpMediator.SendAsync<GetTestQuery, string>(new GetTestQuery() { TestData = "test" },
         CancellationToken.None));
-var getTestWithSuffixQuery = new GetTestWithSuffixQuery()
+var getTestWithSuffixQuery = new GetTestWithSuffixQuery
 {
     TestData = "test"
 };
 Console.WriteLine(
     await httpMediator.SendAsync<GetTestWithSuffixQuery, string>(getTestWithSuffixQuery, CancellationToken.None));
 
-var getTestByKeyWithCustomPathQuery = new GetTestByKeyWithCustomPathQuery();
-getTestByKeyWithCustomPathQuery.SetKey(123);
+var getTestByKeyWithCustomPathQuery = new GetTestByKeyWithCustomPathQuery
+{
+    Key = 123
+};
 Console.WriteLine(
-    await httpMediator.SendAsync<GetTestByKeyWithCustomPathQuery, string>(getTestByKeyWithCustomPathQuery, CancellationToken.None));
+    await httpMediator.SendAsync<GetTestByKeyWithCustomPathQuery, string>(getTestByKeyWithCustomPathQuery,
+        CancellationToken.None));
 
 Console.WriteLine(
     (await httpMediator.SendAsync<CreateTestCommand, CreateTestResponse>(new CreateTestCommand { TestData = "test" },
         CancellationToken.None)).Value);
-var createTestByKeyCommand = new CreateTestByKeyCommand();
-createTestByKeyCommand.SetKey(123);
+var createTestByKeyCommand = new CreateTestByKeyCommand
+{
+    Key = 123
+};
 Console.WriteLine(
     (await httpMediator.SendAsync<CreateTestByKeyCommand, CreateTestByKeyResponse>(createTestByKeyCommand,
         CancellationToken.None)).Value);
-var createTestBy2KeysCommand = new CreateTestBy2KeysCommand();
-createTestBy2KeysCommand.SetKey1(1);
-createTestBy2KeysCommand.SetKey2(2);
+var createTestBy2KeysCommand = new CreateTestBy2KeysCommand
+{
+    TestData = "TestData",
+    Key1 = 1,
+    Key2 = 2
+};
 Console.WriteLine(
     (await httpMediator.SendAsync<CreateTestBy2KeysCommand, CreateTestBy2KeysResponse>(createTestBy2KeysCommand,
         CancellationToken.None)).Value);
 var createTestBy6KeysCommand = new CreateTestBy6KeysCommand
 {
-    TestData = "test"
+    TestData = "test",
+    Key1 = 1,
+    Key2 = 2,
+    Key3 = 3,
+    Key4 = 4,
+    Key5 = 5,
+    Key6 = 6
 };
-createTestBy6KeysCommand.SetKey1(1);
-createTestBy6KeysCommand.SetKey2(2);
-createTestBy6KeysCommand.SetKey3(3);
-createTestBy6KeysCommand.SetKey4(4);
-createTestBy6KeysCommand.SetKey5(5);
-createTestBy6KeysCommand.SetKey6(6);
 Console.WriteLine(
     (await httpMediator.SendAsync<CreateTestBy6KeysCommand, CreateTestBy6KeysResponse>(createTestBy6KeysCommand,
         CancellationToken.None)).Value);
 
 Console.WriteLine(await httpMediator.SendAsync<PostTestCommand, string>(new PostTestCommand { TestData = "test" },
     CancellationToken.None));
-var postTestByKeyCommand = new PostTestByKeyCommand();
-postTestByKeyCommand.SetKey(123);
+var postTestByKeyCommand = new PostTestByKeyCommand
+{
+    TestData = "TestData",
+    Key = 1
+};
 Console.WriteLine(
     await httpMediator.SendAsync<PostTestByKeyCommand, string>(postTestByKeyCommand, CancellationToken.None));
-var postTestBy2KeysCommand = new PostTestBy2KeysCommand();
-postTestBy2KeysCommand.SetKey1(1);
-postTestBy2KeysCommand.SetKey2(2);
+var postTestBy2KeysCommand = new PostTestBy2KeysCommand
+{
+    TestData = "TestData",
+    Key1 = 1,
+    Key2 = 2
+};
 Console.WriteLine(
     await httpMediator.SendAsync<PostTestBy2KeysCommand, string>(postTestBy2KeysCommand, CancellationToken.None));
 var postTestBy7KeysCommand = new PostTestBy7KeysCommand
 {
-    TestData = "test"
+    TestData = "test",
+    Key1 = 1,
+    Key2 = 2,
+    Key3 = 3,
+    Key4 = 4,
+    Key5 = 5,
+    Key6 = 6,
+    Key7 = 7
 };
-postTestBy7KeysCommand.SetKey1(1);
-postTestBy7KeysCommand.SetKey2(2);
-postTestBy7KeysCommand.SetKey3(3);
-postTestBy7KeysCommand.SetKey4(4);
-postTestBy7KeysCommand.SetKey5(5);
-postTestBy7KeysCommand.SetKey6(6);
-postTestBy7KeysCommand.SetKey7(7);
 Console.WriteLine(
     await httpMediator.SendAsync<PostTestBy7KeysCommand, string>(postTestBy7KeysCommand, CancellationToken.None));
 
 Console.WriteLine(await httpMediator.SendAsync<UpdateTestCommand, string>(new UpdateTestCommand { TestData = "test" },
     CancellationToken.None));
-var updateTestByKeyCommand = new UpdateTestByKeyCommand();
-updateTestByKeyCommand.SetKey(123);
+var updateTestByKeyCommand = new UpdateTestByKeyCommand
+{
+    TestData = "TestData",
+    Key = 1
+};
 Console.WriteLine(
     await httpMediator.SendAsync<UpdateTestByKeyCommand, string>(updateTestByKeyCommand, CancellationToken.None));
-var updateTestBy2KeysCommand = new UpdateTestBy2KeysCommand();
-updateTestBy2KeysCommand.SetKey1(1);
-updateTestBy2KeysCommand.SetKey2(2);
+var updateTestBy2KeysCommand = new UpdateTestBy2KeysCommand
+{
+    Key1 = 1,
+    TestData = "TestData",
+    Key2 = 2
+};
 Console.WriteLine(
     await httpMediator.SendAsync<UpdateTestBy2KeysCommand, string>(updateTestBy2KeysCommand, CancellationToken.None));
 var updateTestBy7KeysCommand = new UpdateTestBy7KeysCommand
 {
-    TestData = "test"
+    TestData = "test",
+    Key1 = 1,
+    Key2 = 2,
+    Key3 = 3,
+    Key4 = 4,
+    Key5 = 5,
+    Key6 = 6,
+    Key7 = 7
 };
-updateTestBy7KeysCommand.SetKey1(1);
-updateTestBy7KeysCommand.SetKey2(2);
-updateTestBy7KeysCommand.SetKey3(3);
-updateTestBy7KeysCommand.SetKey4(4);
-updateTestBy7KeysCommand.SetKey5(5);
-updateTestBy7KeysCommand.SetKey6(6);
-updateTestBy7KeysCommand.SetKey7(7);
 Console.WriteLine(
     await httpMediator.SendAsync<UpdateTestBy7KeysCommand, string>(updateTestBy7KeysCommand, CancellationToken.None));
 
 Console.WriteLine(await httpMediator.SendAsync(new DeleteTestCommand { TestData = "test" }, CancellationToken.None));
-var deleteTestByKeyCommand = new DeleteTestByKeyCommand()
+var deleteTestByKeyCommand = new DeleteTestByKeyCommand
 {
-    TestData = "test"
+    TestData = "test",
+    Key = 1
 };
-deleteTestByKeyCommand.SetKey(123);
 Console.WriteLine(await httpMediator.SendAsync(deleteTestByKeyCommand, CancellationToken.None));
 var deleteTestBy2KeysCommand = new DeleteTestBy2KeysCommand
 {
-    TestData = "test"
+    TestData = "test",
+    Key1 = 1,
+    Key2 = 2
 };
-deleteTestBy2KeysCommand.SetKey1(1);
-deleteTestBy2KeysCommand.SetKey2(2);
 Console.WriteLine(await httpMediator.SendAsync(deleteTestBy2KeysCommand, CancellationToken.None));
 var deleteTestBy7KeysCommand = new DeleteTestBy7KeysCommand
 {
-    TestData = "test"
+    TestData = "test",
+    Key1 = 1,
+    Key2 = 2,
+    Key3 = 3,
+    Key4 = 4,
+    Key5 = 5,
+    Key6 = 6,
+    Key7 = 7
 };
-deleteTestBy7KeysCommand.SetKey1(1);
-deleteTestBy7KeysCommand.SetKey2(2);
-deleteTestBy7KeysCommand.SetKey3(3);
-deleteTestBy7KeysCommand.SetKey4(4);
-deleteTestBy7KeysCommand.SetKey5(5);
-deleteTestBy7KeysCommand.SetKey6(6);
-deleteTestBy7KeysCommand.SetKey7(7);
 Console.WriteLine(await httpMediator.SendAsync(deleteTestBy7KeysCommand, CancellationToken.None));
 
 var fileResponse = await httpMediator.SendAsync<GetFileQuery, byte[]>(
@@ -235,10 +265,12 @@ var queryParams = new GetTestWithQueryParamsQuery
             Name = "Deep inner object name"
         }
     },
-    TestEnumParam = GetTestWithQueryParamsEnum.TestEnum2
+    TestEnumParam = GetTestWithQueryParamsEnum.TestEnum2,
+    Key = 1
 };
-var queryParamsResponse = await httpMediator.SendAsync<GetTestWithQueryParamsQuery, GetTestWithQueryParamsQuery>(queryParams, CancellationToken.None);
-Console.WriteLine(JsonSerializer.Serialize(queryParamsResponse));
+var queryParamsResponse =
+    await httpMediator.SendAsync<GetTestWithQueryParamsQuery, string>(queryParams, CancellationToken.None);
+Console.WriteLine(queryParamsResponse);
 
 
 var pngBase64 =
@@ -247,23 +279,44 @@ var bytes = Convert.FromBase64String(pngBase64);
 using var stream = new MemoryStream(bytes);
 var importFileStreamWithNameCommand = new ImportFileStreamWithNameCommand();
 importFileStreamWithNameCommand.SetFile(stream, "img.png");
-var importFileStreamWithNameResponse = await httpMediator.SendAsync<ImportFileStreamWithNameCommand, FileStreamResponse>(importFileStreamWithNameCommand, CancellationToken.None);
-Console.WriteLine($"ImportFileStreamWithNameCommand: file size {importFileStreamWithNameResponse.File.Length}, file name {importFileStreamWithNameResponse.FileName}");
+var importFileStreamWithNameResponse =
+    await httpMediator.SendAsync<ImportFileStreamWithNameCommand, FileStreamResponse>(importFileStreamWithNameCommand,
+        CancellationToken.None);
+Console.WriteLine(
+    $"ImportFileStreamWithNameCommand: file size {importFileStreamWithNameResponse.File.Length}, file name {importFileStreamWithNameResponse.FileName}");
 
 using var stream2 = new MemoryStream(bytes);
 var importFileStreamCommand = new ImportFileStreamCommand();
 importFileStreamCommand.SetFile(stream2, "img.png");
-var importFileStreamResponse = await httpMediator.SendAsync<ImportFileStreamCommand, Stream>(importFileStreamCommand, CancellationToken.None);
+var importFileStreamResponse =
+    await httpMediator.SendAsync<ImportFileStreamCommand, Stream>(importFileStreamCommand, CancellationToken.None);
 Console.WriteLine($"ImportFileStreamCommand: file size {importFileStreamResponse.Length}");
 
 using var stream3 = new MemoryStream(bytes);
 var importFileBytesWithNameCommand = new ImportFileBytesWithNameCommand();
 importFileBytesWithNameCommand.SetFile(stream3, "img.png");
-var importFileBytesWithNameResponse = await httpMediator.SendAsync<ImportFileBytesWithNameCommand, FileResponse>(importFileBytesWithNameCommand, CancellationToken.None);
-Console.WriteLine($"ImportFileBytesWithNameCommand: file size {importFileBytesWithNameResponse.File.Length}, file name {importFileBytesWithNameResponse.FileName}");
+var importFileBytesWithNameResponse =
+    await httpMediator.SendAsync<ImportFileBytesWithNameCommand, FileResponse>(importFileBytesWithNameCommand,
+        CancellationToken.None);
+Console.WriteLine(
+    $"ImportFileBytesWithNameCommand: file size {importFileBytesWithNameResponse.File.Length}, file name {importFileBytesWithNameResponse.FileName}");
 
 using var stream4 = new MemoryStream(bytes);
 var importFileBytesCommand = new ImportFileBytesCommand();
 importFileBytesCommand.SetFile(stream4, "img.png");
-var importFileBytesResponse = await httpMediator.SendAsync<ImportFileBytesCommand, byte[]>(importFileBytesCommand, CancellationToken.None);
+var importFileBytesResponse =
+    await httpMediator.SendAsync<ImportFileBytesCommand, byte[]>(importFileBytesCommand, CancellationToken.None);
 Console.WriteLine($"ImportFileBytesCommand: file size {importFileBytesResponse.Length}");
+
+var getByKey7WithDifferentTypesQuery = new GetByKey7WithDifferentTypesQuery
+{
+    Key1 = 1,
+    Key2 = "key2",
+    Key3 = long.MaxValue,
+    Key4 = true,
+    Key5 = DateTimeOffset.UtcNow,
+    Key6 = Guid.NewGuid(),
+    Key7 = 123.456m
+};
+var getByKey7WithDifferentTypesResponse = await httpMediator.SendAsync<GetByKey7WithDifferentTypesQuery, string>(getByKey7WithDifferentTypesQuery, CancellationToken.None);
+Console.WriteLine(getByKey7WithDifferentTypesResponse);

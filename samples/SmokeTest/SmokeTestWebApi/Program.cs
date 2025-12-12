@@ -2,12 +2,10 @@ using MitMediator.AutoApi;
 using SmokeTest.Application.UseCase.Test.Queries.GetEmpty;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-
 builder.Services.AddControllers();
 builder.Services.AddMitMediator();
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi("v1");
+builder.Services.AddOpenApi("v2");
 
 builder.Services.AddCors(options =>
 {
@@ -30,12 +28,8 @@ app.MapOpenApi();
 app.UseSwaggerUI(options =>
 {
     options.SwaggerEndpoint("/openapi/v1.json", "v1");
-    options.SwaggerEndpoint("/openapi/v1.json", "v2");
+    options.SwaggerEndpoint("/openapi/v2.json", "v2");
 });
 app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
 
 app.Run();

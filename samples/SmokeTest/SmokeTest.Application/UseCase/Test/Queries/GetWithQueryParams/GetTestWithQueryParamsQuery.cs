@@ -1,10 +1,11 @@
 using MitMediator;
+using MitMediator.AutoApi.Abstractions;
 
 namespace SmokeTest.Application.UseCase.Test.Queries.GetWithQueryParams;
 
-public class GetTestWithQueryParamsQuery : IRequest<GetTestWithQueryParamsQuery>
+public class GetTestWithQueryParamsQuery : KeyRequest<int>, IRequest<string>
 {
-    public string TestStringParam { get; set; }
+    public required string TestStringParam { get; set; }
     
     public string? TestNullableStringParam { get; set; }
     
@@ -20,11 +21,11 @@ public class GetTestWithQueryParamsQuery : IRequest<GetTestWithQueryParamsQuery>
     
     public DateTimeOffset DateTimeOffsetParam { get; set; }
     
-    public string[] ArrayParam { get; set; }
+    public required string[] ArrayParam { get; set; }
     
-    public List<string> ListParam { get; set; }
+    public required List<string> ListParam { get; set; }
     
     public GetTestWithQueryParamsEnum TestEnumParam { get; set; } 
     
-    public GetTestWithQueryInnerObject InnerObject { get; set; }
+    public required GetTestWithQueryInnerObject InnerObject { get; set; }
 }

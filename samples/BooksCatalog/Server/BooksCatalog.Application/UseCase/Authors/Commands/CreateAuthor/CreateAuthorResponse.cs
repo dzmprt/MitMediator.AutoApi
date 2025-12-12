@@ -3,29 +3,22 @@ using MitMediator.AutoApi.Abstractions;
 
 namespace BooksCatalog.Application.UseCase.Authors.Commands.CreateAuthor;
 
-public class CreateAuthorResponse //: IResourceKey
+public class CreateAuthorResponse(Author author) : IResourceKey
 {
     /// <summary>
     /// Author id.
     /// </summary>
-    public int AuthorId { get; private set; }
-    
+    public int AuthorId { get; private set; } = author.AuthorId;
+
     /// <summary>
     /// First name.
     /// </summary>
-    public string FirstName { get; private set; }
-    
+    public string FirstName { get; private set; } = author.FirstName;
+
     /// <summary>
     /// Last name.
     /// </summary>
-    public string LastName { get; private set; }
-
-    public CreateAuthorResponse(Author author)
-    {
-        AuthorId = author.AuthorId;
-        FirstName = author.FirstName;
-        LastName = author.LastName;
-    }
+    public string LastName { get; private set; } = author.LastName;
 
     public string GetResourceKey() => AuthorId.ToString();
 }

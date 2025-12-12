@@ -32,9 +32,14 @@ public class RequestInfo
     public string? Description { get; }
 
     /// <summary>
-    /// Custom pattern. If set, base url, version and tag will be ignored.
+    /// Endpoint method pattern.
     /// </summary>
     public string Pattern { get; }
+    
+    /// <summary>
+    /// Endpoint method pattern with type of route params (like books/{key:int}).
+    /// </summary>
+    public string PatternWithTypesOfRoutParams { get; }
 
     /// <summary>
     /// Pattern suffix. Example ACTION in "api/tag/action"
@@ -60,7 +65,7 @@ public class RequestInfo
     public bool IsKeyRequest { get; }
 
     public int? KeysCount { get; }
-    
+
     public bool IsDisableAntiforgery { get; }
 
     /// <summary>
@@ -71,15 +76,15 @@ public class RequestInfo
     {
         var implementsIRequest = requestType
             .GetInterfaces()
-            .Any(i => i.IsGenericType && 
+            .Any(i => i.IsGenericType &&
                       (i.GetGenericTypeDefinition() == typeof(IRequest<>))
-                      );
+            );
 
         if (!implementsIRequest)
         {
             throw new ArgumentException($"{nameof(requestType)} must implement IRequest<T>", nameof(requestType));
         }
-        
+
         BasePath = basePath;
         RequestType = requestType;
         Tag = GetTag(requestType);
@@ -87,6 +92,7 @@ public class RequestInfo
         Description = GetDescription(requestType);
         PluralizedTag = GetPluralizedTag(requestType);
         Pattern = GetPattern(requestType, basePath);
+        PatternWithTypesOfRoutParams = GetPattern(requestType, basePath, true);
         Suffix = GetSuffix(requestType);
         MethodType = GetHttpMethod(requestType);
         ContentType = GetContentType(requestType);
@@ -105,7 +111,7 @@ public class RequestInfo
         var attribute = requestType.GetCustomAttribute<DisableAntiforgeryAttribute>();
         return attribute is not null;
     }
-    
+
     private static string? GetContentType(Type requestType)
     {
         var attribute = requestType.GetCustomAttribute<ResponseContentTypeAttribute>();
@@ -150,7 +156,7 @@ public class RequestInfo
         return attribute?.Description;
     }
 
-    public static string GetPattern(Type requestType, string? basePath)
+    public static string GetPattern(Type requestType, string? basePath = null, bool useRouteOptionsConstraintMap = false)
     {
         var patternAttribute = requestType.GetCustomAttribute<PatternAttribute>();
         var isKeyRequest = GetIsKeyRequest(requestType);
@@ -161,26 +167,36 @@ public class RequestInfo
                 return patternAttribute.Pattern;
             }
 
+            var customPattern = patternAttribute.Pattern;
             var keysCount = GetKeysCount(requestType);
+
             if (keysCount == 1)
             {
                 if (!patternAttribute.Pattern.Contains("{key}"))
                 {
                     throw new Exception("Custom pattern must contain '{key}'.");
                 }
-
-                return patternAttribute.Pattern;
+                
             }
-
-            for (var i = 1; i < keysCount + 1; i++)
+            else
             {
-                if (!patternAttribute.Pattern.Contains($"{{key{i}}}"))
+                for (var i = 1; i < keysCount + 1; i++)
                 {
-                    throw new Exception($"Custom pattern must contain '{{key{i}}}'.");
+                    if (!patternAttribute.Pattern.Contains($"{{key{i}"))
+                    {
+                        throw new Exception($"Custom pattern must contain '{{key{i}}}'.");
+                    }
                 }
             }
+            
+            if (useRouteOptionsConstraintMap)
+            {
+                var keyTypes = GetKeysTypes(requestType);
+                customPattern = MapKeyTypesInPattern(keysCount, patternAttribute.Pattern, keyTypes);
+            }
 
-            return patternAttribute.Pattern;
+
+            return customPattern;
         }
 
         var pliralizedTag = GetPluralizedTag(requestType);
@@ -193,10 +209,16 @@ public class RequestInfo
         if (isKeyRequest)
         {
             var keysCount = GetKeysCount(requestType);
-            pattern = keysCount == 1
+            var keyTypes = GetKeysTypes(requestType);
+            pattern = keyTypes.Length == 1
                 ? string.Concat(pattern, "/{key}")
                 : string.Concat(pattern, "/",
                     string.Join("/", Enumerable.Range(1, keysCount).Select(c => $"{{key{c}}}")));
+            
+            if (useRouteOptionsConstraintMap)
+            {
+                pattern = MapKeyTypesInPattern(keysCount, pattern, keyTypes);
+            }
         }
 
         var suffix = GetSuffix(requestType);
@@ -214,16 +236,34 @@ public class RequestInfo
         return pattern;
     }
 
+    private static string MapKeyTypesInPattern(int keysCount, string pattern, Type[] keyTypes)
+    {
+        if (keysCount == 1)
+        {
+            pattern = pattern.Replace("{key}", $"{{key{MapKeyTypeToRouteOptionsConstraint(keyTypes[0])}}}");
+        }
+        else
+        {
+            for (var i = 1; i < keysCount+1; i++)
+            {
+                pattern = pattern.Replace($"{{key{i}}}", $"{{key{i}{MapKeyTypeToRouteOptionsConstraint(keyTypes[i-1])}}}");
+
+            }
+        }
+
+        return pattern;
+    }
+
     private static string? GetSuffix(Type requestType)
     {
         var patternAttribute = requestType.GetCustomAttribute<PatternAttribute>();
         var suffix = requestType.GetCustomAttribute<SuffixAttribute>();
-        
+
         if (patternAttribute is not null && suffix is not null)
         {
             throw new Exception("Suffix can't be specified when a custom pattern is provided.");
         }
-        
+
         if (suffix != null)
         {
             return suffix.Suffix;
@@ -291,6 +331,26 @@ public class RequestInfo
             $"Invalid number of generic arguments for type {requestType.Name}. Type must implement IKeyRequest<> interface.");
     }
 
+    public static Type[] GetKeysTypes(Type requestType)
+    {
+        var keyInterface = requestType.GetInterfaces()
+            .FirstOrDefault(i =>
+                i.IsGenericType &&
+                new[]
+                {
+                    typeof(IKeyRequest<>),
+                    typeof(IKeyRequest<,>),
+                    typeof(IKeyRequest<,,>),
+                    typeof(IKeyRequest<,,,>),
+                    typeof(IKeyRequest<,,,,>),
+                    typeof(IKeyRequest<,,,,,>),
+                    typeof(IKeyRequest<,,,,,,>),
+                }.Contains(i.GetGenericTypeDefinition()));
+
+        return keyInterface?.GenericTypeArguments ?? throw new Exception(
+            $"Invalid generic arguments for type {requestType.Name}. Type must implement IKeyRequest<> interface.");
+    }
+
     private static string GetPluralizedTag(Type requestType)
     {
         var attribute = requestType.GetCustomAttribute<TagAttribute>();
@@ -299,6 +359,7 @@ public class RequestInfo
         {
             return SplitPascalCaseToKebab(tag);
         }
+
         var requestNameToKebab = RemoveKeywordsAndSplitToKebab(requestType.Name);
         tag = requestNameToKebab.Split("-").First();
         return SplitPascalCaseToKebab(Pluralizer.Pluralize(tag));
@@ -364,6 +425,7 @@ public class RequestInfo
         {
             return methodAttribute.MethodType;
         }
+
         var typeValue = MethodType.Get;
         foreach (var kvp in ActionNamesMaps)
         {
@@ -406,130 +468,6 @@ public class RequestInfo
             ["drop"] = MethodType.Delete
         };
 
-    public static Type GetKeyType(Type queryType)
-    {
-        var requestKeyInterface = queryType
-            .GetInterfaces()
-            .FirstOrDefault(i =>
-                i.IsGenericType &&
-                i.GetGenericTypeDefinition() == typeof(IKeyRequest<>));
-
-        if (requestKeyInterface == null)
-        {
-            throw new Exception($"{queryType.Name} must implement IKeyRequest<> interface.");
-        }
-
-        return requestKeyInterface!.GetGenericArguments()[0];
-    }
-
-    public static (Type, Type) GetKey2Type(Type queryType)
-    {
-        var requestKeyInterface = queryType
-            .GetInterfaces()
-            .FirstOrDefault(i =>
-                i.IsGenericType &&
-                i.GetGenericTypeDefinition() == typeof(IKeyRequest<,>));
-
-        if (requestKeyInterface == null)
-        {
-            throw new Exception($"{queryType.Name} must implement IKeyRequest<,> interface.");
-        }
-
-        var keyTypes = requestKeyInterface!.GetGenericArguments();
-
-        return (keyTypes[0], keyTypes[1]);
-    }
-
-    public static (Type, Type, Type) GetKey3Type(Type queryType)
-    {
-        var requestKeyInterface = queryType
-            .GetInterfaces()
-            .FirstOrDefault(i =>
-                i.IsGenericType &&
-                i.GetGenericTypeDefinition() == typeof(IKeyRequest<,,>));
-
-        if (requestKeyInterface == null)
-        {
-            throw new Exception($"{queryType.Name} must implement IKeyRequest<,,> interface.");
-        }
-
-        var keyTypes = requestKeyInterface!.GetGenericArguments();
-
-        return (keyTypes[0], keyTypes[1], keyTypes[2]);
-    }
-
-    public static (Type, Type, Type, Type) GetKey4Type(Type queryType)
-    {
-        var requestKeyInterface = queryType
-            .GetInterfaces()
-            .FirstOrDefault(i =>
-                i.IsGenericType &&
-                i.GetGenericTypeDefinition() == typeof(IKeyRequest<,,,>));
-
-        if (requestKeyInterface == null)
-        {
-            throw new Exception($"{queryType.Name} must implement IKeyRequest<,,,> interface.");
-        }
-
-        var keyTypes = requestKeyInterface!.GetGenericArguments();
-
-        return (keyTypes[0], keyTypes[1], keyTypes[2], keyTypes[3]);
-    }
-
-    public static (Type, Type, Type, Type, Type) GetKey5Type(Type queryType)
-    {
-        var requestKeyInterface = queryType
-            .GetInterfaces()
-            .FirstOrDefault(i =>
-                i.IsGenericType &&
-                i.GetGenericTypeDefinition() == typeof(IKeyRequest<,,,,>));
-
-        if (requestKeyInterface == null)
-        {
-            throw new Exception($"{queryType.Name} must implement IKeyRequest<,,,,> interface.");
-        }
-
-        var keyTypes = requestKeyInterface!.GetGenericArguments();
-
-        return (keyTypes[0], keyTypes[1], keyTypes[2], keyTypes[3], keyTypes[4]);
-    }
-
-    public static (Type, Type, Type, Type, Type, Type) GetKey6Type(Type queryType)
-    {
-        var requestKeyInterface = queryType
-            .GetInterfaces()
-            .FirstOrDefault(i =>
-                i.IsGenericType &&
-                i.GetGenericTypeDefinition() == typeof(IKeyRequest<,,,,,>));
-
-        if (requestKeyInterface == null)
-        {
-            throw new Exception($"{queryType.Name} must implement IKeyRequest<,,,,,> interface.");
-        }
-
-        var keyTypes = requestKeyInterface!.GetGenericArguments();
-
-        return (keyTypes[0], keyTypes[1], keyTypes[2], keyTypes[3], keyTypes[4], keyTypes[5]);
-    }
-
-    public static (Type, Type, Type, Type, Type, Type, Type) GetKey7Type(Type queryType)
-    {
-        var requestKeyInterface = queryType
-            .GetInterfaces()
-            .FirstOrDefault(i =>
-                i.IsGenericType &&
-                i.GetGenericTypeDefinition() == typeof(IKeyRequest<,,,,,,>));
-
-        if (requestKeyInterface == null)
-        {
-            throw new Exception($"{queryType.Name} must implement IKeyRequest<,,,,,,> interface.");
-        }
-
-        var keyTypes = requestKeyInterface!.GetGenericArguments();
-
-        return (keyTypes[0], keyTypes[1], keyTypes[2], keyTypes[3], keyTypes[4], keyTypes[5], keyTypes[6]);
-    }
-
     public static Type GetResponseType(Type requestType)
     {
         var requestInterface = requestType
@@ -540,4 +478,29 @@ public class RequestInfo
 
         return requestInterface!.GetGenericArguments()[0];
     }
+
+    // see https://github.com/dotnet/aspnetcore/blob/c5f8422073be4a98c9cf3f75c58f9a0d59fdf073/src/Http/Routing/src/RouteOptions.cs#L102
+    private static readonly Dictionary<Type, string> RouteOptionsConstraintMap = new()
+    {
+        // { typeof(string), "string" },
+        { typeof(int), "int" },     
+        { typeof(long), "long" },
+        { typeof(bool), "bool" },
+        { typeof(DateTime), "datetime" },
+        { typeof(DateTimeOffset), "datetime" },
+        { typeof(decimal), "decimal" },
+        { typeof(double), "double" },
+        { typeof(float), "float" },
+        { typeof(Guid), "guid" }
+    };
+
+    private static string MapKeyTypeToRouteOptionsConstraint(Type key)
+    {
+        if (key == typeof(string)) 
+        {
+            return string.Empty;
+        }
+        return RouteOptionsConstraintMap.TryGetValue(key, out var constraint) ? $":{constraint}" : throw new ArgumentException($"Unsupported key route options type {key.FullName}");
+    }
+
 }

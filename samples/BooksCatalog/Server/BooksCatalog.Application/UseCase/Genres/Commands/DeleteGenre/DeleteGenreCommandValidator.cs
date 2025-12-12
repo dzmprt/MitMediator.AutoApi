@@ -13,6 +13,6 @@ internal sealed class DeleteGenreCommandValidator : AbstractValidator<DeleteGenr
     /// </summary>
     public DeleteGenreCommandValidator()
     {
-        RuleFor(x => x.GenreName).NotEmpty().MaximumLength(Genre.MaxGenreNameLength);
+        RuleFor(x => x.GetKey()).NotEmpty().MaximumLength(Genre.MaxGenreNameLength);
     }
 }

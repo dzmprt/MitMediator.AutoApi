@@ -8,17 +8,4 @@ namespace BooksCatalog.Application.UseCase.Books.Queries.GetBookCover;
 /// Get book cover.
 /// </summary>
 [ResponseContentType("image/png")]
-public struct GetBookCoverQuery : IRequest<FileStreamResponse>, IKeyRequest<int>
-{
-    /// <summary>
-    /// Book id.
-    /// </summary>
-    internal int BookId { get; private set; }
-
-    public void SetKey(int key)
-    {
-        BookId = key;
-    }
-    
-    public int GetKey() => BookId;
-}
+public class GetBookCoverQuery : KeyRequest<int>, IRequest<FileStreamResponse>;
