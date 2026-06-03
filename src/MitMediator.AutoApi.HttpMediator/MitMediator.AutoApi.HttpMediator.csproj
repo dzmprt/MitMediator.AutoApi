@@ -12,13 +12,12 @@
         <PackageIcon>logo.png</PackageIcon>
         <RepositoryUrl>https://github.com/dzmprt/MitMediator.AutoApi</RepositoryUrl>
         <PackageTags>mediator;request;response;queries;commands;mitmediator;minimalapi;autoapi;cqrs;httpmediator;httpclient</PackageTags>
-        <PackageReleaseNotes>10.0.0-alfa-3
-- Changed the method of mapping route parameter types to constraints
-- Changed key requests abstractions, added keys properties extensionsparameter types to constraintsparameter types to constraints</PackageReleaseNotes>
+        <PackageReleaseNotes>10.0.0
+- Initial release</PackageReleaseNotes>
         <TrimMode>full</TrimMode>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
-        <Version>10.0.0-alfa-3</Version>
+        <Version>10.0.0</Version>
         <LangVersion>14</LangVersion>
     </PropertyGroup>
 

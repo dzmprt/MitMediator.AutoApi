@@ -1,0 +1,33 @@
+<Solution>
+  <Folder Name="/assets/">
+    <File Path="assets\logo.png" />
+  </Folder>
+  <Folder Name="/samples/" />
+  <Folder Name="/samples/BooksCatalog/">
+    <Project Path="samples/BooksCatalog/BooksCatalogConsoleClient/BooksCatalogConsoleClient.csproj" />
+  </Folder>
+  <Folder Name="/samples/BooksCatalog/Server/">
+    <Project Path="samples/BooksCatalog/Server/BooksCatalog.Application/BooksCatalog.Application.csproj" />
+    <Project Path="samples/BooksCatalog/Server/BooksCatalog.Domain/BooksCatalog.Domain.csproj" />
+    <Project Path="samples/BooksCatalog/Server/BooksCatalog.Infrastructure/BooksCatalog.Infrastructure.csproj" />
+    <Project Path="samples/BooksCatalog/Server/BooksCatalog.WebApi/BooksCatalog.WebApi.csproj" />
+  </Folder>
+  <Folder Name="/samples/SmokeTest/">
+    <Project Path="samples/SmokeTest/SmokeTeskWebApiScalar/SmokeTeskWebApiScalar.csproj" />
+    <Project Path="samples/SmokeTest/SmokeTest.Application/SmokeTest.Application.csproj" />
+    <Project Path="samples/SmokeTest/SmokeTestBlazorClient/SmokeTestBlazorClient.csproj" />
+    <Project Path="samples/SmokeTest/SmokeTestClient/SmokeTestClient.csproj" />
+    <Project Path="samples/SmokeTest/SmokeTestWebApi/SmokeTestWebApi.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/MitMediator.AutoApi.Abstractions/MitMediator.AutoApi.Abstractions.csproj" />
+    <Project Path="src/MitMediator.AutoApi.HttpMediator/MitMediator.AutoApi.HttpMediator.csproj" />
+    <Project Path="src/MitMediator.AutoApi/MitMediator.AutoApi.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MitMediator.AutoApi.Abstractions.Tests/MitMediator.AutoApi.Abstractions.Tests.csproj" />
+    <Project Path="tests/MitMediator.AutoApi.HttpMediator.Tests/MitMediator.AutoApi.HttpMediator.Tests.csproj" />
+    <Project Path="tests/MitMediator.AutoApi.Tests/MitMediator.AutoApi.Tests.csproj" />
+  </Folder>
+
+</Solution>
