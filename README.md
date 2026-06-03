@@ -24,13 +24,13 @@
 
 ```bash
 # for ASP.NET API projects
-dotnet add package MitMediator.AutoApi -v 10.0.0-alfa-3
+dotnet add package MitMediator.AutoApi -v 10.0.0
 
 # for application layer
-dotnet add package MitMediator.AutoApi.Abstractions -v 10.0.0-alfa-3
+dotnet add package MitMediator.AutoApi.Abstractions -v 10.0.0
 
 # for client application (MAUI, Blazor, UWP, etc.)
-dotnet add package MitMediator.AutoApi.HttpMediator -v 10.0.0-alfa-3
+dotnet add package MitMediator.AutoApi.HttpMediator -v 10.0.0
 ```
 
 ### 2. Use extension for IEndpointRouteBuilder
@@ -84,13 +84,13 @@ HTTP Method is inferred from the leading verb in the type name:
 
 Resource Name (main tag) is derived from the first noun after the verb, and pluralized:
 
-- Book → /books 
-- Author → /authors
+- Book -> /books
+- Author -> /authors
 
 Route suffix includes any remaining parts of the type name, converted to lowercase and kebab-case:
 
-- Count → /count
-- WithAuthor → /with-author
+- Count -> /count
+- WithAuthor -> /with-author
 
 > Custom suffix will be added as is
 
@@ -137,9 +137,9 @@ public class CreateBookCommand : IRequest<Book>
 }
 ```
 
-If you need to use a route parameter, inherit from one of the classes `KeyRequest<TKey>`
+If you need to use a route parameter, inherit from one of the classes `KeyRequest<TKey>` (recomended)
 or implement one of the interfaces `IKeyRequest<TKey>`, `IKeyRequest<TKey1,TKey2>`, etc.
-(up to 7 keys).
+(up to 7 keys). 
 
 ### `GET` endpoint with suffix and key in url
 
@@ -147,7 +147,8 @@ or implement one of the interfaces `IKeyRequest<TKey>`, `IKeyRequest<TKey1,TKey2
 // URL: GET /v1/books/123/cover
 public class GetBookCoverQuery : KeyRequest<int>, IRequest<Book>;
 ```
-> Use interface `IKeyRequest<int>` for structs or when you can't inherit KeyRequest:
+Use interface `IKeyRequest<int>` for structs or when you can't inherit KeyRequest:
+
 > ```csharp 
 > // URL: GET /v1/books/123/cover
 > public struct GetBookCoverQuery : IKeyRequest<int>, IRequest<Book>
