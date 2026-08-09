@@ -43,7 +43,7 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     </ItemGroup>
-            <ItemGroup>
-    <ProjectReference Include="../MitMediator.AutoApi.Abstractions/MitMediator.AutoApi.Abstractions.csproj" />
+              <ItemGroup>
+    <PackageReference Include="MitMediator.AutoApi.Abstractions" />
   </ItemGroup>
 </Project>

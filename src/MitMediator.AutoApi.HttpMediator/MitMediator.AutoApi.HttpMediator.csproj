@@ -40,7 +40,7 @@
     <ItemGroup>
         <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
     </ItemGroup>
-            <ItemGroup>
-    <ProjectReference Include="../MitMediator.AutoApi.Abstractions/MitMediator.AutoApi.Abstractions.csproj" />
+              <ItemGroup>
+    <PackageReference Include="MitMediator.AutoApi.Abstractions" />
   </ItemGroup>
 </Project>
