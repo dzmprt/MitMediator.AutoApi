@@ -21,20 +21,20 @@ internal sealed class GetBooksQueryHandler(IBaseProvider<Book> booksProvider) : 
                                                               q.Author.LastName.Contains(freeText) ||
                                                               q.Title.Contains(freeText) ||
                                                               q.Genre.GenreName.Contains(freeText);
-        
+
         var items = await booksProvider.SearchAsync(searchExpression,
             o => o.BookId,
             request.Limit,
             request.Offset,
             cancellationToken
         );
-        
+
         var totalCount = await booksProvider.CountAsync(searchExpression, cancellationToken);
         var response = new GetBooksResponse()
         {
             Items = items,
+            TotalCount = totalCount
         };
-        response.SetTotalCount(totalCount);
         return response;
     }
 }

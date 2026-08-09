@@ -12,12 +12,12 @@
       <ProjectReference Include="..\Server\BooksCatalog.Application\BooksCatalog.Application.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="MitMediator.AutoApi.HttpMediator" />
-    </ItemGroup>
-
+    
     <PropertyGroup>
         <ExcludeFromCodeCoverage>true</ExcludeFromCodeCoverage>
     </PropertyGroup>
 
+    <ItemGroup>
+    <PackageReference Include="MitMediator.AutoApi.HttpMediator" />
+  </ItemGroup>
 </Project>

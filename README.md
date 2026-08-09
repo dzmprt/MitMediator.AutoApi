@@ -259,19 +259,15 @@ public class GetBooksResponse : ITotalCount
 {
     public Book[] Items { get; init; }
 
-    private int _totalCount;
-    
-    public int GetTotalCount() => _totalCount;
-
-    public void SetTotalCount(int totalCount)
-    {
-        _totalCount = totalCount;
-    }
+    public int TotalCount { get; init; }
 }
 ```
 
 When this interface is implemented, MitMediator.AutoApi will automatically include the `X-Total-Count` header in the
-response, reflecting the value returned by `GetTotalCount()`
+response, reflecting the value of the `TotalCount` property. Set the value when creating the response.
+```
+
+The HTTP client also exposes the value as `response.TotalCount` after deserialization.
 
 ## Location header
 

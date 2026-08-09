@@ -8,6 +8,25 @@ namespace MitMediator.AutoApi.Tests.EndpointsMethodsTests;
 public class TaskHandlerMethodsTests
 {
     [Fact]
+    public async Task WithGetParamsWithTotalCount_ShouldSetTotalCountHeader()
+    {
+        var mediator = new Mock<IMediator>();
+        mediator
+            .Setup(value => value.Send<TotalCountTaskRequest, TotalCountTaskResponse>(
+                It.IsAny<TotalCountTaskRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TotalCountTaskResponse { TotalCount = 42 });
+
+        var context = CreateContext(mediator.Object);
+        var endpoint = EndpointsMethodsForTaskHandlers.WithGetParams<TotalCountTaskRequest, TotalCountTaskResponse>(
+            new RequestInfo(typeof(TotalCountTaskRequest)));
+
+        var result = await (ValueTask<IResult>)endpoint.DynamicInvoke(context, CancellationToken.None)!;
+
+        Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<TotalCountTaskResponse>>(result);
+        Assert.Equal("42", context.Response.Headers["X-Total-Count"].ToString());
+    }
+
+    [Fact]
     public async Task WithGetParams_ShouldCallTaskMediator()
     {
         var mediator = new Mock<IMediator>();
@@ -60,5 +79,14 @@ public class TaskHandlerMethodsTests
     private sealed class SimpleTaskRequest : IRequest<string>, IKeyRequest<int>
     {
         public int Key { get; init; }
+    }
+
+    private sealed class TotalCountTaskRequest : IRequest<TotalCountTaskResponse>
+    {
+    }
+
+    private sealed class TotalCountTaskResponse : ITotalCount
+    {
+        public int TotalCount { get; init; }
     }
 }

@@ -243,7 +243,7 @@ Console.WriteLine($"GetFilePng: file size {filePngResponse.Length}, file name {f
 
 var getListQuery = new GetListQuery();
 var response = await httpMediator.SendAsync<GetListQuery, GetListResponse>(getListQuery, CancellationToken.None);
-Console.WriteLine($"GetListQuery: items count {response.Items.Length}, X-Total-Count {response.GetTotalCount()}");
+Console.WriteLine($"GetListQuery: items count {response.Items.Length}, X-Total-Count {response.TotalCount}");
 
 var queryParams = new GetTestWithQueryParamsQuery
 {

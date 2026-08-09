@@ -17,12 +17,12 @@
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
     <PackageVersion Include="MitMediator" Version="10.0.0" />
     <PackageVersion Include="MitMediator.AutoApi" Version="10.0.0" />
-    <PackageVersion Include="MitMediator.AutoApi.Abstractions" Version="10.0.1-rc" />
-    <PackageVersion Include="MitMediator.AutoApi.HttpMediator" Version="10.0.0" />
     <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="Scalar.AspNetCore" Version="2.16.18" />
     <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.2.3" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
-  </ItemGroup>
+      <PackageVersion Include="MitMediator.AutoApi.HttpMediator" Version="10.0.1-rc" />
+    <PackageVersion Include="MitMediator.AutoApi.Abstractions" Version="10.0.1-rc" />
+</ItemGroup>
 </Project>

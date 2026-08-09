@@ -122,19 +122,6 @@ internal class HttpRequestHandler<TRequest, TResponse> : IClientRequestHandler<T
         };
         opts.Converters.Add(stringEnumConverter);
         var responseModel = JsonSerializer.Deserialize<TResponse>(content, opts)!;
-        if (responseModel is ITotalCount)
-        {
-            if(response.Headers.TryGetValues("X-Total-Count", out var values))
-            {
-                var count = values.First();
-                var totalCount = (ITotalCount)responseModel;
-                totalCount.SetTotalCount(int.Parse(count));
-            }
-            else
-            {
-                throw new Exception("Not fount header \"X-Total-Count\", check server settings.");
-            }
-        }
         return (responseModel, response.Headers);
     }
 }
