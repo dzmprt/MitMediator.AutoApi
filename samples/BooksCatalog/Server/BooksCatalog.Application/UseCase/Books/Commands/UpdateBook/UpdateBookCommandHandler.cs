@@ -20,7 +20,7 @@ public class UpdateBookCommandHandler(
     /// <inheritdoc/>
     public async ValueTask<Book> HandleAsync(UpdateBookCommand request, CancellationToken cancellationToken)
     {
-        var book = await booksRepository.FirstOrDefaultAsync(b => b.BookId == request.GetKey(), cancellationToken);
+        var book = await booksRepository.FirstOrDefaultAsync(b => b.BookId == request.Key, cancellationToken);
         if (book is null)
         {
             throw new NotFoundException();

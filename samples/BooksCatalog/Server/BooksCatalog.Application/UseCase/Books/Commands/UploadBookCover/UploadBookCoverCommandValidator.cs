@@ -12,6 +12,6 @@ public class UpdateBookCommandValidator : AbstractValidator<UploadBookCoverComma
     /// </summary>
     public UpdateBookCommandValidator()
     {
-        RuleFor(c => c.BookId).GreaterThan(0);
+        RuleFor(c => c.Key).GreaterThan(0);
     }
 }

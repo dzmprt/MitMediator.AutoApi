@@ -37,7 +37,7 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 var request = QueryBinder.BindFromQuery<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request.SetKey(key);
+                QueryBinder.SetProperty(request, "Key", key);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 return GetApiResult(requestInfo, result, ctx);
             });
@@ -51,8 +51,8 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 var request = QueryBinder.BindFromQuery<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request.SetKey1(key1);
-                request.SetKey2(key2);
+                QueryBinder.SetProperty(request, "Key1", key1);
+                QueryBinder.SetProperty(request, "Key2", key2);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 return GetApiResult(requestInfo, result, ctx);
             });
@@ -66,9 +66,9 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 var request = QueryBinder.BindFromQuery<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request.SetKey1(key1);
-                request.SetKey2(key2);
-                request.SetKey3(key3);
+                QueryBinder.SetProperty(request, "Key1", key1);
+                QueryBinder.SetProperty(request, "Key2", key2);
+                QueryBinder.SetProperty(request, "Key3", key3);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 return GetApiResult(requestInfo, result, ctx);
             });
@@ -83,10 +83,10 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 var request = QueryBinder.BindFromQuery<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request.SetKey1(key1);
-                request.SetKey2(key2);
-                request.SetKey3(key3);
-                request.SetKey4(key4);
+                QueryBinder.SetProperty(request, "Key1", key1);
+                QueryBinder.SetProperty(request, "Key2", key2);
+                QueryBinder.SetProperty(request, "Key3", key3);
+                QueryBinder.SetProperty(request, "Key4", key4);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 return GetApiResult(requestInfo, result, ctx);
             });
@@ -101,11 +101,11 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 var request = QueryBinder.BindFromQuery<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request.SetKey1(key1);
-                request.SetKey2(key2);
-                request.SetKey3(key3);
-                request.SetKey4(key4);
-                request.SetKey5(key5);
+                QueryBinder.SetProperty(request, "Key1", key1);
+                QueryBinder.SetProperty(request, "Key2", key2);
+                QueryBinder.SetProperty(request, "Key3", key3);
+                QueryBinder.SetProperty(request, "Key4", key4);
+                QueryBinder.SetProperty(request, "Key5", key5);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 return GetApiResult(requestInfo, result, ctx);
             });
@@ -121,12 +121,12 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 var request = QueryBinder.BindFromQuery<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request.SetKey1(key1);
-                request.SetKey2(key2);
-                request.SetKey3(key3);
-                request.SetKey4(key4);
-                request.SetKey5(key5);
-                request.SetKey6(key6);
+                QueryBinder.SetProperty(request, "Key1", key1);
+                QueryBinder.SetProperty(request, "Key2", key2);
+                QueryBinder.SetProperty(request, "Key3", key3);
+                QueryBinder.SetProperty(request, "Key4", key4);
+                QueryBinder.SetProperty(request, "Key5", key5);
+                QueryBinder.SetProperty(request, "Key6", key6);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 return GetApiResult(requestInfo, result, ctx);
             });
@@ -143,13 +143,13 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 var request = QueryBinder.BindFromQuery<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request.SetKey1(key1);
-                request.SetKey2(key2);
-                request.SetKey3(key3);
-                request.SetKey4(key4);
-                request.SetKey5(key5);
-                request.SetKey6(key6);
-                request.SetKey7(key7);
+                QueryBinder.SetProperty(request, "Key1", key1);
+                QueryBinder.SetProperty(request, "Key2", key2);
+                QueryBinder.SetProperty(request, "Key3", key3);
+                QueryBinder.SetProperty(request, "Key4", key4);
+                QueryBinder.SetProperty(request, "Key5", key5);
+                QueryBinder.SetProperty(request, "Key6", key6);
+                QueryBinder.SetProperty(request, "Key7", key7);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 return GetApiResult(requestInfo, result, ctx);
             });
@@ -206,7 +206,7 @@ internal static class EndpointsMethodsForTaskHandlers
             async ([FromBody] request, [FromRoute] key, ctx, ct) =>
             {
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request.SetKey(key);
+                QueryBinder.SetProperty(request, "Key", key);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
                     return GetApiResult(requestInfo, result, ctx);
@@ -227,7 +227,7 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 request ??= Activator.CreateInstance<TRequest>();
                 request.SetFile(formFile.OpenReadStream(), formFile.FileName);
-                request.SetKey(key);
+                QueryBinder.SetProperty(request, "Key", key);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
@@ -246,8 +246,8 @@ internal static class EndpointsMethodsForTaskHandlers
             async ([FromBody] request, [FromRoute] key1, [FromRoute] key2, ctx, ct) =>
             {
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request.SetKey1(key1);
-                request.SetKey2(key2);
+                QueryBinder.SetProperty(request, "Key1", key1);
+                QueryBinder.SetProperty(request, "Key2", key2);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
                     return GetApiResult(requestInfo, result, ctx);
@@ -268,8 +268,8 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 request ??= Activator.CreateInstance<TRequest>();
                 request.SetFile(formFile.OpenReadStream(), formFile.FileName);
-                request.SetKey1(key1);
-                request.SetKey2(key2);
+                QueryBinder.SetProperty(request, "Key1", key1);
+                QueryBinder.SetProperty(request, "Key2", key2);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
@@ -290,9 +290,9 @@ internal static class EndpointsMethodsForTaskHandlers
             async ([FromBody] request, [FromRoute] key1, [FromRoute] key2, [FromRoute] key3, ctx, ct) =>
             {
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request.SetKey1(key1);
-                request.SetKey2(key2);
-                request.SetKey3(key3);
+                QueryBinder.SetProperty(request, "Key1", key1);
+                QueryBinder.SetProperty(request, "Key2", key2);
+                QueryBinder.SetProperty(request, "Key3", key3);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
                     return GetApiResult(requestInfo, result, ctx);
@@ -314,9 +314,9 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 request ??= Activator.CreateInstance<TRequest>();
                 request.SetFile(formFile.OpenReadStream(), formFile.FileName);
-                request.SetKey1(key1);
-                request.SetKey2(key2);
-                request.SetKey3(key3);
+                QueryBinder.SetProperty(request, "Key1", key1);
+                QueryBinder.SetProperty(request, "Key2", key2);
+                QueryBinder.SetProperty(request, "Key3", key3);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
@@ -339,10 +339,10 @@ internal static class EndpointsMethodsForTaskHandlers
                 ct) =>
             {
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request.SetKey1(key1);
-                request.SetKey2(key2);
-                request.SetKey3(key3);
-                request.SetKey4(key4);
+                QueryBinder.SetProperty(request, "Key1", key1);
+                QueryBinder.SetProperty(request, "Key2", key2);
+                QueryBinder.SetProperty(request, "Key3", key3);
+                QueryBinder.SetProperty(request, "Key4", key4);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
                     return GetApiResult(requestInfo, result, ctx);
@@ -365,10 +365,10 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 request ??= Activator.CreateInstance<TRequest>();
                 request.SetFile(formFile.OpenReadStream(), formFile.FileName);
-                request.SetKey1(key1);
-                request.SetKey2(key2);
-                request.SetKey3(key3);
-                request.SetKey4(key4);
+                QueryBinder.SetProperty(request, "Key1", key1);
+                QueryBinder.SetProperty(request, "Key2", key2);
+                QueryBinder.SetProperty(request, "Key3", key3);
+                QueryBinder.SetProperty(request, "Key4", key4);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
@@ -392,11 +392,11 @@ internal static class EndpointsMethodsForTaskHandlers
                 [FromRoute] key5, ctx, ct) =>
             {
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request.SetKey1(key1);
-                request.SetKey2(key2);
-                request.SetKey3(key3);
-                request.SetKey4(key4);
-                request.SetKey5(key5);
+                QueryBinder.SetProperty(request, "Key1", key1);
+                QueryBinder.SetProperty(request, "Key2", key2);
+                QueryBinder.SetProperty(request, "Key3", key3);
+                QueryBinder.SetProperty(request, "Key4", key4);
+                QueryBinder.SetProperty(request, "Key5", key5);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
                     return GetApiResult(requestInfo, result, ctx);
@@ -420,11 +420,11 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 request ??= Activator.CreateInstance<TRequest>();
                 request.SetFile(formFile.OpenReadStream(), formFile.FileName);
-                request.SetKey1(key1);
-                request.SetKey2(key2);
-                request.SetKey3(key3);
-                request.SetKey4(key4);
-                request.SetKey5(key5);
+                QueryBinder.SetProperty(request, "Key1", key1);
+                QueryBinder.SetProperty(request, "Key2", key2);
+                QueryBinder.SetProperty(request, "Key3", key3);
+                QueryBinder.SetProperty(request, "Key4", key4);
+                QueryBinder.SetProperty(request, "Key5", key5);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
@@ -450,12 +450,12 @@ internal static class EndpointsMethodsForTaskHandlers
                 [FromRoute] key5, [FromRoute] key6, ctx, ct) =>
             {
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request.SetKey1(key1);
-                request.SetKey2(key2);
-                request.SetKey3(key3);
-                request.SetKey4(key4);
-                request.SetKey5(key5);
-                request.SetKey6(key6);
+                QueryBinder.SetProperty(request, "Key1", key1);
+                QueryBinder.SetProperty(request, "Key2", key2);
+                QueryBinder.SetProperty(request, "Key3", key3);
+                QueryBinder.SetProperty(request, "Key4", key4);
+                QueryBinder.SetProperty(request, "Key5", key5);
+                QueryBinder.SetProperty(request, "Key6", key6);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
                     return GetApiResult(requestInfo, result, ctx);
@@ -480,12 +480,12 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 request ??= Activator.CreateInstance<TRequest>();
                 request.SetFile(formFile.OpenReadStream(), formFile.FileName);
-                request.SetKey1(key1);
-                request.SetKey2(key2);
-                request.SetKey3(key3);
-                request.SetKey4(key4);
-                request.SetKey5(key5);
-                request.SetKey6(key6);
+                QueryBinder.SetProperty(request, "Key1", key1);
+                QueryBinder.SetProperty(request, "Key2", key2);
+                QueryBinder.SetProperty(request, "Key3", key3);
+                QueryBinder.SetProperty(request, "Key4", key4);
+                QueryBinder.SetProperty(request, "Key5", key5);
+                QueryBinder.SetProperty(request, "Key6", key6);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
@@ -512,13 +512,13 @@ internal static class EndpointsMethodsForTaskHandlers
                 [FromRoute] key5, [FromRoute] key6, [FromRoute] key7, ctx, ct) =>
             {
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request.SetKey1(key1);
-                request.SetKey2(key2);
-                request.SetKey3(key3);
-                request.SetKey4(key4);
-                request.SetKey5(key5);
-                request.SetKey6(key6);
-                request.SetKey7(key7);
+                QueryBinder.SetProperty(request, "Key1", key1);
+                QueryBinder.SetProperty(request, "Key2", key2);
+                QueryBinder.SetProperty(request, "Key3", key3);
+                QueryBinder.SetProperty(request, "Key4", key4);
+                QueryBinder.SetProperty(request, "Key5", key5);
+                QueryBinder.SetProperty(request, "Key6", key6);
+                QueryBinder.SetProperty(request, "Key7", key7);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
                     return GetApiResult(requestInfo, result, ctx);
@@ -544,13 +544,13 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 request ??= Activator.CreateInstance<TRequest>();
                 request.SetFile(formFile.OpenReadStream(), formFile.FileName);
-                request.SetKey1(key1);
-                request.SetKey2(key2);
-                request.SetKey3(key3);
-                request.SetKey4(key4);
-                request.SetKey5(key5);
-                request.SetKey6(key6);
-                request.SetKey7(key7);
+                QueryBinder.SetProperty(request, "Key1", key1);
+                QueryBinder.SetProperty(request, "Key2", key2);
+                QueryBinder.SetProperty(request, "Key3", key3);
+                QueryBinder.SetProperty(request, "Key4", key4);
+                QueryBinder.SetProperty(request, "Key5", key5);
+                QueryBinder.SetProperty(request, "Key6", key6);
+                QueryBinder.SetProperty(request, "Key7", key7);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {

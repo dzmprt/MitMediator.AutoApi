@@ -14,7 +14,7 @@ internal sealed class UpdateAuthorCommandHandler(IBaseRepository<Author> authorR
     /// <inheritdoc/>
     public async ValueTask<Author> HandleAsync(UpdateAuthorCommand command, CancellationToken cancellationToken)
     {
-        var author = await authorRepository.FirstOrDefaultAsync(q => q.AuthorId == command.GetKey(), cancellationToken);
+        var author = await authorRepository.FirstOrDefaultAsync(q => q.AuthorId == command.Key, cancellationToken);
         if (author is null)
         {
             throw new NotFoundException();

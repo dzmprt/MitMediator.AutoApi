@@ -10,12 +10,5 @@ public class UploadBookCoverCommand : FileRequest, IKeyRequest<int>, IRequest
     /// <summary>
     /// Book id.
     /// </summary>
-    internal int BookId { get; private set; }
-    
-    public void SetKey(int key)
-    {
-        BookId = key;
-    }
-    
-    public int GetKey() => BookId;
+    public int Key { get; init; }
 }

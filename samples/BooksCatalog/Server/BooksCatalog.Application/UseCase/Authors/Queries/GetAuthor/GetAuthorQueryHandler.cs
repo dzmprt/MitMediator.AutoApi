@@ -13,7 +13,7 @@ internal sealed class GetAuthorQueryHandler(IBaseProvider<Author> authorProvider
     /// <inheritdoc/>
     public async ValueTask<Author> HandleAsync(GetAuthorQuery query, CancellationToken cancellationToken)
     {
-        var author = await authorProvider.FirstOrDefaultAsync(q => q.AuthorId == query.GetKey(), cancellationToken);
+        var author = await authorProvider.FirstOrDefaultAsync(q => q.AuthorId == query.Key, cancellationToken);
         if (author is null)
         {
             throw new NotFoundException();

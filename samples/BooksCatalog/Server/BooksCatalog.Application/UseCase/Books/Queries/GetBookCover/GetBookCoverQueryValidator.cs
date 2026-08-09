@@ -12,6 +12,6 @@ public class GetBookCoverQueryValidator : AbstractValidator<GetBookCoverQuery>
     /// </summary>
     public GetBookCoverQueryValidator()
     {
-        RuleFor(c => c.GetKey()).GreaterThan(0);
+        RuleFor(c => c.Key).GreaterThan(0);
     }
 }

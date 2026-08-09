@@ -138,15 +138,7 @@ public class RequestInfoTests
     [DisableAntiforgery]
     public class ReachSampleRequest : IRequest<SampleResponse>, IKeyRequest<int>
     {
-        public void SetKey(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey()
-        {
-            throw new NotImplementedException();
-        }
+        public int Key { get; init; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -173,15 +165,7 @@ public class RequestInfoTests
     [Pattern("api/missing")]
     public class BadPatternRequest : IRequest<string>, IKeyRequest<int>
     {
-        public void SetKey(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey()
-        {
-            throw new NotImplementedException();
-        }
+        public int Key { get; init; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -191,308 +175,63 @@ public class RequestInfoTests
     [ExcludeFromCodeCoverage]
     public class KeyRequest1 : IRequest<string>, IKeyRequest<int>
     {
-        public void SetKey(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey()
-        {
-            throw new NotImplementedException();
-        }
+        public int Key { get; init; }
     }
 
     [ExcludeFromCodeCoverage]
     public class KeyRequest2 : IRequest<string>, IKeyRequest<int, int>
     {
-        public void SetKey1(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey1()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetKey2(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey2()
-        {
-            throw new NotImplementedException();
-        }
+        public int Key1 { get; init; }
+        public int Key2 { get; init; }
     }
 
     [ExcludeFromCodeCoverage]
     public class KeyRequest3 : IRequest<string>, IKeyRequest<int, int, int>
     {
-        public void SetKey1(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey1()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetKey2(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey2()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetKey3(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey3()
-        {
-            throw new NotImplementedException();
-        }
+        public int Key1 { get; init; }
+        public int Key2 { get; init; }
+        public int Key3 { get; init; }
     }
 
     [ExcludeFromCodeCoverage]
     public class KeyRequest4 : IRequest<string>, IKeyRequest<int, int, int, int>
     {
-        public void SetKey1(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey1()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetKey2(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey2()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetKey3(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey3()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetKey4(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey4()
-        {
-            throw new NotImplementedException();
-        }
+        public int Key1 { get; init; }
+        public int Key2 { get; init; }
+        public int Key3 { get; init; }
+        public int Key4 { get; init; }
     }
 
     [ExcludeFromCodeCoverage]
     public class KeyRequest5 : IRequest<string>, IKeyRequest<int, int, int, int, int>
     {
-        public void SetKey1(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey1()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetKey2(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey2()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetKey3(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey3()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetKey4(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey4()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetKey5(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey5()
-        {
-            throw new NotImplementedException();
-        }
+        public int Key1 { get; init; }
+        public int Key2 { get; init; }
+        public int Key3 { get; init; }
+        public int Key4 { get; init; }
+        public int Key5 { get; init; }
     }
 
     [ExcludeFromCodeCoverage]
     public class KeyRequest6 : IRequest<string>, IKeyRequest<int, int, int, int, int, int>
     {
-        public void SetKey1(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey1()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetKey2(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey2()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetKey3(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey3()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetKey4(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey4()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetKey5(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey5()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetKey6(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey6()
-        {
-            throw new NotImplementedException();
-        }
+        public int Key1 { get; init; }
+        public int Key2 { get; init; }
+        public int Key3 { get; init; }
+        public int Key4 { get; init; }
+        public int Key5 { get; init; }
+        public int Key6 { get; init; }
     }
 
     [ExcludeFromCodeCoverage]
     public class KeyRequest7 : IRequest<string>, IKeyRequest<int, int, int, int, int, int, int>
     {
-        public void SetKey1(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey1()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetKey2(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey2()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetKey3(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey3()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetKey4(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey4()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetKey5(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey5()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetKey6(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey6()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetKey7(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetKey7()
-        {
-            throw new NotImplementedException();
-        }
+        public int Key1 { get; init; }
+        public int Key2 { get; init; }
+        public int Key3 { get; init; }
+        public int Key4 { get; init; }
+        public int Key5 { get; init; }
+        public int Key6 { get; init; }
+        public int Key7 { get; init; }
     }
 }

@@ -8,17 +8,7 @@ namespace MitMediator.AutoApi.Tests.RequestsForTests.Test.Commands.CreateByKey;
 [Suffix("by-key/create")]
 public class CreateTestByKeyCommand : IRequest<string>, IKeyRequest<int>
 {
-    internal int Key { get; private set; }
+    public int Key { get; init; }
     
     public string TestData { get; init; }
-    
-    public void SetKey(int key)
-    {
-        Key = key;
-    }
-
-    public int GetKey()
-    {
-        throw new NotImplementedException();
-    }
 }

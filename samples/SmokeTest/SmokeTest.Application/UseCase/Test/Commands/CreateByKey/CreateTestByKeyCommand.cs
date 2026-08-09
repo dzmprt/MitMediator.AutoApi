@@ -7,14 +7,7 @@ namespace SmokeTest.Application.UseCase.Test.Commands.CreateByKey;
 [Suffix("create")]
 public struct CreateTestByKeyCommand : IRequest<CreateTestByKeyResponse>, IKeyRequest<int>
 {
-    internal int Key { get; private set; }
-    
     public string TestData { get; init; }
-    
-    public void SetKey(int key)
-    {
-        Key = key;
-    }
 
-    public int GetKey() => Key;
+    public int Key { get; init; }
 }

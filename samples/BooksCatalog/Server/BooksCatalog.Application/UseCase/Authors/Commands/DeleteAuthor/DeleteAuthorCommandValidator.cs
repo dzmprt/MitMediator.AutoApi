@@ -12,6 +12,6 @@ internal sealed class DeleteAuthorCommandValidator : AbstractValidator<DeleteAut
     /// </summary>
     public DeleteAuthorCommandValidator()
     {
-        RuleFor(x => x.GetKey()).GreaterThan(0);
+        RuleFor(x => x.Key).GreaterThan(0);
     }
 }

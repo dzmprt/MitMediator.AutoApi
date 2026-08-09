@@ -42,6 +42,8 @@ public static class HttpQueryStringsExtensions
         foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
             if (!prop.CanRead) continue;
+            if (prop.Name == "Key" || (prop.Name.StartsWith("Key") &&
+                int.TryParse(prop.Name[3..], out _))) continue;
 
             var value = prop.GetValue(obj);
             var name = string.IsNullOrEmpty(prefix) ? prop.Name : $"{prefix}.{prop.Name}";

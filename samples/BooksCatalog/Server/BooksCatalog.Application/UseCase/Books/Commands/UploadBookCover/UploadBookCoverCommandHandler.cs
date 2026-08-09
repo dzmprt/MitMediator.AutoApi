@@ -15,7 +15,7 @@ public class UploadBookCoverCommandHandler(IBaseRepository<Book> booksRepository
 {
     public async ValueTask<Unit> HandleAsync(UploadBookCoverCommand request, CancellationToken cancellationToken)
     {
-        var book = await booksRepository.FirstOrDefaultAsync(b => b.BookId == request.BookId, cancellationToken);
+        var book = await booksRepository.FirstOrDefaultAsync(b => b.BookId == request.Key, cancellationToken);
         if (book is null)
         {
             throw new NotFoundException();

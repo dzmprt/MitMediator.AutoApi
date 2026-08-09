@@ -455,6 +455,7 @@ public class RequestInfo
             ["edit"] = MethodType.Put,
             ["modify"] = MethodType.Put,
             ["put"] = MethodType.Put,
+            ["set"] = MethodType.Put,
 
             ["post"] = MethodType.Post,
             ["import"] = MethodType.Post,

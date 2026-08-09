@@ -6,17 +6,7 @@ namespace MitMediator.AutoApi.Abstractions;
 /// <typeparam name="TKey">Key.</typeparam>
 public interface IKeyRequest<TKey>
 {
-    /// <summary>
-    /// Set key.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey(TKey key);
-    
-    /// <summary>
-    /// Get key.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey GetKey();
+    TKey Key { get; init; }
 }
 
 /// <summary>
@@ -26,29 +16,8 @@ public interface IKeyRequest<TKey>
 /// <typeparam name="TKey2">Key 2.</typeparam>
 public interface IKeyRequest<TKey1, TKey2>
 {
-    /// <summary>
-    /// Set key 1.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey1(TKey1 key);
-    
-    /// <summary>
-    /// Get key 1.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey1 GetKey1();
-
-    /// <summary>
-    /// Set key 2.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey2(TKey2 key);
-    
-    /// <summary>
-    /// Get key 2.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey2 GetKey2();
+    TKey1 Key1 { get; init; }
+    TKey2 Key2 { get; init; }
 }
 
 /// <summary>
@@ -59,230 +28,36 @@ public interface IKeyRequest<TKey1, TKey2>
 /// <typeparam name="TKey3"></typeparam>
 public interface IKeyRequest<TKey1, TKey2, TKey3>
 {
-    /// <summary>
-    /// Set key 1.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey1(TKey1 key);
-    
-    /// <summary>
-    /// Get key 1.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey1 GetKey1();
-
-    /// <summary>
-    /// Set key 2.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey2(TKey2 key);
-    
-    /// <summary>
-    /// Get key 2.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey2 GetKey2();
-
-    /// <summary>
-    /// Set key 3.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey3(TKey3 key);
-    
-    /// <summary>
-    /// Get key 3.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey3 GetKey3();
+    TKey1 Key1 { get; init; }
+    TKey2 Key2 { get; init; }
+    TKey3 Key3 { get; init; }
 }
 
 public interface IKeyRequest<TKey1, TKey2, TKey3, TKey4>
 {
-    /// <summary>
-    /// Set key 1.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey1(TKey1 key);
-    
-    /// <summary>
-    /// Get key 1.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey1 GetKey1();
-
-    /// <summary>
-    /// Set key 2.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey2(TKey2 key);
-    
-    /// <summary>
-    /// Get key 2.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey2 GetKey2();
-
-    /// <summary>
-    /// Set key 3.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey3(TKey3 key);
-    
-    /// <summary>
-    /// Get key 3.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey3 GetKey3();
-
-    /// <summary>
-    /// Set key 4.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey4(TKey4 key);
-    
-    /// <summary>
-    /// Get key 4.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey4 GetKey4();
+    TKey1 Key1 { get; init; }
+    TKey2 Key2 { get; init; }
+    TKey3 Key3 { get; init; }
+    TKey4 Key4 { get; init; }
 }
 
 public interface IKeyRequest<TKey1, TKey2, TKey3, TKey4, TKey5>
 {
-    /// <summary>
-    /// Set key 1.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey1(TKey1 key);
-    
-    /// <summary>
-    /// Get key 1.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey1 GetKey1();
-
-    /// <summary>
-    /// Set key 2.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey2(TKey2 key);
-    
-    /// <summary>
-    /// Get key 2.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey2 GetKey2();
-
-    /// <summary>
-    /// Set key 3.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey3(TKey3 key);
-    
-    /// <summary>
-    /// Get key 3.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey3 GetKey3();
-
-    /// <summary>
-    /// Set key 4.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey4(TKey4 key);
-    
-    /// <summary>
-    /// Get key 4.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey4 GetKey4();
-
-    /// <summary>
-    /// Set key 5.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey5(TKey5 key);
-    
-    /// <summary>
-    /// Get key 5.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey5 GetKey5();
+    TKey1 Key1 { get; init; }
+    TKey2 Key2 { get; init; }
+    TKey3 Key3 { get; init; }
+    TKey4 Key4 { get; init; }
+    TKey5 Key5 { get; init; }
 }
 
 public interface IKeyRequest<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>
 {
-    /// <summary>
-    /// Set key 1.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey1(TKey1 key);
-    
-    /// <summary>
-    /// Get key 1.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey1 GetKey1();
-
-    /// <summary>
-    /// Set key 2.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey2(TKey2 key);
-    
-    /// <summary>
-    /// Get key 2.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey2 GetKey2();
-
-    /// <summary>
-    /// Set key 3.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey3(TKey3 key);
-    
-    /// <summary>
-    /// Get key 3.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey3 GetKey3();
-
-    /// <summary>
-    /// Set key 4.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey4(TKey4 key);
-    
-    /// <summary>
-    /// Get key 4.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey4 GetKey4();
-
-    /// <summary>
-    /// Set key 5.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey5(TKey5 key);
-    
-    /// <summary>
-    /// Get key 5.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey5 GetKey5();
-
-    /// <summary>
-    /// Set key 6.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey6(TKey6 key);
-    
-    /// <summary>
-    /// Get key 6.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey6 GetKey6();
+    TKey1 Key1 { get; init; }
+    TKey2 Key2 { get; init; }
+    TKey3 Key3 { get; init; }
+    TKey4 Key4 { get; init; }
+    TKey5 Key5 { get; init; }
+    TKey6 Key6 { get; init; }
 }
 
 /// <summary>
@@ -297,87 +72,11 @@ public interface IKeyRequest<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>
 /// <typeparam name="TKey7">Key 7</typeparam>
 public interface IKeyRequest<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7>
 {
-    /// <summary>
-    /// Set key 1.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey1(TKey1 key);
-    
-    /// <summary>
-    /// Get key 1.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey1 GetKey1();
-
-    /// <summary>
-    /// Set key 2.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey2(TKey2 key);
-    
-    /// <summary>
-    /// Get key 2.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey2 GetKey2();
-
-    /// <summary>
-    /// Set key 3.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey3(TKey3 key);
-    
-    /// <summary>
-    /// Get key 3.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey3 GetKey3();
-
-    /// <summary>
-    /// Set key 4.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey4(TKey4 key);
-    
-    /// <summary>
-    /// Get key 4.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey4 GetKey4();
-
-    /// <summary>
-    /// Set key 5.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey5(TKey5 key);
-    
-    /// <summary>
-    /// Get key 5.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey5 GetKey5();
-
-    /// <summary>
-    /// Set key 6.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey6(TKey6 key);
-    
-    /// <summary>
-    /// Get key 6.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey6 GetKey6();
-
-    /// <summary>
-    /// Set key 7.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    void SetKey7(TKey7 key);
-    
-    /// <summary>
-    /// Get key 7.
-    /// </summary>
-    /// <returns>Key.</returns>
-    TKey7 GetKey7();
+    TKey1 Key1 { get; init; }
+    TKey2 Key2 { get; init; }
+    TKey3 Key3 { get; init; }
+    TKey4 Key4 { get; init; }
+    TKey5 Key5 { get; init; }
+    TKey6 Key6 { get; init; }
+    TKey7 Key7 { get; init; }
 }

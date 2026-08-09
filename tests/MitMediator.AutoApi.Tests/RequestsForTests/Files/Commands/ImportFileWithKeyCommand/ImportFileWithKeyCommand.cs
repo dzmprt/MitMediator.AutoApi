@@ -6,12 +6,5 @@ namespace MitMediator.AutoApi.Tests.RequestsForTests.Files.Commands.ImportFileWi
 [ExcludeFromCodeCoverage]
 public class ImportFileWithKeyCommand : FileRequest, IRequest<FileStreamResponse>, IKeyRequest<int>
 {
-    public void SetKey(int key)
-    {
-    }
-
-    public int GetKey()
-    {
-        return 0;
-    }
+	public int Key { get; init; }
 }

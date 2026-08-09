@@ -14,7 +14,7 @@ internal sealed class GetBookQueryHandler(IBaseProvider<Book> booksProvider) : I
     /// <inheritdoc/>
     public async ValueTask<Book> HandleAsync(GetBookQuery query, CancellationToken cancellationToken)
     {
-        var book = await booksProvider.FirstOrDefaultAsync(q => q.BookId == query.GetKey(), cancellationToken);
+        var book = await booksProvider.FirstOrDefaultAsync(q => q.BookId == query.Key, cancellationToken);
         if (book is null)
         {
             throw new NotFoundException();
