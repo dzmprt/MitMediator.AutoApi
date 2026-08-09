@@ -11,12 +11,12 @@ public struct GetBooksQuery : IRequest<GetBooksResponse>
     /// Limit.
     /// </summary>
     public int? Limit { get; init; }
-    
+
     /// <summary>
     /// Offset.
     /// </summary>
     public int? Offset { get; init; }
-    
+
     /// <summary>
     /// Free text.
     /// </summary>

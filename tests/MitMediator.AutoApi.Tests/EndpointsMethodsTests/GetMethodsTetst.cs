@@ -10,6 +10,36 @@ namespace MitMediator.AutoApi.Tests.EndpointsMethodsTests;
 
 public class GetMethodsTetst
 {
+    [Fact]
+    public async Task GetMethodWithTotalCount_ShouldSetTotalCountHeader()
+    {
+        var mediatorMock = new Mock<IMediator>();
+        mediatorMock.Setup(m => m.SendAsync<RequestsForTests.Test.Queries.GetList.GetListQuery,
+                RequestsForTests.Test.Queries.GetList.GetListResponse>(
+                It.IsAny<RequestsForTests.Test.Queries.GetList.GetListQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new RequestsForTests.Test.Queries.GetList.GetListResponse
+            {
+                Items = ["Record"],
+                TotalCount = 42
+            });
+
+        var context = new DefaultHttpContext
+        {
+            RequestServices = new ServiceCollection()
+                .AddSingleton(mediatorMock.Object)
+                .BuildServiceProvider()
+        };
+        var endpoint = EndpointsMethods
+            .WithGetParams<RequestsForTests.Test.Queries.GetList.GetListQuery,
+                RequestsForTests.Test.Queries.GetList.GetListResponse>(
+                new RequestInfo(typeof(RequestsForTests.Test.Queries.GetList.GetListQuery)));
+
+        var result = await (ValueTask<IResult>)endpoint.DynamicInvoke(context, CancellationToken.None)!;
+
+        Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<RequestsForTests.Test.Queries.GetList.GetListResponse>>(result);
+        Assert.Equal("42", context.Response.Headers["X-Total-Count"].ToString());
+    }
+
      [Fact]
     public async Task GetMethodOneKey_ShouldCallMediatorCorrectly()
     {

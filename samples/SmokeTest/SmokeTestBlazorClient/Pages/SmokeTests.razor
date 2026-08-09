@@ -362,7 +362,7 @@ IRequest<TResponse>
 
             if (response is ITotalCount totalCount)
             {
-                return new(typeof(TRequest).Name, JsonSerializer.Serialize(request), $"X-Total-Count: {totalCount.GetTotalCount()}, {JsonSerializer.Serialize(response)}");
+                return new(typeof(TRequest).Name, JsonSerializer.Serialize(request), $"X-Total-Count: {totalCount.TotalCount}, {JsonSerializer.Serialize(response)}");
             }
             return new(typeof(TRequest).Name, JsonSerializer.Serialize(request), JsonSerializer.Serialize(response));
         }

@@ -12,13 +12,12 @@
         <PackageIcon>logo.png</PackageIcon>
         <RepositoryUrl>https://github.com/dzmprt/MitMediator.AutoApi</RepositoryUrl>
         <PackageTags>mediator;request;response;queries;commands;mitmediator;minimalapi;autoapi;cqrs;httpmediator;httpclient</PackageTags>
-        <PackageReleaseNotes>v10.0.1-rc
-- Updated route generation for init-only Key and KeyN properties
-- Excluded route keys from generated query strings</PackageReleaseNotes>
+        <PackageReleaseNotes>v10.0.1-rc-3
+- Updated ITotalCount interface</PackageReleaseNotes>
         <TrimMode>full</TrimMode>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
-        <Version>10.0.1-rc</Version>
+        <Version>10.0.1-rc-3</Version>
         <LangVersion>14</LangVersion>
     </PropertyGroup>
 
@@ -41,7 +40,7 @@
     <ItemGroup>
         <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
     </ItemGroup>
-  <ItemGroup>
+          <ItemGroup>
     <PackageReference Include="MitMediator.AutoApi.Abstractions" />
   </ItemGroup>
 </Project>

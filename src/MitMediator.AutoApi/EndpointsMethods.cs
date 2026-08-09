@@ -587,7 +587,7 @@ internal static class EndpointsMethods
 
         if (result is ITotalCount totalCount)
         {
-            ctx.Response.Headers.Append("X-Total-Count", totalCount.GetTotalCount().ToString());
+            ctx.Response.Headers.Append("X-Total-Count", totalCount.TotalCount.ToString());
         }
 
         switch (result)

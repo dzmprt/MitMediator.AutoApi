@@ -11,8 +11,8 @@ public class GetListQueryHandler : IRequestHandler<GetListQuery, GetListResponse
         var response = new GetListResponse
         {
             Items = result,
+            TotalCount = totalCount
         };
-        response.SetTotalCount(totalCount);
         return new ValueTask<GetListResponse>(response);
     }
 }

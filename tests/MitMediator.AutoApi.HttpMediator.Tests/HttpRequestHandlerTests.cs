@@ -18,14 +18,7 @@ public class GetListResponse : ITotalCount
 {
     public string[] Items { get; init; }
 
-    internal int _totalCount;
-
-    public int GetTotalCount() => _totalCount;
-
-    public void SetTotalCount(int totalCount)
-    {
-        _totalCount = totalCount;
-    }
+    public int TotalCount { get; init; }
 }
 
 public class GetFileStreamQuery : IRequest<Stream>
@@ -133,7 +126,7 @@ public class HttpRequestHandlerTests
                     var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK)
                         { Content = new StringContent(jsonResponse) };
                     var totalCount = responseContent as ITotalCount;
-                    httpResponseMessage.Headers.Add("X-Total-Count", totalCount.GetTotalCount().ToString());
+                    httpResponseMessage.Headers.Add("X-Total-Count", totalCount.TotalCount.ToString());
                     return httpResponseMessage;
                 }
 
@@ -282,13 +275,13 @@ public class HttpRequestHandlerTests
     {
         var response = new GetListResponse()
         {
-            Items = Enumerable.Range(0, 3).Select(x => $"Record #{x}").ToArray()
+            Items = Enumerable.Range(0, 3).Select(x => $"Record #{x}").ToArray(),
+            TotalCount = 100
         };
-        response.SetTotalCount(100);
         var handler = BuildHandler<GetListQuery, GetListResponse>(MethodType.Get, response);
         var result = await handler.HandleAsync(new GetListQuery(), CancellationToken.None);
         Assert.Equal(3, result.Items.Length);
-        Assert.Equal(100, result.GetTotalCount());
+        Assert.Equal(100, result.TotalCount);
         Assert.NotStrictEqual(result, response);
     }
 }

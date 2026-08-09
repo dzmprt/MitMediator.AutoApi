@@ -45,7 +45,7 @@ while (true)
                 await DeleteBookById();
                 break;
             case 4:
-               await ChangeBookTitleById();
+                await ChangeBookTitleById();
                 break;
             case 5:
                 await CreateNewBook();
@@ -60,7 +60,7 @@ while (true)
 async ValueTask ShowAllBooks()
 {
     var booksResponse = await httpMediator.SendAsync<GetBooksQuery, GetBooksResponse>(new GetBooksQuery(), CancellationToken.None);
-    Console.WriteLine($"Books total count: {booksResponse.GetTotalCount()}");
+    Console.WriteLine($"Books total count: {booksResponse.TotalCount}");
     Console.WriteLine("Books:");
     foreach (var book in booksResponse.Items)
     {

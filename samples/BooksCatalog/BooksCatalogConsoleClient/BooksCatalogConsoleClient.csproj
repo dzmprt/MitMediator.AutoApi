@@ -9,15 +9,15 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\..\src\MitMediator.AutoApi.HttpMediator\MitMediator.AutoApi.HttpMediator.csproj" />
       <ProjectReference Include="..\Server\BooksCatalog.Application\BooksCatalog.Application.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="MitMediator.AutoApi.HttpMediator" />
-    </ItemGroup>
-
+    
     <PropertyGroup>
         <ExcludeFromCodeCoverage>true</ExcludeFromCodeCoverage>
     </PropertyGroup>
 
+    <ItemGroup>
+  </ItemGroup>
 </Project>
