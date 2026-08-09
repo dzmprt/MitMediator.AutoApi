@@ -38,14 +38,18 @@ internal static class HttpRequestsHelper
     private static object[] ExtractKeys(object obj)
     {
         var type = obj.GetType();
+        if (!RequestInfo.GetIsKeyRequest(type))
+            return Array.Empty<object>();
 
-        var methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public)
-            .Where(m => m.Name.StartsWith("GetKey"))
-            .OrderBy(m =>
-                m.Name == "GetKey" ? 0 : int.TryParse(m.Name.Substring("GetKey".Length), out var index) ? index : 1000);
+        var keyInterface = type.GetInterfaces()
+            .First(interfaceType => interfaceType.IsGenericType &&
+                interfaceType.GetGenericTypeDefinition().Name.StartsWith("IKeyRequest"));
+        var keysCount = keyInterface.GetGenericArguments().Length;
 
-        return (from method in methods where method.GetParameters().Length == 0 select method.Invoke(obj, null))
-            .ToArray();
+        return Enumerable.Range(0, keysCount)
+            .Select(index => keyInterface.GetProperty(index == 0 && keysCount == 1 ? "Key" : $"Key{index + 1}"))
+            .Select(property => property!.GetValue(obj))
+            .ToArray()!;
     }
 
     public static string ToRouteString(object? value)

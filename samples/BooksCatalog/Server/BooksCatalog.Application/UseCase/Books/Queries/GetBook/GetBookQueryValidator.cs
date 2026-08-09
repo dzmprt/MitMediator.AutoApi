@@ -12,6 +12,6 @@ internal sealed class GetBookQueryValidator : AbstractValidator<GetBookQuery>
     /// </summary>
     public GetBookQueryValidator()
     {
-        RuleFor(q => q.GetKey()).GreaterThan(0);
+        RuleFor(q => q.Key).GreaterThan(0);
     }
 }

@@ -8,13 +8,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="FluentValidation" Version="12.1.1" />
-      <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
-      <PackageReference Include="MitMediator.AutoApi.Abstractions" Version="10.0.0-alfa-3" />
+      <PackageReference Include="FluentValidation" />
+      <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\BooksCatalog.Domain\BooksCatalog.Domain.csproj" />
+      <ProjectReference Include="..\..\..\..\src\MitMediator.AutoApi.Abstractions\MitMediator.AutoApi.Abstractions.csproj" />
     </ItemGroup>
 
     <PropertyGroup>

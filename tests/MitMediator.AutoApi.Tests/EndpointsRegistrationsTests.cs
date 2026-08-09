@@ -20,19 +20,19 @@ public class EndpointsRegistrationsTests
             throw new NotImplementedException();
         }
     }
-    
+
     [Fact]
     public void UseAutoApi_RegistersAllExpectedRoutes()
     {
         var builder = WebApplication.CreateBuilder();
         builder.Services.AddOnlyMitMediator();
-        
+
         var requestTypes = typeof(GetTestQuery).Assembly
             .GetTypes()
             .Where(t => t.GetInterfaces()
                 .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRequest<>)))
             .ToList();
-        
+
         foreach (var requestType in requestTypes)
         {
             var responseType = requestType
@@ -54,7 +54,7 @@ public class EndpointsRegistrationsTests
         var endpoints = endpointDataSource.Endpoints;
 
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/v1/tests/with-suffix"));
-        
+
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/v1/tests/{key}"));
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/v1/tests/{key1}/{key2}"));
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/v1/tests/{key1}/{key2}/{key3}"));
@@ -63,11 +63,11 @@ public class EndpointsRegistrationsTests
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/v1/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}"));
         Assert.Contains(endpoints,
             e => Matches(e, "GET", "api/v1/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/{key7}"));
-        
+
         Assert.Contains(endpoints, e => Matches(e, "GET", "my_custom_path/{key}/some_field"));
         Assert.Contains(endpoints, e => Matches(e, "GET", "my_custom_path_with_2Keys/{key1}/some_field/{key2}"));
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/v2/tests"));
-        
+
         Assert.Contains(endpoints, e => Matches(e, "PUT", "api/v1/tests"));
         Assert.Contains(endpoints, e => Matches(e, "PUT", "api/v1/tests/{key}/by-key"));
         Assert.Contains(endpoints, e => Matches(e, "PUT", "api/v1/tests/{key1}/{key2}/by2-keys"));
@@ -78,7 +78,7 @@ public class EndpointsRegistrationsTests
             e => Matches(e, "PUT", "api/v1/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/by6-keys"));
         Assert.Contains(endpoints,
             e => Matches(e, "PUT", "api/v1/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/{key7}/by7-keys"));
-        
+
         Assert.Contains(endpoints, e => Matches(e, "POST", "api/v1/tests"));
         Assert.Contains(endpoints, e => Matches(e, "POST", "api/v1/tests/{key}/by-key"));
         Assert.Contains(endpoints, e => Matches(e, "POST", "api/v1/tests/{key1}/{key2}/by2-keys"));
@@ -89,7 +89,7 @@ public class EndpointsRegistrationsTests
             e => Matches(e, "POST", "api/v1/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/by6-keys"));
         Assert.Contains(endpoints,
             e => Matches(e, "POST", "api/v1/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/{key7}/by7-keys"));
-        
+
         Assert.Contains(endpoints, e => Matches(e, "POST", "api/v1/tests/create"));
         Assert.Contains(endpoints, e => Matches(e, "POST", "api/v1/tests/{key}/by-key/create"));
         Assert.Contains(endpoints, e => Matches(e, "POST", "api/v1/tests/{key1}/{key2}/by2-keys/create"));
@@ -99,7 +99,7 @@ public class EndpointsRegistrationsTests
             e => Matches(e, "POST", "api/v1/tests/{key1}/{key2}/{key3}/{key4}/{key5}/by5-keys/create"));
         Assert.Contains(endpoints,
             e => Matches(e, "POST", "api/v1/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/by6-keys/create"));
-        
+
         Assert.Contains(endpoints, e => Matches(e, "DELETE", "api/v1/tests"));
         Assert.Contains(endpoints, e => Matches(e, "DELETE", "api/v1/tests/{key}/by-key"));
         Assert.Contains(endpoints, e => Matches(e, "DELETE", "api/v1/tests/{key1}/{key2}/by2-keys"));
@@ -110,16 +110,16 @@ public class EndpointsRegistrationsTests
             e => Matches(e, "DELETE", "api/v1/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/by6-keys"));
         Assert.Contains(endpoints,
             e => Matches(e, "DELETE", "api/v1/tests/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/{key7}/by7-keys"));
-        
-        
+
+
         Assert.DoesNotContain(endpoints, e => Matches(e, "POST", "TestIgnore"));
-        
+
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/v1/custom-tag-but/remove-tag-from-suffix"));
-        
+
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/v1/custom-tag-withs/but-remove-tag-from-suffix"));
-        
+
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/v1/custom-tag-empty-suffix"));
-        
+
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/v1/files/with-custom-name"));
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/v1/files/stream-with-custom-name"));
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/v1/files/txt"));
@@ -134,26 +134,26 @@ public class EndpointsRegistrationsTests
         Assert.Contains(endpoints, e => Matches(e, "POST", "api/v1/files/{key1}/{key2}/{key3}/{key4}/with-key4"));
         Assert.Contains(endpoints, e => Matches(e, "POST", "api/v1/files/{key1}/{key2}/{key3}/{key4}/{key5}/with-key5"));
         Assert.Contains(endpoints, e => Matches(e, "POST", "api/v1/files/{key1}/{key2}/{key3}/{key4}/{key5}/{key6}/with-key6"));
-        
+
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/v1/buses/suffix"));
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/v1/cities"));
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/v1/heroes"));
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/v1/potatoes"));
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/v1/quizzes"));
-        
+
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/v2/my-books/favorite"));
-        
+
         Assert.Contains(endpoints, e => Matches(e, "DELETE", "with-keys/{key1}/field/{key2}"));
-        
+
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/v1/lists"));
-        
+
         Assert.Contains(endpoints, e => Matches(e, "GET", "api/v1/nots/supported-prefix"));
-        
+
         Assert.Contains(endpoints, e => MatchesWithRoutKeysTypes(e, "GET", "api/v1/tests/{key1:int}/{key2}/{key3:long}/{key4:bool}/{key5:datetime}/{key6:guid}/{key7:decimal}/key7-with-different-types"));
         Assert.Contains(endpoints, e => MatchesWithRoutKeysTypes(e, "GET", "api/v1/tests/{key1:datetime}/{key2:datetime}/date-keys"));
 
     }
-    
+
     private static bool Matches(Endpoint endpoint, string verb, string pattern)
     {
         var routeEndpoint = (RouteEndpoint)endpoint;
@@ -170,7 +170,7 @@ public class EndpointsRegistrationsTests
                routeEndpoint.Metadata.OfType<HttpMethodMetadata>()
                    .Any(m => m.HttpMethods.Contains(verb));
     }
-    
+
     private static bool MatchesWithRoutKeysTypes(Endpoint endpoint, string verb, string pattern)
     {
         var routeEndpoint = (RouteEndpoint)endpoint;

@@ -24,13 +24,13 @@
 
 ```bash
 # for ASP.NET API projects
-dotnet add package MitMediator.AutoApi -v 10.0.0
+dotnet add package MitMediator.AutoApi -v 10.0.1-rc
 
 # for application layer
-dotnet add package MitMediator.AutoApi.Abstractions -v 10.0.0
+dotnet add package MitMediator.AutoApi.Abstractions -v 10.0.1-rc
 
 # for client application (MAUI, Blazor, UWP, etc.)
-dotnet add package MitMediator.AutoApi.HttpMediator -v 10.0.0
+dotnet add package MitMediator.AutoApi.HttpMediator -v 10.0.1-rc
 ```
 
 ### 2. Use extension for IEndpointRouteBuilder
@@ -73,6 +73,7 @@ HTTP Method is inferred from the leading verb in the type name:
 | `edit`                  | PUT                 |
 | `modify`                | PUT                 |
 | `put`                   | PUT                 |
+| `set`                   | PUT                 |
 | `post`                  | POST                |
 | `import`                | POST                |
 | `upload`                | POST                |
@@ -137,9 +138,12 @@ public class CreateBookCommand : IRequest<Book>
 }
 ```
 
-If you need to use a route parameter, inherit from one of the classes `KeyRequest<TKey>` (recomended)
+If you need to use a route parameter, inherit from one of the classes `KeyRequest<TKey>` (recommended)
 or implement one of the interfaces `IKeyRequest<TKey>`, `IKeyRequest<TKey1,TKey2>`, etc.
 (up to 7 keys). 
+
+Route keys are exposed as `init`-only properties (`Key`, `Key1`, `Key2`, etc.), so they can be assigned when
+creating a request and are automatically excluded from the query string.
 
 ### `GET` endpoint with suffix and key in url
 
@@ -153,14 +157,7 @@ Use interface `IKeyRequest<int>` for structs or when you can't inherit KeyReques
 > // URL: GET /v1/books/123/cover
 > public struct GetBookCoverQuery : IKeyRequest<int>, IRequest<Book>
 > {
->     internal int BookId { get; private set; }
->
->     public void SetKey(int key)
->     {
->         BookId = key;
->     }
->     
->     public int GetKey() => BookId;
+>     public int Key { get; init; }
 > }
 > ```
 
@@ -329,8 +326,7 @@ serviceCollection.AddScoped<IClientMediator, HttpMediator>(c => new HttpMediator
 var provider = serviceCollection.BuildServiceProvider();
 var httpMediator = provider.GetRequiredService<IClientMediator>();
 
-var query = new GetBookQuery();
-query.SetKey(12);
+var query = new GetBookQuery { Key = 12 };
 var data = await httpMediator.SendAsync<GetBookQuery, Book>(query, CancellationToken.None);
 
 public class AuthorizationHeaderInjection<TRequest, TResponse> : IHttpHeaderInjector<TRequest, TResponse> where TRequest : IRequest<TResponse>

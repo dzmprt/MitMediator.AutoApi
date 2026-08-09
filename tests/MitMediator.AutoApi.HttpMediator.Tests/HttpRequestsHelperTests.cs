@@ -7,35 +7,14 @@ public class HttpRequestsHelperTests
 {
     private class SingleRequest : IRequest<int>, IKeyRequest<string>
     {
-        private string Key { get; set; }
-        
-        public void SetKey(string key)
-        {
-            Key = key;
-        }
-
-        public string GetKey() => Key;
+        public string Key { get; init; }
     }
 
     private class MultiRequest : IRequest<int>, IKeyRequest<string, string>
     {
-        private string Key1 { get; set; }
+        public string Key1 { get; init; }
         
-        private string Key2 { get; set; }
-        
-        public void SetKey1(string key)
-        {
-            Key1 = key;
-        }
-
-        public string GetKey1() => Key1;
-
-        public void SetKey2(string key)
-        {
-            Key2 = key;
-        }
-
-        public string GetKey2() => Key2;
+        public string Key2 { get; init; }
     }
 
     private class NoKeyRequest : IRequest
@@ -46,8 +25,7 @@ public class HttpRequestsHelperTests
     [Fact]
     public void GetUrl_SingleKey_ReplacesKeyPlaceholder()
     {
-        var request = new SingleRequest();
-        request.SetKey("123");
+        var request = new SingleRequest { Key = "123" };
         
         var url = HttpRequestsHelper.GetUrl(request, "https://api.example.com");
         
@@ -57,9 +35,7 @@ public class HttpRequestsHelperTests
     [Fact]
     public void GetUrl_MultipleKeys_ReplacesKeyPlaceholders()
     {
-        var request = new MultiRequest();
-        request.SetKey1("key1Value");
-        request.SetKey2("key2Value");
+        var request = new MultiRequest { Key1 = "key1Value", Key2 = "key2Value" };
         
         var url = HttpRequestsHelper.GetUrl(request, "https://api.example.com");
 
@@ -80,12 +56,12 @@ public class HttpRequestsHelperTests
     public void ExtractKeys_OrdersCorrectly()
     {
         var keys = typeof(MultiRequest)
-            .GetMethods()
-            .Where(m => m.Name.StartsWith("GetKey"))
-            .Select(m => m.Name)
+            .GetProperties()
+            .Where(p => p.Name.StartsWith("Key"))
+            .Select(p => p.Name)
             .ToArray();
 
-        Assert.Contains("GetKey1", keys);
-        Assert.Contains("GetKey2", keys);
+        Assert.Contains("Key1", keys);
+        Assert.Contains("Key2", keys);
     }
 }

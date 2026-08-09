@@ -6,6 +6,11 @@ namespace MitMediator.AutoApi;
 
 internal static class QueryBinder
 {
+    public static void SetProperty<T>(T obj, string propertyName, object? value)
+    {
+        typeof(T).GetProperty(propertyName)?.SetValue(obj, value);
+    }
+
     public static T BindFromQuery<T>(HttpContext context)
     {
         var query = context.Request.Query;

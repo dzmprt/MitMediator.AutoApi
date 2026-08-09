@@ -15,7 +15,7 @@ internal sealed class DeleteBookCommandHandler(IBaseRepository<Book> booksReposi
     /// <inheritdoc/>
     public async ValueTask<Unit> HandleAsync(DeleteBookCommand command, CancellationToken cancellationToken)
     {
-        var book = await booksRepository.FirstOrDefaultAsync(q => q.BookId == command.GetKey(), cancellationToken);
+        var book = await booksRepository.FirstOrDefaultAsync(q => q.BookId == command.Key, cancellationToken);
         if (book is null)
         {
             throw new NotFoundException();

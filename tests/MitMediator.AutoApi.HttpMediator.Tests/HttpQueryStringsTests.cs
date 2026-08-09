@@ -24,6 +24,15 @@ public class HttpQueryStringsExtensionsTests
         public Status Status { get; set; }
     }
 
+    private class ModelWithRouteKeys
+    {
+        public int Key { get; init; }
+        public int Key1 { get; init; }
+        public int Key2 { get; init; }
+        public string? KeyName { get; init; }
+        public string? Value { get; init; }
+    }
+
     [Fact]
     public void NullObject_ReturnsEmpty()
     {
@@ -140,5 +149,26 @@ public class HttpQueryStringsExtensionsTests
         var obj = new { Timestamp = dto };
         var result = obj.ToQueryString();
         Assert.Contains("Timestamp=2024-12-31T00%3A00%3A00.000Z", result);
+    }
+
+    [Fact]
+    public void RouteKeyProperties_AreExcludedButOtherKeyPrefixedPropertiesRemain()
+    {
+        var obj = new ModelWithRouteKeys
+        {
+            Key = 1,
+            Key1 = 2,
+            Key2 = 3,
+            KeyName = "name",
+            Value = "value"
+        };
+
+        var result = obj.ToQueryString();
+
+        Assert.DoesNotContain("Key=", result);
+        Assert.DoesNotContain("Key1=", result);
+        Assert.DoesNotContain("Key2=", result);
+        Assert.Contains("KeyName=name", result);
+        Assert.Contains("Value=value", result);
     }
 }

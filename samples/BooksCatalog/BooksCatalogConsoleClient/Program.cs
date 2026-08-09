@@ -75,8 +75,7 @@ async ValueTask ShowBookById()
     var idStr = Console.ReadLine();
     if (int.TryParse(idStr, out var bookId))
     {
-        var command = new GetBookQuery();
-        command.SetKey(bookId);
+        var command = new GetBookQuery { Key = bookId };
         var book = await httpMediator.SendAsync<GetBookQuery, Book>(command, CancellationToken.None);
         Console.WriteLine($"id:{book.BookId}, title: {book.Title}");
         Console.WriteLine();
@@ -89,8 +88,7 @@ async ValueTask DeleteBookById()
     var idStr = Console.ReadLine();
     if (int.TryParse(idStr, out var bookId))
     {
-        var command = new DeleteBookCommand();
-        command.SetKey(bookId);
+        var command = new DeleteBookCommand { Key = bookId };
         await httpMediator.SendAsync(command, CancellationToken.None);
         Console.WriteLine("Deleted");
         Console.WriteLine();
@@ -103,8 +101,7 @@ async ValueTask ChangeBookTitleById()
     var idStr = Console.ReadLine();
     if (int.TryParse(idStr, out var bookId))
     {
-        var getBookCommand = new GetBookQuery();
-        getBookCommand.SetKey(bookId);
+        var getBookCommand = new GetBookQuery { Key = bookId };
         var book = await httpMediator.SendAsync<GetBookQuery, Book>(getBookCommand, CancellationToken.None);
         Console.Write("New title:>");
         var newTitle = Console.ReadLine();
@@ -115,11 +112,11 @@ async ValueTask ChangeBookTitleById()
         }
         var updatedBookCommand = new UpdateBookCommand()
         {
+            Key = bookId,
             Title = newTitle,
             AuthorId = book.Author.AuthorId,
             GenreName = book.Genre.GenreName,
         };
-        updatedBookCommand.SetKey(bookId);
         book = await httpMediator.SendAsync<UpdateBookCommand, Book>(updatedBookCommand, CancellationToken.None);
         Console.WriteLine("New book info:");
         Console.WriteLine($"id:{book.BookId}, title: {book.Title}");
