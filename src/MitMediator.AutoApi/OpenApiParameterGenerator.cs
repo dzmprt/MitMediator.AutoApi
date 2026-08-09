@@ -2,6 +2,7 @@ using System.Collections;
 using System.Reflection;
 using System.Text.Json.Nodes;
 using Microsoft.OpenApi;
+using MitMediator.AutoApi.Abstractions;
 
 namespace MitMediator.AutoApi;
 
@@ -16,8 +17,14 @@ internal static class OpenApiParameterGenerator
 
     private static void GenerateRecursive(Type type, string prefix, IList<OpenApiParameter> parameters)
     {
+        var keyProperties = KeyRequestProperties.GetNames(type);
         foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
+            if (keyProperties.Contains(prop.Name))
+            {
+                continue;
+            }
+
             var name = string.IsNullOrEmpty(prefix) ? prop.Name : $"{prefix}.{prop.Name}";
             var isNullable = IsNullable(prop);
             var propType = prop.PropertyType;

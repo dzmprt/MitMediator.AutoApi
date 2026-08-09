@@ -102,6 +102,32 @@ public class QueryBinderTests
     }
 
     [Fact]
+    public async Task WithGetParamsAndKeys_ShouldIgnoreKeysFromQuery()
+    {
+        SingleKeyQuery? capturedRequest = null;
+        var mediatorMock = new Mock<IMediator>();
+        mediatorMock
+            .Setup(m => m.SendAsync<SingleKeyQuery, string>(It.IsAny<SingleKeyQuery>(), It.IsAny<CancellationToken>()))
+            .Callback<SingleKeyQuery, CancellationToken>((request, _) => capturedRequest = request)
+            .ReturnsAsync(string.Empty);
+
+        var services = new ServiceCollection()
+            .AddSingleton(mediatorMock.Object)
+            .BuildServiceProvider();
+        var context = new DefaultHttpContext
+        {
+            RequestServices = services,
+            Request = { Query = new QueryCollection(new Dictionary<string, StringValues> { ["Key1"] = "99" }) }
+        };
+        var endpoint = EndpointsMethods.WithGetParamsAnd1Key<SingleKeyQuery, string, int>(
+            new RequestInfo(typeof(SingleKeyQuery)));
+
+        await (ValueTask<IResult>)endpoint.DynamicInvoke(42, context, CancellationToken.None)!;
+
+        Assert.Equal(42, capturedRequest!.Key);
+    }
+
+    [Fact]
     public async Task WithBodyAndSevenKeys_ShouldPassRouteKeysToMediator()
     {
         GetTestQuery? capturedRequest = null;
@@ -134,6 +160,11 @@ public class QueryBinderTests
     }
 
     private sealed class RequestWithInitOnlyProperty
+    {
+        public int Key { get; init; }
+    }
+
+    private sealed class SingleKeyQuery : IRequest<string>, IKeyRequest<int>
     {
         public int Key { get; init; }
     }
