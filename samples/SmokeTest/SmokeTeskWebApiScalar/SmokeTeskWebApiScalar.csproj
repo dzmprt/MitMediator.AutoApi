@@ -8,12 +8,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
-    <PackageReference Include="MitMediator.AutoApi" />
     <PackageReference Include="Scalar.AspNetCore" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="../SmokeTest.Application/SmokeTest.Application.csproj" />
+    <ProjectReference Include="..\..\..\src\MitMediator.AutoApi\MitMediator.AutoApi.csproj" />
   </ItemGroup>
 
 </Project>

@@ -17,11 +17,11 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
-        <PackageReference Include="MitMediator.AutoApi" />
         <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\..\..\src\MitMediator.AutoApi\MitMediator.AutoApi.csproj" />
       <ProjectReference Include="..\BooksCatalog.Application\BooksCatalog.Application.csproj" />
       <ProjectReference Include="..\BooksCatalog.Infrastructure\BooksCatalog.Infrastructure.csproj" />
     </ItemGroup>
