@@ -1,4 +1,5 @@
 using Microsoft.OpenApi;
+using MitMediator.AutoApi.Abstractions;
 
 namespace MitMediator.AutoApi.Tests;
 
@@ -62,6 +63,14 @@ public class OpenApiParameterGeneratorTests
         Assert.Equal(JsonSchemaType.Integer, intList.Schema!.Items!.Type);
     }
 
+    [Fact]
+    public void GenerateFromType_DoesNotMapKeyPropertiesAsQueryParameters()
+    {
+        var parameters = OpenApiParameterGenerator.GenerateFromType(typeof(KeyOpenApiRequest));
+
+        Assert.Equal(["Text"], parameters.Select(parameter => parameter.Name));
+    }
+
     private static OpenApiParameter AssertParameter(
         IEnumerable<OpenApiParameter> parameters,
         string name,
@@ -115,6 +124,12 @@ public class OpenApiParameterGeneratorTests
     {
         public string Name { get; set; } = string.Empty;
         public TestStatus? Rank { get; set; }
+    }
+
+    private sealed class KeyOpenApiRequest : IKeyRequest<int>
+    {
+        public int Key { get; init; }
+        public string Text { get; init; } = string.Empty;
     }
 
     private enum TestStatus

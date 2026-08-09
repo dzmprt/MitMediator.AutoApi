@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Globalization;
 using System.Reflection;
+using MitMediator.AutoApi.Abstractions;
 
 namespace MitMediator.AutoApi;
 
@@ -50,9 +51,10 @@ internal static class QueryBinder
         }
 
         var obj = Activator.CreateInstance(type)!;
+        var keyProperties = KeyRequestProperties.GetNames(type);
         foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
-            if (!prop.CanWrite) continue;
+            if (!prop.CanWrite || keyProperties.Contains(prop.Name)) continue;
 
             var key = string.IsNullOrEmpty(prefix) ? prop.Name : $"{prefix}.{prop.Name}";
             var propType = prop.PropertyType;
