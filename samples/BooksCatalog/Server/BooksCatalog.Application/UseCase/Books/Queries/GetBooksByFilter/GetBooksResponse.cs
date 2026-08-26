@@ -7,5 +7,5 @@ public class GetBooksResponse : ITotalCount
 {
     public Book[] Items { get; init; }
 
-    public int TotalCount { get; init; }
+    public long TotalCount { get; init; }
 }

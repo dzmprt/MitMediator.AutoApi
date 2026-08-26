@@ -9,5 +9,5 @@ public interface ITotalCount
     /// Total count.
     /// </summary>
     /// <returns>Total count.</returns>
-    int TotalCount { get; init; }
+    long TotalCount { get; init; }
 }
