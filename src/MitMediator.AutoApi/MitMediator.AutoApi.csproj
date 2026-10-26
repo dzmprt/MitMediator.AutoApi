@@ -7,7 +7,7 @@
         <OutputType>Library</OutputType>
         <IsPackable>true</IsPackable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Version>10.0.1-rc-6</Version>
+        <Version>10.0.1</Version>
         <Title>MitMediator.AutoApi</Title>
         <Authors>Dmitry Protko</Authors>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -18,8 +18,13 @@
         <PackageIcon>logo.png</PackageIcon>
         <RepositoryUrl>https://github.com/dzmprt/MitMediator.AutoApi</RepositoryUrl>
         <PackageTags>mediator;request;response;queries;commands;mitmediator;minimalapi;autoapi;cqrs;</PackageTags>
-        <PackageReleaseNotes>v10.0.1-rc-6
-- use long for ITotalCount</PackageReleaseNotes>
+        <PackageReleaseNotes>v10.0.1
+- Changed ITotalCount type to long
+- Fixed IKeyRequest fields for structs
+- IKeyRequest fields are now used only as URL parameters
+- Updated route generation for init-only Key and KeyN properties
+- Excluded route keys from generated query strings
+- Added support for Set{RequestName}Request</PackageReleaseNotes>
         <TrimMode>full</TrimMode>
         <LangVersion>14</LangVersion>
     </PropertyGroup>
@@ -43,7 +48,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     </ItemGroup>
-      <ItemGroup>
-    <PackageReference Include="MitMediator.AutoApi.Abstractions" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="MitMediator.AutoApi.Abstractions" />
+    </ItemGroup>
 </Project>
