@@ -7,9 +7,23 @@ namespace MitMediator.AutoApi;
 
 internal static class QueryBinder
 {
-    public static void SetProperty<T>(T obj, string propertyName, object? value)
+    public static T SetProperty<T>(T obj, string propertyName, object? value)
     {
-        typeof(T).GetProperty(propertyName)?.SetValue(obj, value);
+        var boxed = (object?)obj;
+        typeof(T).GetProperty(propertyName)?.SetValue(boxed, value);
+        return boxed is null ? obj : (T)boxed;
+    }
+
+    public static T SetKeyProperties<T>(T obj, params object?[] values)
+    {
+        var boxed = (object?)obj;
+        for (var index = 0; index < values.Length; index++)
+        {
+            var propertyName = values.Length == 1 ? "Key" : $"Key{index + 1}";
+            typeof(T).GetProperty(propertyName)?.SetValue(boxed, values[index]);
+        }
+
+        return boxed is null ? obj : (T)boxed;
     }
 
     public static T BindFromQuery<T>(HttpContext context)

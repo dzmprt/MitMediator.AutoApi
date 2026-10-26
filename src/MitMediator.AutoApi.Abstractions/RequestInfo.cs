@@ -35,7 +35,7 @@ public class RequestInfo
     /// Endpoint method pattern.
     /// </summary>
     public string Pattern { get; }
-    
+
     /// <summary>
     /// Endpoint method pattern with type of route params (like books/{key:int}).
     /// </summary>
@@ -176,7 +176,7 @@ public class RequestInfo
                 {
                     throw new Exception("Custom pattern must contain '{key}'.");
                 }
-                
+
             }
             else
             {
@@ -188,7 +188,7 @@ public class RequestInfo
                     }
                 }
             }
-            
+
             if (useRouteOptionsConstraintMap)
             {
                 var keyTypes = GetKeysTypes(requestType);
@@ -214,7 +214,7 @@ public class RequestInfo
                 ? string.Concat(pattern, "/{key}")
                 : string.Concat(pattern, "/",
                     string.Join("/", Enumerable.Range(1, keysCount).Select(c => $"{{key{c}}}")));
-            
+
             if (useRouteOptionsConstraintMap)
             {
                 pattern = MapKeyTypesInPattern(keysCount, pattern, keyTypes);
@@ -244,9 +244,9 @@ public class RequestInfo
         }
         else
         {
-            for (var i = 1; i < keysCount+1; i++)
+            for (var i = 1; i < keysCount + 1; i++)
             {
-                pattern = pattern.Replace($"{{key{i}}}", $"{{key{i}{MapKeyTypeToRouteOptionsConstraint(keyTypes[i-1])}}}");
+                pattern = pattern.Replace($"{{key{i}}}", $"{{key{i}{MapKeyTypeToRouteOptionsConstraint(keyTypes[i - 1])}}}");
 
             }
         }
@@ -456,6 +456,7 @@ public class RequestInfo
             ["modify"] = MethodType.Put,
             ["put"] = MethodType.Put,
             ["set"] = MethodType.Put,
+            ["reset"] = MethodType.Put,
 
             ["post"] = MethodType.Post,
             ["import"] = MethodType.Post,
@@ -484,7 +485,7 @@ public class RequestInfo
     private static readonly Dictionary<Type, string> RouteOptionsConstraintMap = new()
     {
         // { typeof(string), "string" },
-        { typeof(int), "int" },     
+        { typeof(int), "int" },
         { typeof(long), "long" },
         { typeof(bool), "bool" },
         { typeof(DateTime), "datetime" },
@@ -497,7 +498,7 @@ public class RequestInfo
 
     private static string MapKeyTypeToRouteOptionsConstraint(Type key)
     {
-        if (key == typeof(string)) 
+        if (key == typeof(string))
         {
             return string.Empty;
         }

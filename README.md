@@ -38,12 +38,12 @@ dotnet add package MitMediator.AutoApi.HttpMediator -v 10.0.1-rc-3
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 // Register handlers and IMediator.
-builder.Services.AddMitMediator(); 
+builder.Services.AddMitMediator();
 
 var app = builder.Build();
 
 // Automatically maps endpoints based on IRequest
-app.UseAutoApi(); 
+app.UseAutoApi();
 
 app.Run();
 ```
@@ -74,6 +74,7 @@ HTTP Method is inferred from the leading verb in the type name:
 | `modify`                | PUT                 |
 | `put`                   | PUT                 |
 | `set`                   | PUT                 |
+| `reset`                 | PUT                 |
 | `post`                  | POST                |
 | `import`                | POST                |
 | `upload`                | POST                |
@@ -117,9 +118,9 @@ Version prefix (v1, v2, etc.) is prepended to the route as part of the base path
 public struct GetBooksQuery : IRequest<Book[]>
 {
     public int? Limit { get; init; }
-    
+
     public int? Offset { get; init; }
-    
+
     public string? FreeText { get; init; }
 }
 ```
@@ -131,7 +132,7 @@ public struct GetBooksQuery : IRequest<Book[]>
 public class CreateBookCommand : IRequest<Book>
 {
     public string Title { get; init; }
-    
+
     public int AuthorId { get; init; }
 
     public string GenreName { get; init; }
@@ -140,7 +141,7 @@ public class CreateBookCommand : IRequest<Book>
 
 If you need to use a route parameter, inherit from one of the classes `KeyRequest<TKey>` (recommended)
 or implement one of the interfaces `IKeyRequest<TKey>`, `IKeyRequest<TKey1,TKey2>`, etc.
-(up to 7 keys). 
+(up to 7 keys).
 
 Route keys are exposed as `init`-only properties (`Key`, `Key1`, `Key2`, etc.), so they can be assigned when
 creating a request and are automatically excluded from the query string.
@@ -153,7 +154,7 @@ public class GetBookCoverQuery : KeyRequest<int>, IRequest<Book>;
 ```
 Use interface `IKeyRequest<int>` for structs or when you can't inherit KeyRequest:
 
-> ```csharp 
+> ```csharp
 > // URL: GET /v1/books/123/cover
 > public struct GetBookCoverQuery : IKeyRequest<int>, IRequest<Book>
 > {
@@ -192,9 +193,9 @@ When `[PatternAttribute]` is applied, it overrides the entire route. The base ro
 public struct GetBooksQuery : IRequest<Book[]>
 {
     public int? Limit { get; init; }
-    
+
     public int? Offset { get; init; }
-    
+
     public string? FreeText { get; init; }
 }
 ```
@@ -214,7 +215,7 @@ public class DoSomeWithBookAndDeleteCommand : KeyRequest<int, Guid>, IRequest<Bo
 ### `GET` endpoint png file ("image/png")
 
 ```csharp
-// Api URL: GET /v1/books/123/сover
+// Api URL: GET /v1/books/123/cover
 [ResponseContentType("image/png")]
 public class GetBookCoverQuery: KeyRequest<int>, IRequest<byte[]>;
 ```
@@ -227,7 +228,7 @@ file name, use the `FileResponse` or `FileStreamResponse` response.
 Use `[ResponseContentType("image/png")]` attribute for custom content type
 
 When a request implements `IFileRequest` or inherits from `FileRequest`, it will be bound using `[FromForm]`.
-File parameters fron `IFileRequest` will be automatically inferred via `IFromFile`. Apply `[DisableAntiforgery]` to skip 
+File parameters from `IFileRequest` will be automatically inferred via `IFromFile`. Apply `[DisableAntiforgery]` to skip
 CSRF protection for file upload endpoints or non-browser clients
 
 ### Examples
@@ -245,7 +246,6 @@ public class GetBookTextQuery: KeyRequest<int>, IRequest<byte[]>;
 // Api URL: POST /v1/documents/word
 [DisableAntiforgery]
 public class ImportDocumentWordCommand : FileRequest, IRequest<FileResponse>;
-}
 ```
 
 ## X-Total-Count Header
@@ -259,13 +259,12 @@ public class GetBooksResponse : ITotalCount
 {
     public Book[] Items { get; init; }
 
-    public int TotalCount { get; init; }
+    public long TotalCount { get; init; }
 }
 ```
 
 When this interface is implemented, MitMediator.AutoApi will automatically include the `X-Total-Count` header in the
 response, reflecting the value of the `TotalCount` property. Set the value when creating the response.
-```
 
 The HTTP client also exposes the value as `response.TotalCount` after deserialization.
 
@@ -285,9 +284,9 @@ public class CreateBookCommand : IRequest<CreatedBookResponse>
 public class CreatedBookResponse : IResourceKey
 {
     public int BookId { get; private set; }
-    
+
     public string Title { get; private set; }
-    
+
     public string GetResourceKey() => BookId.ToString();
 }
 ```

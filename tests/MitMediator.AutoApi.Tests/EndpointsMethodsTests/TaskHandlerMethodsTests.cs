@@ -87,6 +87,6 @@ public class TaskHandlerMethodsTests
 
     private sealed class TotalCountTaskResponse : ITotalCount
     {
-        public int TotalCount { get; init; }
+        public long TotalCount { get; init; }
     }
 }

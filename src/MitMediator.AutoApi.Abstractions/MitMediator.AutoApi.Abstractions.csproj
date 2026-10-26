@@ -4,9 +4,9 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Version>10.0.1-rc-4</Version>
+        <Version>10.0.1</Version>
         <Title>MitMediator.AutoApi.Abstractions</Title>
-        <Description>Attribute-driven Minimal API registration for MitMediator  </Description>
+        <Description>Attribute-driven Minimal API registration for MitMediator </Description>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Authors>Dmitry Protko</Authors>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -16,8 +16,13 @@
         <PackageIcon>logo.png</PackageIcon>
         <RepositoryUrl>https://github.com/dzmprt/MitMediator.AutoApi</RepositoryUrl>
         <PackageTags>mediator;request;response;queries;commands;mitmediator;minimalapi;autoapi;cqrs;</PackageTags>
-        <PackageReleaseNotes>v10.0.1-rc-4
-- IKeyRequest fields are now used only as URL parameters</PackageReleaseNotes>
+        <PackageReleaseNotes>v10.0.1
+- Changed ITotalCount type to long
+- Fixed IKeyRequest fields for structs
+- IKeyRequest fields are now used only as URL parameters
+- Updated route generation for init-only Key and KeyN properties
+- Excluded route keys from generated query strings
+- Added support for Set{RequestName}Request</PackageReleaseNotes>
         <TrimMode>full</TrimMode>
         <LangVersion>14</LangVersion>
     </PropertyGroup>
@@ -39,7 +44,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="MitMediator" />
+        <PackageReference Include="MitMediator" />
     </ItemGroup>
 
 </Project>

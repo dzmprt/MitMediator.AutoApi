@@ -3,4 +3,8 @@ using MitMediator.AutoApi.Abstractions;
 
 namespace SmokeTest.Application.UseCase.Test.Queries.GetByKey2;
 
-public class GetTestByKey2Query : KeyRequest<int, int>, IRequest<string>;
+public struct GetTestByKey2Query : IKeyRequest<int, int>, IRequest<string>
+{
+    public int Key1 { get; init; }
+    public int Key2 { get; init; }
+}
