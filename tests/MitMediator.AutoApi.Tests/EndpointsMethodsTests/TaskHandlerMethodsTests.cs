@@ -66,6 +66,23 @@ public class TaskHandlerMethodsTests
         Assert.Equal(42, capturedRequest!.Key);
     }
 
+    [Fact]
+    public async Task WithGetParams_NonSeekableStream_ShouldNotFail()
+    {
+        var mediator = new Mock<IMediator>();
+        using var stream = new NonSeekableStream("test"u8.ToArray());
+        mediator.Setup(m => m.Send<StreamTaskRequest, Stream>(
+                It.IsAny<StreamTaskRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(stream);
+        var context = CreateContext(mediator.Object);
+        var endpoint = EndpointsMethodsForTaskHandlers.WithGetParams<StreamTaskRequest, Stream>(
+            new RequestInfo(typeof(StreamTaskRequest)));
+
+        var result = await (ValueTask<IResult>)endpoint.DynamicInvoke(context, CancellationToken.None)!;
+
+        Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.FileStreamHttpResult>(result);
+    }
+
     private static DefaultHttpContext CreateContext(IMediator mediator)
     {
         return new DefaultHttpContext
@@ -88,5 +105,14 @@ public class TaskHandlerMethodsTests
     private sealed class TotalCountTaskResponse : ITotalCount
     {
         public long TotalCount { get; init; }
+    }
+
+    private sealed class StreamTaskRequest : IRequest<Stream>;
+
+    private sealed class NonSeekableStream(byte[] buffer) : MemoryStream(buffer)
+    {
+        public override bool CanSeek => false;
+        public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+        public override long Seek(long offset, SeekOrigin loc) => throw new NotSupportedException();
     }
 }

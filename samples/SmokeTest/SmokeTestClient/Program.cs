@@ -10,6 +10,7 @@ using SmokeTest.Application.UseCase.Files.Commands.ImportFileBytes;
 using SmokeTest.Application.UseCase.Files.Commands.ImportFileBytesWithName;
 using SmokeTest.Application.UseCase.Files.Commands.ImportFileStream;
 using SmokeTest.Application.UseCase.Files.Commands.ImportFileStreamWithName;
+using SmokeTest.Application.UseCase.Files.Commands.UpdateFile;
 using SmokeTest.Application.UseCase.Files.Queries.GetFile;
 using SmokeTest.Application.UseCase.Files.Queries.GetFilePng;
 using SmokeTest.Application.UseCase.Files.Queries.GetFileTxt;
@@ -23,6 +24,7 @@ using SmokeTest.Application.UseCase.Test.Commands.DeleteByKey;
 using SmokeTest.Application.UseCase.Test.Commands.DeleteByKey2;
 using SmokeTest.Application.UseCase.Test.Commands.DeleteByKey7;
 using SmokeTest.Application.UseCase.Test.Commands.Post;
+using SmokeTest.Application.UseCase.Test.Commands.PostDecimal;
 using SmokeTest.Application.UseCase.Test.Commands.PostBy2Keys;
 using SmokeTest.Application.UseCase.Test.Commands.PostBy7Keys;
 using SmokeTest.Application.UseCase.Test.Commands.PostByKey;
@@ -36,6 +38,7 @@ using SmokeTest.Application.UseCase.Test.Queries.GetByKey2;
 using SmokeTest.Application.UseCase.Test.Queries.GetByKey7;
 using SmokeTest.Application.UseCase.Test.Queries.GetByKey7WithDifferentTypes;
 using SmokeTest.Application.UseCase.Test.Queries.GetByKeyWithCustomPath;
+using SmokeTest.Application.UseCase.Test.Queries.GetDecimal;
 using SmokeTest.Application.UseCase.Test.Queries.GetEmpty;
 using SmokeTest.Application.UseCase.Test.Queries.GetList;
 using SmokeTest.Application.UseCase.Test.Queries.GetWithQueryParams;
@@ -102,6 +105,19 @@ var getTestByKeyWithCustomPathQuery = new GetTestByKeyWithCustomPathQuery
 Console.WriteLine(
     await httpMediator.SendAsync<GetTestByKeyWithCustomPathQuery, string>(getTestByKeyWithCustomPathQuery,
         CancellationToken.None));
+
+var getTestByStringKeyQuery = new SmokeTest.Application.UseCase.Test.Queries.GetByKey.GetTestByStringKeyQuery
+{
+    Key = "/string%key?value=true"
+};
+Console.WriteLine(await httpMediator.SendAsync<
+    SmokeTest.Application.UseCase.Test.Queries.GetByKey.GetTestByStringKeyQuery,
+    string>(getTestByStringKeyQuery, CancellationToken.None));
+
+var getDecimalQuery = new GetDecimalQuery { Key = 123.456m };
+Console.WriteLine(await httpMediator.SendAsync<GetDecimalQuery, decimal>(
+    getDecimalQuery,
+    CancellationToken.None));
 
 Console.WriteLine(
     (await httpMediator.SendAsync<CreateTestCommand, CreateTestResponse>(new CreateTestCommand { TestData = "test" },
@@ -198,6 +214,19 @@ var updateTestBy7KeysCommand = new UpdateTestBy7KeysCommand
 Console.WriteLine(
     await httpMediator.SendAsync<UpdateTestBy7KeysCommand, string>(updateTestBy7KeysCommand, CancellationToken.None));
 
+var updateTestByStringKeyCommand = new UpdateTestByStringKeyCommand
+{
+    Key = "/string%key?value=true",
+    TestData = "test"
+};
+Console.WriteLine(await httpMediator.SendAsync<UpdateTestByStringKeyCommand, string>(
+    updateTestByStringKeyCommand,
+    CancellationToken.None));
+
+Console.WriteLine(await httpMediator.SendAsync<PostDecimalCommand, decimal>(
+    new PostDecimalCommand { Value = 123.456m },
+    CancellationToken.None));
+
 Console.WriteLine(await httpMediator.SendAsync(new DeleteTestCommand { TestData = "test" }, CancellationToken.None));
 var deleteTestByKeyCommand = new DeleteTestByKeyCommand
 {
@@ -282,15 +311,23 @@ importFileStreamWithNameCommand.SetFile(stream, "img.png");
 var importFileStreamWithNameResponse =
     await httpMediator.SendAsync<ImportFileStreamWithNameCommand, FileStreamResponse>(importFileStreamWithNameCommand,
         CancellationToken.None);
+var importFileStreamWithNameBytes =
+    await importFileStreamWithNameResponse.ReadToEndAsync(CancellationToken.None);
+await importFileStreamWithNameResponse.File.DisposeAsync();
 Console.WriteLine(
-    $"ImportFileStreamWithNameCommand: file size {importFileStreamWithNameResponse.File.Length}, file name {importFileStreamWithNameResponse.FileName}");
+    $"ImportFileStreamWithNameCommand: file size {importFileStreamWithNameBytes.Length}, file name {importFileStreamWithNameResponse.FileName}");
 
 using var stream2 = new MemoryStream(bytes);
 var importFileStreamCommand = new ImportFileStreamCommand();
 importFileStreamCommand.SetFile(stream2, "img.png");
 var importFileStreamResponse =
     await httpMediator.SendAsync<ImportFileStreamCommand, Stream>(importFileStreamCommand, CancellationToken.None);
-Console.WriteLine($"ImportFileStreamCommand: file size {importFileStreamResponse.Length}");
+await using (importFileStreamResponse)
+{
+    using var responseBuffer = new MemoryStream();
+    await importFileStreamResponse.CopyToAsync(responseBuffer, CancellationToken.None);
+    Console.WriteLine($"ImportFileStreamCommand: file size {responseBuffer.Length}");
+}
 
 using var stream3 = new MemoryStream(bytes);
 var importFileBytesWithNameCommand = new ImportFileBytesWithNameCommand();
@@ -307,6 +344,13 @@ importFileBytesCommand.SetFile(stream4, "img.png");
 var importFileBytesResponse =
     await httpMediator.SendAsync<ImportFileBytesCommand, byte[]>(importFileBytesCommand, CancellationToken.None);
 Console.WriteLine($"ImportFileBytesCommand: file size {importFileBytesResponse.Length}");
+
+using var stream5 = new MemoryStream(bytes);
+var updateFileCommand = new UpdateFileCommand();
+updateFileCommand.SetFile(stream5, "img.png");
+var updateFileResponse =
+    await httpMediator.SendAsync<UpdateFileCommand, byte[]>(updateFileCommand, CancellationToken.None);
+Console.WriteLine($"UpdateFileCommand: file size {updateFileResponse.Length}");
 
 var getByKey7WithDifferentTypesQuery = new GetByKey7WithDifferentTypesQuery
 {

@@ -3,7 +3,7 @@ namespace MitMediator.AutoApi.Abstractions.Attributes;
 /// <summary>
 /// Custom response content type. Example "image/png".
 /// </summary>
-public class ResponseContentTypeAttribute(string responseContentType) : Attribute
+public sealed class ResponseContentTypeAttribute(string responseContentType) : Attribute
 {
     /// <summary>
     /// Custom response content type. Example "image/png".

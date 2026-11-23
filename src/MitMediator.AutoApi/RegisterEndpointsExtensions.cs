@@ -126,9 +126,12 @@ public static class RegisterEndpointsExtensions
                     .Produces(StatusCodes.Status200OK, requestInfo.ResponseType);
                 break;
             case MethodType.Post:
-            case MethodType.PostCreate:
                 routeHandlerBuilder = app.MapPost(requestInfo.PatternWithTypesOfRoutParams, requestDelegate)
                     .Produces(StatusCodes.Status200OK, requestInfo.ResponseType);
+                break;
+            case MethodType.PostCreate:
+                routeHandlerBuilder = app.MapPost(requestInfo.PatternWithTypesOfRoutParams, requestDelegate)
+                    .Produces(StatusCodes.Status201Created, requestInfo.ResponseType);
                 break;
             case MethodType.Delete:
                 routeHandlerBuilder = app.MapDelete(requestInfo.PatternWithTypesOfRoutParams, requestDelegate)
@@ -136,6 +139,17 @@ public static class RegisterEndpointsExtensions
                 break;
             default:
                 throw new NotSupportedException($"Http method {requestInfo.MethodType} is not supported");
+        }
+
+        if (requestInfo.IsKeyRequest && requestInfo.MethodType is MethodType.Post or MethodType.PostCreate or MethodType.Put)
+        {
+            routeHandlerBuilder.AddOpenApiOperationTransformer((operation, _, _) =>
+            {
+                OpenApiParameterGenerator.RemoveKeyPropertiesFromRequestBody(
+                    operation,
+                    requestInfo.RequestType);
+                return Task.CompletedTask;
+            });
         }
 
         var pluralizedTag = requestInfo.PluralizedTag;

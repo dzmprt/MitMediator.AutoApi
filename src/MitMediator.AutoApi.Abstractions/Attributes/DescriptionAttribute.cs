@@ -3,7 +3,7 @@ namespace MitMediator.AutoApi.Abstractions.Attributes;
 /// <summary>
 /// Custom endpoint description.
 /// </summary>
-public class DescriptionAttribute(string description) : Attribute
+public sealed class DescriptionAttribute(string description) : Attribute
 {
     /// <summary>
     /// Custom endpoint description.

@@ -37,7 +37,7 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 var request = QueryBinder.BindFromQuery<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request = QueryBinder.SetProperty(request, "Key", key);
+                request = QueryBinder.SetProperty(request, "Key", key, ctx);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 return GetApiResult(requestInfo, result, ctx);
             });
@@ -51,7 +51,7 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 var request = QueryBinder.BindFromQuery<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request = QueryBinder.SetKeyProperties(request, key1, key2);
+                request = QueryBinder.SetKeyProperties(request, ctx, key1, key2);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 return GetApiResult(requestInfo, result, ctx);
             });
@@ -65,7 +65,7 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 var request = QueryBinder.BindFromQuery<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request = QueryBinder.SetKeyProperties(request, key1, key2, key3);
+                request = QueryBinder.SetKeyProperties(request, ctx, key1, key2, key3);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 return GetApiResult(requestInfo, result, ctx);
             });
@@ -80,7 +80,7 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 var request = QueryBinder.BindFromQuery<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request = QueryBinder.SetKeyProperties(request, key1, key2, key3, key4);
+                request = QueryBinder.SetKeyProperties(request, ctx, key1, key2, key3, key4);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 return GetApiResult(requestInfo, result, ctx);
             });
@@ -95,7 +95,7 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 var request = QueryBinder.BindFromQuery<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request = QueryBinder.SetKeyProperties(request, key1, key2, key3, key4, key5);
+                request = QueryBinder.SetKeyProperties(request, ctx, key1, key2, key3, key4, key5);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 return GetApiResult(requestInfo, result, ctx);
             });
@@ -111,7 +111,7 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 var request = QueryBinder.BindFromQuery<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request = QueryBinder.SetKeyProperties(request, key1, key2, key3, key4, key5, key6);
+                request = QueryBinder.SetKeyProperties(request, ctx, key1, key2, key3, key4, key5, key6);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 return GetApiResult(requestInfo, result, ctx);
             });
@@ -128,7 +128,7 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 var request = QueryBinder.BindFromQuery<TRequest>(ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request = QueryBinder.SetKeyProperties(request, key1, key2, key3, key4, key5, key6, key7);
+                request = QueryBinder.SetKeyProperties(request, ctx, key1, key2, key3, key4, key5, key6, key7);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 return GetApiResult(requestInfo, result, ctx);
             });
@@ -185,14 +185,14 @@ internal static class EndpointsMethodsForTaskHandlers
             async ([FromBody] request, [FromRoute] key, ctx, ct) =>
             {
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request = QueryBinder.SetProperty(request, "Key", key);
+                request = QueryBinder.SetProperty(request, "Key", key, ctx);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
                     return GetApiResult(requestInfo, result, ctx);
                 }
 
                 var keyPattern = requestInfo.Pattern;
-                keyPattern = keyPattern.Replace("{key}", key?.ToString());
+                keyPattern = keyPattern.Replace("{key}", RouteValueEncoder.EncodeRequestKey(request, "Key"));
                 keyPattern = string.Concat(keyPattern, "/{key}");
                 return GetApiResult(requestInfo, result, ctx, keyPattern);
             });
@@ -206,14 +206,16 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 request ??= Activator.CreateInstance<TRequest>();
                 request.SetFile(formFile.OpenReadStream(), formFile.FileName);
-                request = QueryBinder.SetProperty(request, "Key", key);
+                request = QueryBinder.SetProperty(request, "Key", key, ctx);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
                     return GetApiResult(requestInfo, result, ctx);
                 }
 
-                var keyPattern = $"{requestInfo.Pattern}/{{key}}";
+                var keyPattern = requestInfo.Pattern;
+                keyPattern = keyPattern.Replace("{key}", RouteValueEncoder.EncodeRequestKey(request, "Key"));
+                keyPattern = string.Concat(keyPattern, "/{key}");
                 return GetApiResult(requestInfo, result, ctx, keyPattern);
             });
     }
@@ -225,15 +227,15 @@ internal static class EndpointsMethodsForTaskHandlers
             async ([FromBody] request, [FromRoute] key1, [FromRoute] key2, ctx, ct) =>
             {
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request = QueryBinder.SetKeyProperties(request, key1, key2);
+                request = QueryBinder.SetKeyProperties(request, ctx, key1, key2);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
                     return GetApiResult(requestInfo, result, ctx);
                 }
 
                 var keyPattern = string.Concat(requestInfo.Pattern, "/{key}");
-                keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
-                keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
+                keyPattern = keyPattern.Replace("{key1}", RouteValueEncoder.EncodeRequestKey(request, "Key1"));
+                keyPattern = keyPattern.Replace("{key2}", RouteValueEncoder.EncodeRequestKey(request, "Key2"));
                 return GetApiResult(requestInfo, result, ctx, keyPattern);
             });
     }
@@ -246,7 +248,7 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 request ??= Activator.CreateInstance<TRequest>();
                 request.SetFile(formFile.OpenReadStream(), formFile.FileName);
-                request = QueryBinder.SetKeyProperties(request, key1, key2);
+                request = QueryBinder.SetKeyProperties(request, ctx, key1, key2);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
@@ -254,8 +256,8 @@ internal static class EndpointsMethodsForTaskHandlers
                 }
                 
                 var keyPattern = string.Concat(requestInfo.Pattern, "/{key}");
-                keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
-                keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
+                keyPattern = keyPattern.Replace("{key1}", RouteValueEncoder.EncodeRequestKey(request, "Key1"));
+                keyPattern = keyPattern.Replace("{key2}", RouteValueEncoder.EncodeRequestKey(request, "Key2"));
                 return GetApiResult(requestInfo, result, ctx, keyPattern);
             });
     }
@@ -267,16 +269,16 @@ internal static class EndpointsMethodsForTaskHandlers
             async ([FromBody] request, [FromRoute] key1, [FromRoute] key2, [FromRoute] key3, ctx, ct) =>
             {
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request = QueryBinder.SetKeyProperties(request, key1, key2, key3);
+                request = QueryBinder.SetKeyProperties(request, ctx, key1, key2, key3);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
                     return GetApiResult(requestInfo, result, ctx);
                 }
 
                 var keyPattern = string.Concat(requestInfo.Pattern, "/{key}");
-                keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
-                keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
-                keyPattern = keyPattern.Replace("{key3}", key3?.ToString());
+                keyPattern = keyPattern.Replace("{key1}", RouteValueEncoder.EncodeRequestKey(request, "Key1"));
+                keyPattern = keyPattern.Replace("{key2}", RouteValueEncoder.EncodeRequestKey(request, "Key2"));
+                keyPattern = keyPattern.Replace("{key3}", RouteValueEncoder.EncodeRequestKey(request, "Key3"));
                 return GetApiResult(requestInfo, result, ctx, keyPattern);
             });
     }
@@ -289,7 +291,7 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 request ??= Activator.CreateInstance<TRequest>();
                 request.SetFile(formFile.OpenReadStream(), formFile.FileName);
-                request = QueryBinder.SetKeyProperties(request, key1, key2, key3);
+                request = QueryBinder.SetKeyProperties(request, ctx, key1, key2, key3);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
@@ -297,9 +299,9 @@ internal static class EndpointsMethodsForTaskHandlers
                 }
                 
                 var keyPattern = string.Concat(requestInfo.Pattern, "/{key}");
-                keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
-                keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
-                keyPattern = keyPattern.Replace("{key3}", key3?.ToString());
+                keyPattern = keyPattern.Replace("{key1}", RouteValueEncoder.EncodeRequestKey(request, "Key1"));
+                keyPattern = keyPattern.Replace("{key2}", RouteValueEncoder.EncodeRequestKey(request, "Key2"));
+                keyPattern = keyPattern.Replace("{key3}", RouteValueEncoder.EncodeRequestKey(request, "Key3"));
                 return GetApiResult(requestInfo, result, ctx, keyPattern);
             });
     }
@@ -312,17 +314,17 @@ internal static class EndpointsMethodsForTaskHandlers
                 ct) =>
             {
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request = QueryBinder.SetKeyProperties(request, key1, key2, key3, key4);
+                request = QueryBinder.SetKeyProperties(request, ctx, key1, key2, key3, key4);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
                     return GetApiResult(requestInfo, result, ctx);
                 }
 
                 var keyPattern = string.Concat(requestInfo.Pattern, "/{key}");
-                keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
-                keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
-                keyPattern = keyPattern.Replace("{key3}", key3?.ToString());
-                keyPattern = keyPattern.Replace("{key4}", key4?.ToString());
+                keyPattern = keyPattern.Replace("{key1}", RouteValueEncoder.EncodeRequestKey(request, "Key1"));
+                keyPattern = keyPattern.Replace("{key2}", RouteValueEncoder.EncodeRequestKey(request, "Key2"));
+                keyPattern = keyPattern.Replace("{key3}", RouteValueEncoder.EncodeRequestKey(request, "Key3"));
+                keyPattern = keyPattern.Replace("{key4}", RouteValueEncoder.EncodeRequestKey(request, "Key4"));
                 return GetApiResult(requestInfo, result, ctx, keyPattern);
             });
     }
@@ -335,7 +337,7 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 request ??= Activator.CreateInstance<TRequest>();
                 request.SetFile(formFile.OpenReadStream(), formFile.FileName);
-                request = QueryBinder.SetKeyProperties(request, key1, key2, key3, key4);
+                request = QueryBinder.SetKeyProperties(request, ctx, key1, key2, key3, key4);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
@@ -343,10 +345,10 @@ internal static class EndpointsMethodsForTaskHandlers
                 }
                 
                 var keyPattern = string.Concat(requestInfo.Pattern, "/{key}");
-                keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
-                keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
-                keyPattern = keyPattern.Replace("{key3}", key3?.ToString());
-                keyPattern = keyPattern.Replace("{key4}", key4?.ToString());
+                keyPattern = keyPattern.Replace("{key1}", RouteValueEncoder.EncodeRequestKey(request, "Key1"));
+                keyPattern = keyPattern.Replace("{key2}", RouteValueEncoder.EncodeRequestKey(request, "Key2"));
+                keyPattern = keyPattern.Replace("{key3}", RouteValueEncoder.EncodeRequestKey(request, "Key3"));
+                keyPattern = keyPattern.Replace("{key4}", RouteValueEncoder.EncodeRequestKey(request, "Key4"));
                 return GetApiResult(requestInfo, result, ctx, keyPattern);
             });
     }
@@ -359,18 +361,18 @@ internal static class EndpointsMethodsForTaskHandlers
                 [FromRoute] key5, ctx, ct) =>
             {
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request = QueryBinder.SetKeyProperties(request, key1, key2, key3, key4, key5);
+                request = QueryBinder.SetKeyProperties(request, ctx, key1, key2, key3, key4, key5);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
                     return GetApiResult(requestInfo, result, ctx);
                 }
 
                 var keyPattern = string.Concat(requestInfo.Pattern, "/{key}");
-                keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
-                keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
-                keyPattern = keyPattern.Replace("{key3}", key3?.ToString());
-                keyPattern = keyPattern.Replace("{key4}", key4?.ToString());
-                keyPattern = keyPattern.Replace("{key5}", key5?.ToString());
+                keyPattern = keyPattern.Replace("{key1}", RouteValueEncoder.EncodeRequestKey(request, "Key1"));
+                keyPattern = keyPattern.Replace("{key2}", RouteValueEncoder.EncodeRequestKey(request, "Key2"));
+                keyPattern = keyPattern.Replace("{key3}", RouteValueEncoder.EncodeRequestKey(request, "Key3"));
+                keyPattern = keyPattern.Replace("{key4}", RouteValueEncoder.EncodeRequestKey(request, "Key4"));
+                keyPattern = keyPattern.Replace("{key5}", RouteValueEncoder.EncodeRequestKey(request, "Key5"));
                 return GetApiResult(requestInfo, result, ctx, keyPattern);
             });
     }
@@ -383,7 +385,7 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 request ??= Activator.CreateInstance<TRequest>();
                 request.SetFile(formFile.OpenReadStream(), formFile.FileName);
-                request = QueryBinder.SetKeyProperties(request, key1, key2, key3, key4, key5);
+                request = QueryBinder.SetKeyProperties(request, ctx, key1, key2, key3, key4, key5);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
@@ -391,11 +393,11 @@ internal static class EndpointsMethodsForTaskHandlers
                 }
                 
                 var keyPattern = string.Concat(requestInfo.Pattern, "/{key}");
-                keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
-                keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
-                keyPattern = keyPattern.Replace("{key3}", key3?.ToString());
-                keyPattern = keyPattern.Replace("{key4}", key4?.ToString());
-                keyPattern = keyPattern.Replace("{key5}", key5?.ToString());
+                keyPattern = keyPattern.Replace("{key1}", RouteValueEncoder.EncodeRequestKey(request, "Key1"));
+                keyPattern = keyPattern.Replace("{key2}", RouteValueEncoder.EncodeRequestKey(request, "Key2"));
+                keyPattern = keyPattern.Replace("{key3}", RouteValueEncoder.EncodeRequestKey(request, "Key3"));
+                keyPattern = keyPattern.Replace("{key4}", RouteValueEncoder.EncodeRequestKey(request, "Key4"));
+                keyPattern = keyPattern.Replace("{key5}", RouteValueEncoder.EncodeRequestKey(request, "Key5"));
                 return GetApiResult(requestInfo, result, ctx, keyPattern);
             });
     }
@@ -409,19 +411,19 @@ internal static class EndpointsMethodsForTaskHandlers
                 [FromRoute] key5, [FromRoute] key6, ctx, ct) =>
             {
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request = QueryBinder.SetKeyProperties(request, key1, key2, key3, key4, key5, key6);
+                request = QueryBinder.SetKeyProperties(request, ctx, key1, key2, key3, key4, key5, key6);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
                     return GetApiResult(requestInfo, result, ctx);
                 }
 
-                var keyPattern = string.Concat(requestInfo.Pattern, "/{key");
-                keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
-                keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
-                keyPattern = keyPattern.Replace("{key3}", key3?.ToString());
-                keyPattern = keyPattern.Replace("{key4}", key4?.ToString());
-                keyPattern = keyPattern.Replace("{key5}", key5?.ToString());
-                keyPattern = keyPattern.Replace("{key6}", key6?.ToString());
+                var keyPattern = string.Concat(requestInfo.Pattern, "/{key}");
+                keyPattern = keyPattern.Replace("{key1}", RouteValueEncoder.EncodeRequestKey(request, "Key1"));
+                keyPattern = keyPattern.Replace("{key2}", RouteValueEncoder.EncodeRequestKey(request, "Key2"));
+                keyPattern = keyPattern.Replace("{key3}", RouteValueEncoder.EncodeRequestKey(request, "Key3"));
+                keyPattern = keyPattern.Replace("{key4}", RouteValueEncoder.EncodeRequestKey(request, "Key4"));
+                keyPattern = keyPattern.Replace("{key5}", RouteValueEncoder.EncodeRequestKey(request, "Key5"));
+                keyPattern = keyPattern.Replace("{key6}", RouteValueEncoder.EncodeRequestKey(request, "Key6"));
                 return GetApiResult(requestInfo, result, ctx, keyPattern);
             });
     }
@@ -434,7 +436,7 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 request ??= Activator.CreateInstance<TRequest>();
                 request.SetFile(formFile.OpenReadStream(), formFile.FileName);
-                request = QueryBinder.SetKeyProperties(request, key1, key2, key3, key4, key5, key6);
+                request = QueryBinder.SetKeyProperties(request, ctx, key1, key2, key3, key4, key5, key6);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
@@ -442,12 +444,12 @@ internal static class EndpointsMethodsForTaskHandlers
                 }
                 
                 var keyPattern = string.Concat(requestInfo.Pattern, "/{key}");
-                keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
-                keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
-                keyPattern = keyPattern.Replace("{key3}", key3?.ToString());
-                keyPattern = keyPattern.Replace("{key4}", key4?.ToString());
-                keyPattern = keyPattern.Replace("{key5}", key5?.ToString());
-                keyPattern = keyPattern.Replace("{key6}", key6?.ToString());
+                keyPattern = keyPattern.Replace("{key1}", RouteValueEncoder.EncodeRequestKey(request, "Key1"));
+                keyPattern = keyPattern.Replace("{key2}", RouteValueEncoder.EncodeRequestKey(request, "Key2"));
+                keyPattern = keyPattern.Replace("{key3}", RouteValueEncoder.EncodeRequestKey(request, "Key3"));
+                keyPattern = keyPattern.Replace("{key4}", RouteValueEncoder.EncodeRequestKey(request, "Key4"));
+                keyPattern = keyPattern.Replace("{key5}", RouteValueEncoder.EncodeRequestKey(request, "Key5"));
+                keyPattern = keyPattern.Replace("{key6}", RouteValueEncoder.EncodeRequestKey(request, "Key6"));
                 return GetApiResult(requestInfo, result, ctx, keyPattern);
             });
     }
@@ -461,20 +463,20 @@ internal static class EndpointsMethodsForTaskHandlers
                 [FromRoute] key5, [FromRoute] key6, [FromRoute] key7, ctx, ct) =>
             {
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
-                request = QueryBinder.SetKeyProperties(request, key1, key2, key3, key4, key5, key6, key7);
+                request = QueryBinder.SetKeyProperties(request, ctx, key1, key2, key3, key4, key5, key6, key7);
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
                     return GetApiResult(requestInfo, result, ctx);
                 }
 
-                var keyPattern = string.Concat(requestInfo.Pattern, "/{key");
-                keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
-                keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
-                keyPattern = keyPattern.Replace("{key3}", key3?.ToString());
-                keyPattern = keyPattern.Replace("{key4}", key4?.ToString());
-                keyPattern = keyPattern.Replace("{key5}", key5?.ToString());
-                keyPattern = keyPattern.Replace("{key6}", key6?.ToString());
-                keyPattern = keyPattern.Replace("{key7}", key7?.ToString());
+                var keyPattern = string.Concat(requestInfo.Pattern, "/{key}");
+                keyPattern = keyPattern.Replace("{key1}", RouteValueEncoder.EncodeRequestKey(request, "Key1"));
+                keyPattern = keyPattern.Replace("{key2}", RouteValueEncoder.EncodeRequestKey(request, "Key2"));
+                keyPattern = keyPattern.Replace("{key3}", RouteValueEncoder.EncodeRequestKey(request, "Key3"));
+                keyPattern = keyPattern.Replace("{key4}", RouteValueEncoder.EncodeRequestKey(request, "Key4"));
+                keyPattern = keyPattern.Replace("{key5}", RouteValueEncoder.EncodeRequestKey(request, "Key5"));
+                keyPattern = keyPattern.Replace("{key6}", RouteValueEncoder.EncodeRequestKey(request, "Key6"));
+                keyPattern = keyPattern.Replace("{key7}", RouteValueEncoder.EncodeRequestKey(request, "Key7"));
                 return GetApiResult(requestInfo, result, ctx, keyPattern);
             });
     }
@@ -487,7 +489,7 @@ internal static class EndpointsMethodsForTaskHandlers
             {
                 request ??= Activator.CreateInstance<TRequest>();
                 request.SetFile(formFile.OpenReadStream(), formFile.FileName);
-                request = QueryBinder.SetKeyProperties(request, key1, key2, key3, key4, key5, key6, key7);
+                request = QueryBinder.SetKeyProperties(request, ctx, key1, key2, key3, key4, key5, key6, key7);
                 var mediator = ctx.RequestServices.GetRequiredService<IMediator>();
                 var result = await mediator.Send<TRequest, TResponse>(request, ct);
                 if (requestInfo.MethodType != MethodType.PostCreate)                {
@@ -495,13 +497,13 @@ internal static class EndpointsMethodsForTaskHandlers
                 }
                 
                 var keyPattern = string.Concat(requestInfo.Pattern, "/{key}");
-                keyPattern = keyPattern.Replace("{key1}", key1?.ToString());
-                keyPattern = keyPattern.Replace("{key2}", key2?.ToString());
-                keyPattern = keyPattern.Replace("{key3}", key3?.ToString());
-                keyPattern = keyPattern.Replace("{key4}", key4?.ToString());
-                keyPattern = keyPattern.Replace("{key5}", key5?.ToString());
-                keyPattern = keyPattern.Replace("{key6}", key6?.ToString());
-                keyPattern = keyPattern.Replace("{key7}", key7?.ToString());
+                keyPattern = keyPattern.Replace("{key1}", RouteValueEncoder.EncodeRequestKey(request, "Key1"));
+                keyPattern = keyPattern.Replace("{key2}", RouteValueEncoder.EncodeRequestKey(request, "Key2"));
+                keyPattern = keyPattern.Replace("{key3}", RouteValueEncoder.EncodeRequestKey(request, "Key3"));
+                keyPattern = keyPattern.Replace("{key4}", RouteValueEncoder.EncodeRequestKey(request, "Key4"));
+                keyPattern = keyPattern.Replace("{key5}", RouteValueEncoder.EncodeRequestKey(request, "Key5"));
+                keyPattern = keyPattern.Replace("{key6}", RouteValueEncoder.EncodeRequestKey(request, "Key6"));
+                keyPattern = keyPattern.Replace("{key7}", RouteValueEncoder.EncodeRequestKey(request, "Key7"));
                 return GetApiResult(requestInfo, result, ctx, keyPattern);
             });
     }
@@ -518,7 +520,7 @@ internal static class EndpointsMethodsForTaskHandlers
         {
             if (result is IResourceKey resourceKey)
             {
-                resourceUrl = resourceUrl.Replace("{key}", resourceKey.GetResourceKey());
+                resourceUrl = resourceUrl.Replace("{key}", RouteValueEncoder.Encode(resourceKey.GetResourceKey()));
             }
         }
 
@@ -531,15 +533,25 @@ internal static class EndpointsMethodsForTaskHandlers
         {
             case Unit:
                 return resourceUrl is null ? Results.Ok() : Results.Created(resourceUrl, null);
+            case string text when requestInfo.ContentType is not null:
+                return resourceUrl is null
+                    ? Results.Text(text, requestInfo.ContentType)
+                    : Results.Created(resourceUrl, text);
             case byte[] bytes:
                 return Results.File(bytes, requestInfo.ContentType ?? "application/octet-stream");
             case FileResponse fileResponse:
                 return Results.File(fileResponse.File, requestInfo.ContentType ?? "application/octet-stream", fileResponse.FileName);
             case Stream stream:
-                stream.Seek(0, SeekOrigin.Begin);
+                if (stream.CanSeek)
+                {
+                    stream.Seek(0, SeekOrigin.Begin);
+                }
                 return Results.File(stream, requestInfo.ContentType ?? "application/octet-stream");
             case FileStreamResponse fileStreamResponse:
-                fileStreamResponse.File.Seek(0, SeekOrigin.Begin);
+                if (fileStreamResponse.File.CanSeek)
+                {
+                    fileStreamResponse.File.Seek(0, SeekOrigin.Begin);
+                }
                 return Results.File(fileStreamResponse.File, requestInfo.ContentType ?? "application/octet-stream", fileStreamResponse.FileName);
         }
 

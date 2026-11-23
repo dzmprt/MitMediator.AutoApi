@@ -15,6 +15,29 @@ internal static class OpenApiParameterGenerator
         return parameters;
     }
 
+    public static void RemoveKeyPropertiesFromRequestBody(OpenApiOperation operation, Type requestType)
+    {
+        if (operation.RequestBody?.Content is null)
+        {
+            return;
+        }
+
+        var keyProperties = KeyRequestProperties.GetNames(requestType);
+        foreach (var mediaType in operation.RequestBody.Content.Values)
+        {
+            if (mediaType.Schema is not { Properties: not null } schema)
+            {
+                continue;
+            }
+
+            foreach (var keyProperty in keyProperties)
+            {
+                schema.Properties.Remove(keyProperty);
+                schema.Required?.Remove(keyProperty);
+            }
+        }
+    }
+
     private static void GenerateRecursive(Type type, string prefix, IList<OpenApiParameter> parameters)
     {
         var keyProperties = KeyRequestProperties.GetNames(type);

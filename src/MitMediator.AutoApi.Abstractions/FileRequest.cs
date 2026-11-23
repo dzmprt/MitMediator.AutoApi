@@ -24,7 +24,10 @@ public class FileRequest : IFileRequest
     
     public async Task<byte[]> ReadToEndAsync(CancellationToken cancellationToken)
     {
-        _file.Seek(0, SeekOrigin.Begin);
+        if (_file.CanSeek)
+        {
+            _file.Seek(0, SeekOrigin.Begin);
+        }
         using var memoryStream = new MemoryStream();
         await _file.CopyToAsync(memoryStream, cancellationToken);
         return memoryStream.ToArray();

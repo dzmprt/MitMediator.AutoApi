@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Reflection;
 using System.Text;
 using MitMediator.AutoApi.Abstractions.Attributes;
@@ -442,8 +443,8 @@ public class RequestInfo
         return typeValue;
     }
 
-    private static readonly Dictionary<string, MethodType> ActionNamesMaps =
-        new(StringComparer.InvariantCultureIgnoreCase)
+    private static readonly FrozenDictionary<string, MethodType> ActionNamesMaps =
+        new Dictionary<string, MethodType>(StringComparer.InvariantCultureIgnoreCase)
         {
             ["get"] = MethodType.Get,
             ["load"] = MethodType.Get,
@@ -468,7 +469,7 @@ public class RequestInfo
             ["delete"] = MethodType.Delete,
             ["remove"] = MethodType.Delete,
             ["drop"] = MethodType.Delete
-        };
+        }.ToFrozenDictionary(StringComparer.InvariantCultureIgnoreCase);
 
     public static Type GetResponseType(Type requestType)
     {
@@ -482,7 +483,7 @@ public class RequestInfo
     }
 
     // see https://github.com/dotnet/aspnetcore/blob/c5f8422073be4a98c9cf3f75c58f9a0d59fdf073/src/Http/Routing/src/RouteOptions.cs#L102
-    private static readonly Dictionary<Type, string> RouteOptionsConstraintMap = new()
+    private static readonly FrozenDictionary<Type, string> RouteOptionsConstraintMap = new Dictionary<Type, string>
     {
         // { typeof(string), "string" },
         { typeof(int), "int" },
@@ -494,7 +495,7 @@ public class RequestInfo
         { typeof(double), "double" },
         { typeof(float), "float" },
         { typeof(Guid), "guid" }
-    };
+    }.ToFrozenDictionary();
 
     private static string MapKeyTypeToRouteOptionsConstraint(Type key)
     {

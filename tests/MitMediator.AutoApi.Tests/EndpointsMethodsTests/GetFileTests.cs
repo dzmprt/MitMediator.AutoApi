@@ -160,6 +160,31 @@ public class GetFileTests
         var responseText = await new StreamReader(memoryStream).ReadToEndAsync();
         Assert.Equal("test", responseText);
     }
+
+    [Fact]
+    public async Task GetFileStreamQuery_NonSeekableStream_ShouldNotFail()
+    {
+        var mediator = new Mock<IMediator>();
+        using var stream = new NonSeekableStream("test"u8.ToArray());
+        mediator.Setup(m => m.SendAsync<
+                RequestsForTests.Files.Queries.GetFileStream.GetFileStreamQuery, Stream>(
+                It.IsAny<RequestsForTests.Files.Queries.GetFileStream.GetFileStreamQuery>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(stream);
+        var context = new DefaultHttpContext
+        {
+            RequestServices = new ServiceCollection()
+                .AddSingleton(mediator.Object)
+                .BuildServiceProvider()
+        };
+        var endpoint = EndpointsMethods.WithGetParams<
+            RequestsForTests.Files.Queries.GetFileStream.GetFileStreamQuery, Stream>(
+            new RequestInfo(typeof(RequestsForTests.Files.Queries.GetFileStream.GetFileStreamQuery)));
+
+        var result = await (ValueTask<IResult>)endpoint.DynamicInvoke(context, CancellationToken.None)!;
+
+        Assert.IsType<FileStreamHttpResult>(result);
+    }
     
     private static string? GetFileName(HttpResponse response)
     {
@@ -177,5 +202,12 @@ public class GetFileTests
         }
 
         return null;
+    }
+
+    private sealed class NonSeekableStream(byte[] buffer) : MemoryStream(buffer)
+    {
+        public override bool CanSeek => false;
+        public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+        public override long Seek(long offset, SeekOrigin loc) => throw new NotSupportedException();
     }
 }

@@ -1,39 +1,100 @@
 using System.Collections;
 using System.Globalization;
 using System.Reflection;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 using MitMediator.AutoApi.Abstractions;
 
 namespace MitMediator.AutoApi;
 
 internal static class QueryBinder
 {
-    public static T SetProperty<T>(T obj, string propertyName, object? value)
+    public static T SetProperty<T>(T obj, string propertyName, object? value, HttpContext context)
     {
         var boxed = (object?)obj;
-        typeof(T).GetProperty(propertyName)?.SetValue(boxed, value);
+        var property = typeof(T).GetProperty(propertyName);
+        property?.SetValue(boxed, DecodeRouteValue(context, propertyName, value));
         return boxed is null ? obj : (T)boxed;
     }
 
-    public static T SetKeyProperties<T>(T obj, params object?[] values)
+    public static T SetKeyProperties<T>(T obj, HttpContext context, params object?[] values)
     {
         var boxed = (object?)obj;
         for (var index = 0; index < values.Length; index++)
         {
             var propertyName = values.Length == 1 ? "Key" : $"Key{index + 1}";
-            typeof(T).GetProperty(propertyName)?.SetValue(boxed, values[index]);
+            typeof(T).GetProperty(propertyName)?.SetValue(
+                boxed,
+                DecodeRouteValue(context, propertyName, values[index]));
         }
 
         return boxed is null ? obj : (T)boxed;
     }
 
+    private static object? DecodeRouteValue(HttpContext context, string propertyName, object? value)
+    {
+        if (value is not string routeValue ||
+            context.GetEndpoint() is not RouteEndpoint routeEndpoint ||
+            context.Features.Get<IHttpRequestFeature>()?.RawTarget is not { } rawTarget)
+        {
+            return value;
+        }
+
+        var queryStart = rawTarget.IndexOf('?');
+        var rawPath = queryStart < 0 ? rawTarget : rawTarget[..queryStart];
+        var pathSegments = rawPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var patternSegments = routeEndpoint.RoutePattern.PathSegments;
+        var offset = Math.Max(0, pathSegments.Length - patternSegments.Count);
+
+        for (var index = 0; index < patternSegments.Count; index++)
+        {
+            var parameter = patternSegments[index].Parts
+                .OfType<RoutePatternParameterPart>()
+                .FirstOrDefault(part => string.Equals(
+                    part.Name,
+                    propertyName,
+                    StringComparison.OrdinalIgnoreCase));
+
+            if (parameter is null)
+            {
+                continue;
+            }
+
+            var pathIndex = index + offset;
+            if (pathIndex >= pathSegments.Length)
+            {
+                return routeValue;
+            }
+
+            var rawValue = parameter.IsCatchAll
+                ? string.Join('/', pathSegments.Skip(pathIndex))
+                : pathSegments[pathIndex];
+
+            if (patternSegments[index].Parts.Count != 1)
+            {
+                return routeValue;
+            }
+
+            return Uri.UnescapeDataString(rawValue);
+        }
+
+        return routeValue;
+    }
+
     public static T BindFromQuery<T>(HttpContext context)
     {
         var query = context.Request.Query;
-        var obj = (T)BindObject(typeof(T), "", query)!;
+        var queryKeys = query.Keys.ToHashSet(StringComparer.Ordinal);
+        var obj = (T)BindObject(typeof(T), "", query, queryKeys)!;
         return obj;
     }
 
-    private static object? BindObject(Type type, string prefix, IQueryCollection query)
+    private static object? BindObject(
+        Type type,
+        string prefix,
+        IQueryCollection query,
+        HashSet<string> queryKeys)
     {
         if (type == typeof(string) || type.IsPrimitive || type == typeof(DateTime) || type == typeof(DateTimeOffset) || type == typeof(Guid))
             return ConvertSimple(query[prefix], type);
@@ -73,9 +134,9 @@ internal static class QueryBinder
             var key = string.IsNullOrEmpty(prefix) ? prop.Name : $"{prefix}.{prop.Name}";
             var propType = prop.PropertyType;
 
-            if (query.ContainsKey(key) || query.Keys.Any(k => k.StartsWith(key + ".")))
+            if (query.ContainsKey(key) || queryKeys.Any(k => k.StartsWith(key + ".")))
             {
-                var value = BindObject(propType, key, query);
+                var value = BindObject(propType, key, query, queryKeys);
                 prop.SetValue(obj, value);
             }
         }

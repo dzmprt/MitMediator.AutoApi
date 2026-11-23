@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using MitMediator.AutoApi.Abstractions;
@@ -14,7 +16,7 @@ public class QueryBinderTests
     {
         var request = new RequestWithInitOnlyProperty();
 
-        QueryBinder.SetProperty(request, nameof(RequestWithInitOnlyProperty.Key), 42);
+        QueryBinder.SetProperty(request, nameof(RequestWithInitOnlyProperty.Key), 42, new DefaultHttpContext());
 
         Assert.Equal(42, request.Key);
     }
@@ -24,9 +26,62 @@ public class QueryBinderTests
     {
         var request = new RequestWithInitOnlyProperty();
 
-        QueryBinder.SetProperty(request, "Missing", 42);
+        QueryBinder.SetProperty(request, "Missing", 42, new DefaultHttpContext());
 
         Assert.Equal(0, request.Key);
+    }
+
+    [Fact]
+    public void SetProperty_ShouldDecodeOneLayerFromRawRouteSegment()
+    {
+        var request = new StringKeyRequest();
+        var context = CreateRouteContext("/api/folder%2Fitem", "/api/{key}");
+
+        QueryBinder.SetProperty(request, nameof(StringKeyRequest.Key), "folder%2Fitem", context);
+
+        Assert.Equal("folder/item", request.Key);
+    }
+
+    [Fact]
+    public void SetProperty_ShouldPreserveEscapedPercentInRouteKey()
+    {
+        var request = new StringKeyRequest();
+        var context = CreateRouteContext("/api/abc%252Fdef", "/api/{key}");
+
+        QueryBinder.SetProperty(request, nameof(StringKeyRequest.Key), "abc%2Fdef", context);
+
+        Assert.Equal("abc%2Fdef", request.Key);
+    }
+
+    [Fact]
+    public void SetKeyProperties_ShouldDecodeOnlySingleEncodedStringRouteKeys()
+    {
+        var request = new MixedKeyRequest();
+        var context = CreateRouteContext(
+            "/api/42/folder%2Fitem%3Fdraft%3Dtrue",
+            "/api/{key1}/{key2}");
+
+        QueryBinder.SetKeyProperties(request, context, 42, "folder%2Fitem%3Fdraft%3Dtrue");
+
+        Assert.Equal(42, request.Key1);
+        Assert.Equal("folder/item?draft=true", request.Key2);
+    }
+
+    [Fact]
+    public void SetProperty_ShouldDecodeCompositeRouteKeyExactlyOnce()
+    {
+        var request = new StringKeyRequest();
+        var context = CreateRouteContext(
+            "/api/%25123%25%5C.%2F",
+            "/api/{key}");
+
+        QueryBinder.SetProperty(
+            request,
+            nameof(StringKeyRequest.Key),
+            "%123%\\.%2F",
+            context);
+
+        Assert.Equal("%123%\\./", request.Key);
     }
 
     [Fact]
@@ -181,9 +236,58 @@ public class QueryBinderTests
         Assert.Equal(7, request.Key7);
     }
 
+    [Fact]
+    public void BindFromQuery_ShouldEnumerateQueryKeysOnce()
+    {
+        var query = new CountingQueryCollection(new QueryCollection(
+            new Dictionary<string, StringValues>
+            {
+                ["Text"] = "hello",
+                ["Nested.Value"] = "nested"
+            }));
+        var context = new DefaultHttpContext
+        {
+            Request =
+            {
+                Query = query
+            }
+        };
+
+        var result = QueryBinder.BindFromQuery<BindingRequest>(context);
+
+        Assert.Equal("hello", result.Text);
+        Assert.Equal("nested", result.Nested.Value);
+        Assert.Equal(1, query.KeysReadCount);
+    }
+
+    private static DefaultHttpContext CreateRouteContext(string rawTarget, string routePattern)
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Path = rawTarget;
+        context.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestFeature>()!.RawTarget = rawTarget;
+        context.SetEndpoint(new RouteEndpoint(
+            _ => Task.CompletedTask,
+            RoutePatternFactory.Parse(routePattern),
+            0,
+            EndpointMetadataCollection.Empty,
+            "test"));
+        return context;
+    }
+
     private sealed class RequestWithInitOnlyProperty
     {
         public int Key { get; init; }
+    }
+
+    private sealed class StringKeyRequest : IRequest<string>, IKeyRequest<string>
+    {
+        public string Key { get; init; } = string.Empty;
+    }
+
+    private sealed class MixedKeyRequest : IRequest<string>, IKeyRequest<int, string>
+    {
+        public int Key1 { get; init; }
+        public string Key2 { get; init; } = string.Empty;
     }
 
     private sealed class SingleKeyQuery : IRequest<string>, IKeyRequest<int>
@@ -210,6 +314,33 @@ public class QueryBinderTests
         public int? OptionalInt { get; set; }
         public int[] Numbers { get; set; } = [];
         public List<string> Tags { get; set; } = [];
+        public NestedRequest Nested { get; set; } = new();
+    }
+
+    private sealed class NestedRequest
+    {
+        public string Value { get; set; } = string.Empty;
+    }
+
+    private sealed class CountingQueryCollection(IQueryCollection query) : IQueryCollection
+    {
+        public int KeysReadCount { get; private set; }
+        public int Count => query.Count;
+
+        public ICollection<string> Keys
+        {
+            get
+            {
+                KeysReadCount++;
+                return query.Keys;
+            }
+        }
+
+        public StringValues this[string key] => query[key];
+        public bool ContainsKey(string key) => query.ContainsKey(key);
+        public bool TryGetValue(string key, out StringValues value) => query.TryGetValue(key, out value);
+        public IEnumerator<KeyValuePair<string, StringValues>> GetEnumerator() => query.GetEnumerator();
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => query.GetEnumerator();
     }
 
     private enum TestEnum
