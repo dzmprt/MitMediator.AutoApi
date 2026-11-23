@@ -8,6 +8,7 @@ public class HttpMethodTypeTests
     [InlineData("GetItemQuery", MethodType.Get)]
     [InlineData("LoadItemQuery", MethodType.Get)]
     [InlineData("DownloadItemQuery", MethodType.Get)]
+    [InlineData("FetchItemQuery", MethodType.Get)]
 
     [InlineData("UpdateEntryCommand", MethodType.Put)]
     [InlineData("ChangeEntryCommand", MethodType.Put)]
@@ -15,6 +16,7 @@ public class HttpMethodTypeTests
     [InlineData("ModifyEntryCommand", MethodType.Put)]
     [InlineData("PutEntryCommand", MethodType.Put)]
     [InlineData("ResetEntryCommand", MethodType.Put)]
+    [InlineData("SetEntryCommand", MethodType.Put)]
 
     [InlineData("PostEntryCommand", MethodType.Post)]
     [InlineData("UploadItem", MethodType.Post)]

@@ -71,6 +71,37 @@ public class OpenApiParameterGeneratorTests
         Assert.Equal(["Text"], parameters.Select(parameter => parameter.Name));
     }
 
+    [Fact]
+    public void RemoveKeyPropertiesFromRequestBody_RemovesKeyAndRequiredEntry()
+    {
+        var schema = new OpenApiSchema
+        {
+            Properties = new Dictionary<string, IOpenApiSchema>
+            {
+                ["Key"] = new OpenApiSchema { Type = JsonSchemaType.Integer },
+                ["Text"] = new OpenApiSchema { Type = JsonSchemaType.String }
+            },
+            Required = new HashSet<string>(["Key", "Text"])
+        };
+        var operation = new OpenApiOperation
+        {
+            RequestBody = new OpenApiRequestBody
+            {
+                Content = new Dictionary<string, OpenApiMediaType>
+                {
+                    ["application/json"] = new OpenApiMediaType { Schema = schema }
+                }
+            }
+        };
+
+        OpenApiParameterGenerator.RemoveKeyPropertiesFromRequestBody(operation, typeof(KeyOpenApiRequest));
+
+        Assert.DoesNotContain("Key", schema.Properties.Keys);
+        Assert.DoesNotContain("Key", schema.Required);
+        Assert.Contains("Text", schema.Properties.Keys);
+        Assert.Contains("Text", schema.Required);
+    }
+
     private static OpenApiParameter AssertParameter(
         IEnumerable<OpenApiParameter> parameters,
         string name,

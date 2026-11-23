@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using MitMediator.AutoApi.Abstractions;
+using MitMediator.AutoApi.Abstractions.Attributes;
 using MitMediator.AutoApi.Tests.RequestsForTests;
 using Moq;
 
@@ -27,6 +28,7 @@ public class GetMethodsTetst
         {
             RequestServices = new ServiceCollection()
                 .AddSingleton(mediatorMock.Object)
+                .AddLogging()
                 .BuildServiceProvider()
         };
         var endpoint = EndpointsMethods
@@ -61,6 +63,45 @@ public class GetMethodsTetst
 
         Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<string>>(result.Result);
     }
+
+    [Fact]
+    public async Task StringKeyWithPlainTextResponse_ShouldReturnExactInput()
+    {
+        const string rawKey = "%2Fxccdfsdf%25324%3B%25.%2F%5C%7B%7D";
+        const string expected = "/xccdfsdf%324;%./\\{}";
+        var mediatorMock = new Mock<IMediator>();
+        mediatorMock.Setup(m => m.SendAsync<PlainTextStringKeyQuery, string>(
+                It.IsAny<PlainTextStringKeyQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlainTextStringKeyQuery request, CancellationToken _) => request.Key);
+        var context = new DefaultHttpContext
+        {
+            RequestServices = new ServiceCollection()
+                .AddSingleton(mediatorMock.Object)
+                .AddLogging()
+                .BuildServiceProvider()
+        };
+        context.Request.Path = $"/api/{rawKey}";
+        context.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestFeature>()!.RawTarget =
+            $"/api/{rawKey}";
+        context.SetEndpoint(new Microsoft.AspNetCore.Routing.RouteEndpoint(
+            _ => Task.CompletedTask,
+            Microsoft.AspNetCore.Routing.Patterns.RoutePatternFactory.Parse("/api/{key}"),
+            0,
+            EndpointMetadataCollection.Empty,
+            "test"));
+        context.Response.Body = new MemoryStream();
+
+        var endpoint = EndpointsMethods.WithGetParamsAnd1Key<PlainTextStringKeyQuery, string, string>(
+            new RequestInfo(typeof(PlainTextStringKeyQuery)));
+        var result = await (ValueTask<IResult>)endpoint.DynamicInvoke(
+            "/xccdfsdf%324;%./%5C{}", context, CancellationToken.None)!;
+        await result.ExecuteAsync(context);
+        context.Response.Body.Position = 0;
+        using var reader = new StreamReader(context.Response.Body);
+
+        Assert.Equal("text/plain", context.Response.ContentType);
+        Assert.Equal(expected, await reader.ReadToEndAsync());
+    }
     
     [Fact]
     public async Task GetMethod2Keys_ShouldCallMediatorCorrectly()
@@ -81,6 +122,12 @@ public class GetMethodsTetst
         var result = (ValueTask<IResult>)del.DynamicInvoke(1, 2, context, CancellationToken.None);
 
         Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<string>>(result.Result);
+    }
+
+    [ResponseContentType("text/plain")]
+    private sealed class PlainTextStringKeyQuery : IKeyRequest<string>, IRequest<string>
+    {
+        public string Key { get; init; } = string.Empty;
     }
     
     [Fact]

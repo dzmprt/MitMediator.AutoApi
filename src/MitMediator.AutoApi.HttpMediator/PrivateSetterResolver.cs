@@ -4,7 +4,7 @@ using System.Text.Json.Serialization.Metadata;
 
 namespace MitMediator.AutoApi.HttpMediator;
 
-internal class PrivateSetterResolver : DefaultJsonTypeInfoResolver
+internal sealed class PrivateSetterResolver : DefaultJsonTypeInfoResolver
 {
     public override JsonTypeInfo GetTypeInfo(Type type, JsonSerializerOptions options)
     {

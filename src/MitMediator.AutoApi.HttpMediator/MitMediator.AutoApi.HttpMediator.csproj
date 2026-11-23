@@ -12,17 +12,17 @@
         <PackageIcon>logo.png</PackageIcon>
         <RepositoryUrl>https://github.com/dzmprt/MitMediator.AutoApi</RepositoryUrl>
         <PackageTags>mediator;request;response;queries;commands;mitmediator;minimalapi;autoapi;cqrs;httpmediator;httpclient</PackageTags>
-        <PackageReleaseNotes>v10.0.1
-- Changed ITotalCount type to long
-- Fixed IKeyRequest fields for structs
-- IKeyRequest fields are now used only as URL parameters
-- Updated route generation for init-only Key and KeyN properties
-- Excluded route keys from generated query strings
-- Added support for Set{RequestName}Request</PackageReleaseNotes>
+        <PackageReleaseNotes>v10.1.0-rc
+- Breaking: endpoint attribute types are now sealed
+- Excluded route keys from JSON request serialization
+- Added support for reading non-seekable file and response streams
+- Added string route key encoding and decoding
+- Fixed parent route key handling in Location for multipart POST-create requests
+- Improved request metadata and route property lookup performance</PackageReleaseNotes>
         <TrimMode>full</TrimMode>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
-        <Version>10.0.1</Version>
+        <Version>10.1.0-rc</Version>
         <LangVersion>14</LangVersion>
     </PropertyGroup>
 

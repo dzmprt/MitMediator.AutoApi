@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Net;
 using System.Reflection;
@@ -8,6 +9,8 @@ namespace MitMediator.AutoApi.HttpMediator;
 
 public static class HttpQueryStringsExtensions
 {
+    private static readonly ConcurrentDictionary<Type, PropertyInfo[]> Properties = new();
+
     public static string ToQueryString(this object obj)
     {
         var sb = new StringBuilder();
@@ -17,12 +20,13 @@ public static class HttpQueryStringsExtensions
 
     private static void BuildQuery(object? obj, string prefix, StringBuilder sb)
     {
-        if (obj == null || IsDefault(obj)) return;
+        if (obj == null) return;
 
         var type = obj.GetType();
 
         if (IsSimple(type))
         {
+            if (IsDefault(obj)) return;
             var value = ConvertToString(obj);
             if (value != null)
                 sb.Append('&').Append(WebUtility.UrlEncode(prefix)).Append('=').Append(WebUtility.UrlEncode(value));
@@ -39,7 +43,12 @@ public static class HttpQueryStringsExtensions
             return;
         }
 
-        foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        if (IsDefault(obj)) return;
+
+        var properties = Properties.GetOrAdd(
+            type,
+            currentType => currentType.GetProperties(BindingFlags.Public | BindingFlags.Instance));
+        foreach (var prop in properties)
         {
             if (!prop.CanRead) continue;
             if (prop.Name == "Key" || (prop.Name.StartsWith("Key") &&
@@ -88,7 +97,6 @@ public static class HttpQueryStringsExtensions
         }
 
         if (obj is string s) return string.IsNullOrWhiteSpace(s);
-        if (obj is IEnumerable e) return !e.Cast<object>().Any();
 
         return false;
     }

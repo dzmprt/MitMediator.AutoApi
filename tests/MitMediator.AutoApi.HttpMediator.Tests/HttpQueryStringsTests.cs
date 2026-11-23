@@ -2,6 +2,18 @@ namespace MitMediator.AutoApi.HttpMediator.Tests;
 
 public class HttpQueryStringsExtensionsTests
 {
+    [Fact]
+    public void Collection_IsEnumeratedOnce()
+    {
+        var collection = new OneShotEnumerable(["one", "two"]);
+
+        var result = collection.ToQueryString();
+
+        Assert.Equal(1, collection.EnumerationCount);
+        Assert.Contains("one", result);
+        Assert.Contains("two", result);
+    }
+
     private class SimpleModel
     {
         public int Id { get; set; }
@@ -170,5 +182,21 @@ public class HttpQueryStringsExtensionsTests
         Assert.DoesNotContain("Key2=", result);
         Assert.Contains("KeyName=name", result);
         Assert.Contains("Value=value", result);
+    }
+
+    private sealed class OneShotEnumerable(string[] values) : System.Collections.IEnumerable
+    {
+        public int EnumerationCount { get; private set; }
+
+        public System.Collections.IEnumerator GetEnumerator()
+        {
+            EnumerationCount++;
+            if (EnumerationCount > 1)
+            {
+                throw new InvalidOperationException("The sequence was enumerated more than once.");
+            }
+
+            return values.GetEnumerator();
+        }
     }
 }

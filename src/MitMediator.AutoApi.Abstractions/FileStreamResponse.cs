@@ -11,7 +11,10 @@ public sealed class FileStreamResponse(Stream file, string fileName)
     
     public async Task<byte[]> ReadToEndAsync(CancellationToken cancellationToken)
     {
-        File.Seek(0, SeekOrigin.Begin);
+        if (File.CanSeek)
+        {
+            File.Seek(0, SeekOrigin.Begin);
+        }
         using var memoryStream = new MemoryStream();
         await File.CopyToAsync(memoryStream, cancellationToken);
         return memoryStream.ToArray();

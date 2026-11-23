@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Reflection;
 using MitMediator.AutoApi.Abstractions;
@@ -6,17 +7,19 @@ namespace MitMediator.AutoApi.HttpMediator.Extensions;
 
 internal static class HttpRequestsHelper
 {
+    private static readonly ConcurrentDictionary<Type, PropertyInfo[]> KeyProperties = new();
+
     public static string GetUrl<TRequest>(TRequest request, string? baseUrl = null)
     {
         var requestType = typeof(TRequest);
-        var requestInfo = new RequestInfo(requestType, baseUrl);
+        var requestInfo = RequestInfoCache.Get(requestType, baseUrl);
         var url = requestInfo.Pattern;
         var patternKeys = ExtractKeys(request);
         if (patternKeys.Any())
         {
             if (patternKeys.Length == 1)
             {
-                url = url.Replace("{key}", patternKeys[0]?.ToString() ?? "null");
+                url = url.Replace("{key}", ToRouteString(patternKeys[0]));
             }
             else
             {
@@ -41,15 +44,30 @@ internal static class HttpRequestsHelper
         if (!RequestInfo.GetIsKeyRequest(type))
             return Array.Empty<object>();
 
+        var keyProperties = KeyProperties.GetOrAdd(type, CreateKeyProperties);
+        var values = new object[keyProperties.Length];
+        for (var index = 0; index < keyProperties.Length; index++)
+        {
+            values[index] = keyProperties[index].GetValue(obj)!;
+        }
+
+        return values;
+    }
+
+    private static PropertyInfo[] CreateKeyProperties(Type type)
+    {
         var keyInterface = type.GetInterfaces()
             .First(interfaceType => interfaceType.IsGenericType &&
                 interfaceType.GetGenericTypeDefinition().Name.StartsWith("IKeyRequest"));
         var keysCount = keyInterface.GetGenericArguments().Length;
+        var properties = new PropertyInfo[keysCount];
+        for (var index = 0; index < keysCount; index++)
+        {
+            var propertyName = index == 0 && keysCount == 1 ? "Key" : $"Key{index + 1}";
+            properties[index] = keyInterface.GetProperty(propertyName)!;
+        }
 
-        return Enumerable.Range(0, keysCount)
-            .Select(index => keyInterface.GetProperty(index == 0 && keysCount == 1 ? "Key" : $"Key{index + 1}"))
-            .Select(property => property!.GetValue(obj))
-            .ToArray()!;
+        return properties;
     }
 
     public static string ToRouteString(object? value)
@@ -57,7 +75,7 @@ internal static class HttpRequestsHelper
         if (value == null)
             return "null";
 
-        return value switch
+        var routeValue = value switch
         {
             int i => i.ToString(CultureInfo.InvariantCulture),
             long l => l.ToString(CultureInfo.InvariantCulture),
@@ -70,5 +88,7 @@ internal static class HttpRequestsHelper
             DateTimeOffset dto => dto.ToString("O", CultureInfo.InvariantCulture),
             _ => value?.ToString() ?? "null"
         };
+
+        return Uri.EscapeDataString(routeValue);
     }
 }

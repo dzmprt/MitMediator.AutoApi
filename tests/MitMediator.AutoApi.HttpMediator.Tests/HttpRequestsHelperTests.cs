@@ -43,6 +43,26 @@ public class HttpRequestsHelperTests
     }
 
     [Fact]
+    public void GetUrl_SingleKey_EncodesPathSeparators()
+    {
+        var request = new SingleRequest { Key = "folder/item?draft=true" };
+
+        var url = HttpRequestsHelper.GetUrl(request, "https://api.example.com");
+
+        Assert.Equal("https://api.example.com/v1/single/folder%2Fitem%3Fdraft%3Dtrue", url);
+    }
+
+    [Fact]
+    public void GetUrl_MultipleKeys_EncodesEachSegment()
+    {
+        var request = new MultiRequest { Key1 = "first/value", Key2 = "second#value" };
+
+        var url = HttpRequestsHelper.GetUrl(request, "https://api.example.com");
+
+        Assert.Equal("https://api.example.com/v1/multis/first%2Fvalue/second%23value", url);
+    }
+
+    [Fact]
     public void GetUrl_NoKeys_LeavesPatternUnchanged()
     {
         var request = new NoKeyRequest();
@@ -63,5 +83,16 @@ public class HttpRequestsHelperTests
 
         Assert.Contains("Key1", keys);
         Assert.Contains("Key2", keys);
+    }
+
+    [Fact]
+    public void RequestInfoCache_ReusesMetadataForSameRequestAndBasePath()
+    {
+        var first = RequestInfoCache.Get(typeof(SingleRequest), "https://api.example.com");
+        var second = RequestInfoCache.Get(typeof(SingleRequest), "https://api.example.com");
+        var otherBasePath = RequestInfoCache.Get(typeof(SingleRequest), "https://other.example.com");
+
+        Assert.Same(first, second);
+        Assert.NotSame(first, otherBasePath);
     }
 }

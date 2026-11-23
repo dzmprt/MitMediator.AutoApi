@@ -3,14 +3,18 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using MitMediator.AutoApi.Abstractions;
 using MitMediator.AutoApi.HttpMediator.Extensions;
 
 namespace MitMediator.AutoApi.HttpMediator;
 
-internal class HttpRequestHandler<TRequest, TResponse> : IClientRequestHandler<TRequest, TResponse> where TRequest : IRequest<TResponse>
+internal sealed class HttpRequestHandler<TRequest, TResponse> : IClientRequestHandler<TRequest, TResponse> where TRequest : IRequest<TResponse>
 {
+    private static readonly JsonSerializerOptions RequestSerializerOptions = CreateRequestSerializerOptions();
+    private static readonly JsonSerializerOptions SerializerOptions = CreateSerializerOptions();
+
     private readonly IServiceProvider _serviceProvider;
     
     private readonly string? _baseUrl;
@@ -27,7 +31,8 @@ internal class HttpRequestHandler<TRequest, TResponse> : IClientRequestHandler<T
     public async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
     {
         var requestUrl = HttpRequestsHelper.GetUrl(request, _baseUrl);
-        var requestInfo = new RequestInfo(typeof(TRequest));
+        var requestInfo = RequestInfoCache.Get(typeof(TRequest));
+        using var httpRequest = CreateHttpRequest(request, requestUrl, requestInfo.MethodType);
         var httpHeaderInjectors = _serviceProvider
             .GetServices<IHttpHeaderInjector<TRequest, TResponse>>();
         foreach (var httpHeaderInjector in httpHeaderInjectors)
@@ -35,49 +40,68 @@ internal class HttpRequestHandler<TRequest, TResponse> : IClientRequestHandler<T
             var header = await httpHeaderInjector.GetHeadersAsync(cancellationToken);
             if (header.HasValue)
             {
-                _httpClient.DefaultRequestHeaders.Add(header.Value.Item1, header.Value.Item2);   
+                httpRequest.Headers.Add(header.Value.Item1, header.Value.Item2);
             }
         }
 
-        switch (requestInfo.MethodType)
-        {
-            case MethodType.PostCreate:
-            case MethodType.Post:
-                HttpResponseMessage response;
-                if (request is IFileRequest fileRequest)
-                {
-                    var streamContent = new StreamContent(fileRequest.GetFileStream());
-                    var form = new MultipartFormDataContent();
-                    form.Add(streamContent, "formFile", fileRequest.GetFileName());
+        var response = await _httpClient.SendAsync(
+            httpRequest,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken);
 
-                    response = await _httpClient.PostAsync(requestUrl, form, cancellationToken);
-                }
-                else
-                {
-                    response = await _httpClient.PostAsync(requestUrl, new StringContent(
-                        JsonSerializer.Serialize(request),
-                        Encoding.UTF8,
-                        "application/json"), cancellationToken);
-                }
-        
-                return (await ConvertResponseAsync<TResponse>(response, cancellationToken)).Item1;
-            case MethodType.Put:
-                var putResponse = await _httpClient.PutAsync(requestUrl, new StringContent(
-                    JsonSerializer.Serialize(request),
-                    Encoding.UTF8,
-                    "application/json"), cancellationToken);
-                return (await ConvertResponseAsync<TResponse>(putResponse, cancellationToken)).Item1;
-            case MethodType.Delete:
-                var deleteResponse = await _httpClient.DeleteAsync(requestUrl, cancellationToken);
-                return (await ConvertResponseAsync<TResponse>(deleteResponse, cancellationToken)).Item1;
-            case MethodType.Get:
-            default:
-                var getResponse = await _httpClient.GetAsync(requestUrl, cancellationToken);
-                return (await ConvertResponseAsync<TResponse>(getResponse, cancellationToken)).Item1;
+        try
+        {
+            var convertedResponse = await ConvertResponseAsync(response, cancellationToken);
+            if (typeof(TResponse) == typeof(Stream) || typeof(TResponse) == typeof(FileStreamResponse))
+            {
+                return convertedResponse.Item1;
+            }
+
+            response.Dispose();
+            return convertedResponse.Item1;
+        }
+        catch
+        {
+            response.Dispose();
+            throw;
         }
     }
+
+    private static HttpRequestMessage CreateHttpRequest(
+        TRequest request,
+        string requestUrl,
+        MethodType methodType)
+    {
+        var method = methodType switch
+        {
+            MethodType.Post or MethodType.PostCreate => HttpMethod.Post,
+            MethodType.Put => HttpMethod.Put,
+            MethodType.Delete => HttpMethod.Delete,
+            _ => HttpMethod.Get
+        };
+        var httpRequest = new HttpRequestMessage(method, requestUrl);
+
+        if (method == HttpMethod.Post || method == HttpMethod.Put)
+        {
+            if (request is IFileRequest fileRequest)
+            {
+                var form = new MultipartFormDataContent();
+                form.Add(new StreamContent(fileRequest.GetFileStream()), "formFile", fileRequest.GetFileName());
+                httpRequest.Content = form;
+            }
+            else
+            {
+                httpRequest.Content = new StringContent(
+                    JsonSerializer.Serialize(request, RequestSerializerOptions),
+                    Encoding.UTF8,
+                    "application/json");
+            }
+        }
+
+        return httpRequest;
+    }
     
-    private static async ValueTask<(TResponse, HttpResponseHeaders responseHeaders)> ConvertResponseAsync<TResponse>(
+    private static async ValueTask<(TResponse, HttpResponseHeaders responseHeaders)> ConvertResponseAsync(
         HttpResponseMessage response, CancellationToken cancellationToken)
     {
         if (!response.IsSuccessStatusCode)
@@ -100,13 +124,17 @@ internal class HttpRequestHandler<TRequest, TResponse> : IClientRequestHandler<T
         }
         if (typeof(TResponse) == typeof(Stream))
         {
-            var result = await response.Content.ReadAsStreamAsync(cancellationToken);
+            var result = new HttpResponseStream(
+                await response.Content.ReadAsStreamAsync(cancellationToken),
+                response);
             return ((TResponse)(object)result, response.Headers);
         }
         if (typeof(TResponse) == typeof(FileStreamResponse))
         {
             var fileName = response.Content.Headers.ContentDisposition?.FileName ?? string.Empty;
-            var result = new FileStreamResponse(await response.Content.ReadAsStreamAsync(cancellationToken), fileName);
+            var result = new FileStreamResponse(new HttpResponseStream(
+                await response.Content.ReadAsStreamAsync(cancellationToken),
+                response), fileName);
             return ((TResponse)(object)result, response.Headers);
         }
         var content = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -114,14 +142,59 @@ internal class HttpRequestHandler<TRequest, TResponse> : IClientRequestHandler<T
         {
             return (default, response.Headers);
         }
-        var stringEnumConverter = new JsonStringEnumConverter();
-        var opts = new JsonSerializerOptions
+        if (typeof(TResponse) == typeof(string) &&
+            response.Content.Headers.ContentType?.MediaType == "text/plain" &&
+            !content.TrimStart().StartsWith('"'))
+        {
+            return ((TResponse)(object)content, response.Headers);
+        }
+        var responseModel = JsonSerializer.Deserialize<TResponse>(content, SerializerOptions)!;
+        return (responseModel, response.Headers);
+    }
+
+    private static JsonSerializerOptions CreateSerializerOptions()
+    {
+        var options = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
             TypeInfoResolver = new PrivateSetterResolver()
         };
-        opts.Converters.Add(stringEnumConverter);
-        var responseModel = JsonSerializer.Deserialize<TResponse>(content, opts)!;
-        return (responseModel, response.Headers);
+        options.Converters.Add(new JsonStringEnumConverter());
+        return options;
+    }
+
+    private static JsonSerializerOptions CreateRequestSerializerOptions()
+    {
+        var resolver = new DefaultJsonTypeInfoResolver();
+        resolver.Modifiers.Add(typeInfo =>
+        {
+            if (typeInfo.Kind != JsonTypeInfoKind.Object || !RequestInfo.GetIsKeyRequest(typeInfo.Type))
+            {
+                return;
+            }
+
+            var keyPropertyNames = typeInfo.Type.GetInterfaces()
+                .Where(interfaceType => interfaceType.IsGenericType &&
+                    interfaceType.GetGenericTypeDefinition().FullName?.StartsWith(
+                        "MitMediator.AutoApi.Abstractions.IKeyRequest`",
+                        StringComparison.Ordinal) == true)
+                .SelectMany(interfaceType => interfaceType.GetProperties())
+                .Select(property => property.Name)
+                .ToHashSet(StringComparer.Ordinal);
+
+            foreach (var property in typeInfo.Properties)
+            {
+                if (property.AttributeProvider is PropertyInfo propertyInfo &&
+                    keyPropertyNames.Contains(propertyInfo.Name))
+                {
+                    property.ShouldSerialize = static (_, _) => false;
+                }
+            }
+        });
+
+        return new JsonSerializerOptions
+        {
+            TypeInfoResolver = resolver
+        };
     }
 }

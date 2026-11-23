@@ -24,13 +24,13 @@
 
 ```bash
 # for ASP.NET API projects
-dotnet add package MitMediator.AutoApi -v 10.0.1
+dotnet add package MitMediator.AutoApi -v 10.1.0-rc
 
 # for application layer
-dotnet add package MitMediator.AutoApi.Abstractions -v 10.0.1
+dotnet add package MitMediator.AutoApi.Abstractions -v 10.1.0-rc
 
 # for client application (MAUI, Blazor, UWP, etc.)
-dotnet add package MitMediator.AutoApi.HttpMediator -v 10.0.1
+dotnet add package MitMediator.AutoApi.HttpMediator -v 10.1.0-rc
 ```
 
 ### 2. Use extension for IEndpointRouteBuilder
@@ -161,6 +161,11 @@ Use interface `IKeyRequest<int>` for structs or when you can't inherit KeyReques
 >     public int Key { get; init; }
 > }
 > ```
+
+When implementing `IKeyRequest` directly, mark every route key property (`Key`, `Key1`, `Key2`, etc.) with
+`[JsonIgnore]` from `System.Text.Json.Serialization`. This prevents route keys from being included in the body
+of `POST`/`PUT` requests. If a key is included in the request body, its value is overwritten by the value
+from the URL when the endpoint binds the request. The provided `KeyRequest<TKey>`, `KeyRequest<TKey1, TKey2>`, and other `KeyRequest` base classes already apply `[JsonIgnore]` to their route key properties.
 
 ## Change default mapping
 

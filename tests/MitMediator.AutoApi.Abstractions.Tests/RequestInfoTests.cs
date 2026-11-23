@@ -1,10 +1,39 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using MitMediator.AutoApi.Abstractions.Attributes;
 
 namespace MitMediator.AutoApi.Abstractions.Tests;
 
 public class RequestInfoTests
 {
+    [Fact]
+    public void KeyRequestBaseClass_DoesNotSerializeRouteKey()
+    {
+        var request = new UpdateRequest
+        {
+            Key = 42,
+            Name = "Updated"
+        };
+
+        var json = JsonSerializer.Serialize(request);
+
+        Assert.DoesNotContain("\"Key\"", json);
+        Assert.Contains("\"Name\":\"Updated\"", json);
+    }
+
+    [Fact]
+    public void KeyRequestBaseClasses_AllRouteKeysAreIgnored()
+    {
+        var keyPropertyCount = Enumerable.Range(1, 7)
+            .Select(GetKeyRequestBaseType)
+            .Sum(type => type.GetProperties()
+                .Count(property => property.GetCustomAttributes(
+                    typeof(System.Text.Json.Serialization.JsonIgnoreAttribute),
+                    inherit: true).Length > 0));
+
+        Assert.Equal(28, keyPropertyCount);
+    }
+
     [Fact]
     public void Constructor_ShouldInitializeAllProperties()
     {
@@ -233,5 +262,25 @@ public class RequestInfoTests
         public int Key5 { get; init; }
         public int Key6 { get; init; }
         public int Key7 { get; init; }
+    }
+
+    private sealed class UpdateRequest : KeyRequest<int>
+    {
+        public string Name { get; init; } = string.Empty;
+    }
+
+    private static Type GetKeyRequestBaseType(int keyCount)
+    {
+        return keyCount switch
+        {
+            1 => typeof(KeyRequest<>).MakeGenericType(typeof(int)),
+            2 => typeof(KeyRequest<,>).MakeGenericType(typeof(int), typeof(int)),
+            3 => typeof(KeyRequest<,,>).MakeGenericType(typeof(int), typeof(int), typeof(int)),
+            4 => typeof(KeyRequest<,,,>).MakeGenericType(typeof(int), typeof(int), typeof(int), typeof(int)),
+            5 => typeof(KeyRequest<,,,,>).MakeGenericType(typeof(int), typeof(int), typeof(int), typeof(int), typeof(int)),
+            6 => typeof(KeyRequest<,,,,,>).MakeGenericType(typeof(int), typeof(int), typeof(int), typeof(int), typeof(int), typeof(int)),
+            7 => typeof(KeyRequest<,,,,,,>).MakeGenericType(typeof(int), typeof(int), typeof(int), typeof(int), typeof(int), typeof(int), typeof(int)),
+            _ => throw new ArgumentOutOfRangeException(nameof(keyCount))
+        };
     }
 }
