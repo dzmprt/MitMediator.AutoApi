@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Reflection;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.OpenApi;
 using MitMediator.AutoApi.Abstractions;
@@ -15,7 +16,11 @@ internal static class OpenApiParameterGenerator
         return parameters;
     }
 
-    public static void RemoveKeyPropertiesFromRequestBody(OpenApiOperation operation, Type requestType)
+    public static void RemoveKeyPropertiesFromRequestBody(
+        OpenApiOperation operation,
+        Type requestType,
+        JsonSerializerOptions serializerOptions,
+        OpenApiDocument? document = null)
     {
         if (operation.RequestBody?.Content is null)
         {
@@ -23,18 +28,48 @@ internal static class OpenApiParameterGenerator
         }
 
         var keyProperties = KeyRequestProperties.GetNames(requestType);
-        foreach (var mediaType in operation.RequestBody.Content.Values)
+        foreach (var (contentType, mediaType) in operation.RequestBody.Content)
         {
-            if (mediaType.Schema is not { Properties: not null } schema)
+            var schema = mediaType.Schema;
+            if (schema is OpenApiSchemaReference reference)
+            {
+                // ASP.NET may leave the reference unbound until after operation transformers run.
+                schema = reference.Target;
+                if (schema is null && reference.Reference.Id is { } id &&
+                    document?.Components?.Schemas is { } schemas)
+                {
+                    schemas.TryGetValue(id, out schema);
+                }
+            }
+
+            if (schema is not OpenApiSchema { Properties: { } properties } source)
             {
                 continue;
             }
 
-            foreach (var keyProperty in keyProperties)
+            var names = contentType == "application/json"
+                ? serializerOptions.GetTypeInfo(requestType).Properties
+                    .Where(property => property.AttributeProvider is PropertyInfo member && keyProperties.Contains(member.Name))
+                    .Select(property => property.Name)
+                : keyProperties;
+            var namesToRemove = names.Where(properties.ContainsKey).ToArray();
+            if (namesToRemove.Length == 0)
             {
-                schema.Properties.Remove(keyProperty);
-                schema.Required?.Remove(keyProperty);
+                continue;
             }
+
+            // Keep the component intact for any responses or other uses of the DTO.
+            var bodySchema = (OpenApiSchema)source.CreateShallowCopy();
+            var bodyProperties = new Dictionary<string, IOpenApiSchema>(properties);
+            bodySchema.Properties = bodyProperties;
+            bodySchema.Required = source.Required?.ToHashSet();
+            foreach (var name in namesToRemove)
+            {
+                bodyProperties.Remove(name);
+                bodySchema.Required?.Remove(name);
+            }
+
+            mediaType.Schema = bodySchema;
         }
     }
 
@@ -69,7 +104,7 @@ internal static class OpenApiParameterGenerator
                     }
                 });
             }
-            else if (actualType == typeof(string) || actualType.IsPrimitive || actualType == typeof(DateTime) ||
+            else if (actualType == typeof(string) || actualType.IsPrimitive || actualType == typeof(decimal) || actualType == typeof(DateTime) ||
                      actualType == typeof(DateTimeOffset) || actualType == typeof(Guid))
             {
                 parameters.Add(new OpenApiParameter
@@ -158,6 +193,7 @@ internal static class OpenApiParameterGenerator
     {
         return !type.IsPrimitive
                && type != typeof(string)
+               && type != typeof(decimal)
                && type != typeof(DateTime)
                && type != typeof(DateTimeOffset)
                && type != typeof(Guid)

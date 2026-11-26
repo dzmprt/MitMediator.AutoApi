@@ -1,6 +1,8 @@
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using MitMediator.AutoApi.Abstractions.Attributes;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
@@ -74,7 +76,7 @@ public class HttpRequestHandlerTests
 {
     private static HttpRequestHandler<TReq, TResponse> BuildHandler<TReq, TResponse>(MethodType method,
         TResponse? responseContent,
-        Func<HttpRequestMessage, Task>? capture = null, bool customPattern = false, bool throwError = false,
+        Func<HttpRequestMessage, Task>? capture = null, bool throwError = false,
         string? errorMessage = null, bool plainText = false)
         where TReq : IRequest<TResponse>
     {
@@ -84,6 +86,14 @@ public class HttpRequestHandlerTests
                 ItExpr.IsAny<CancellationToken>())
             .Returns(async (HttpRequestMessage request, CancellationToken _) =>
             {
+                Assert.Equal(method switch
+                {
+                    MethodType.Post or MethodType.PostCreate => HttpMethod.Post,
+                    MethodType.Put => HttpMethod.Put,
+                    MethodType.Delete => HttpMethod.Delete,
+                    _ => HttpMethod.Get
+                }, request.Method);
+
                 if (capture is not null)
                 {
                     await capture(request);
@@ -106,7 +116,7 @@ public class HttpRequestHandlerTests
                     }
 
                     return new HttpResponseMessage(HttpStatusCode.OK)
-                        { Content = new StringContent(responseContent?.ToString() ?? string.Empty) };
+                        { Content = JsonContent.Create(responseContent) };
                 }
                 
                 if (typeof(TResponse) == typeof(Stream))
@@ -180,22 +190,55 @@ public class HttpRequestHandlerTests
     [Fact]
     public async Task Get_ShouldReturn_Response()
     {
-        var handler = BuildHandler<GetCommand, string>(MethodType.Get, "\"get-value\"");
+        var handler = BuildHandler<GetCommand, string>(MethodType.Get, "get-value");
         var result = await handler.HandleAsync(new GetCommand(), CancellationToken.None);
         Assert.Equal("get-value", result);
     }
 
-    [Fact]
-    public async Task Get_PlainText_ShouldReturnRawResponse()
+    [Theory]
+    [InlineData("/string%key?value=true")]
+    [InlineData("\"quoted\" trailing text")]
+    [InlineData("\"quoted\"")]
+    [InlineData("   ")]
+    [InlineData("")]
+    public async Task Get_PlainText_ShouldReturnRawResponse(string text)
     {
-        var handler = BuildHandler<GetCommand, string>(
-            MethodType.Get,
-            "/string%key?value=true",
-            plainText: true);
+        var handler = BuildHandler<GetCommand, string>(MethodType.Get, text, plainText: true);
 
         var result = await handler.HandleAsync(new GetCommand(), CancellationToken.None);
 
-        Assert.Equal("/string%key?value=true", result);
+        Assert.Equal(text, result);
+    }
+
+    [Fact]
+    public async Task Post_Multipart_SendsFileAndRequestFieldsWithoutRouteKey()
+    {
+        var handler = BuildHandler<ImportAttachmentCommand, string>(MethodType.Post, "ok", async message =>
+        {
+            Assert.Equal("/v1/attachments/42", message.RequestUri!.AbsolutePath);
+            var form = Assert.IsType<MultipartFormDataContent>(message.Content);
+            var fields = form.ToDictionary(field => field.Headers.ContentDisposition!.Name!.Trim('"'));
+            var file = fields["formFile"];
+            Assert.Equal("notes.txt", file.Headers.ContentDisposition!.FileName!.Trim('"'));
+            Assert.Equal("data", await file.ReadAsStringAsync());
+            Assert.Equal("label", await fields["Label"].ReadAsStringAsync());
+            Assert.Equal("false", await fields["Enabled"].ReadAsStringAsync());
+            Assert.DoesNotContain("Key", fields.Keys);
+        });
+        var request = new ImportAttachmentCommand { Key = 42, Label = "label", Enabled = false };
+        using var stream = new MemoryStream("data"u8.ToArray());
+        request.SetFile(stream, "notes.txt");
+
+        Assert.Equal("ok", await handler.HandleAsync(request, CancellationToken.None));
+    }
+
+    [Tag("attachments")]
+    [Suffix("")]
+    public sealed class ImportAttachmentCommand : FileRequest, IRequest<string>, IKeyRequest<int>
+    {
+        public int Key { get; init; }
+        public string? Label { get; init; }
+        public bool Enabled { get; init; }
     }
 
     [Fact]
@@ -216,7 +259,7 @@ public class HttpRequestHandlerTests
     [Fact]
     public async Task Post_ShouldReturn_Response()
     {
-        var handler = BuildHandler<PostCommand, string>(MethodType.Post, "\"post-value\"");
+        var handler = BuildHandler<PostCommand, string>(MethodType.Post, "post-value");
         var result = await handler.HandleAsync(new PostCommand(), CancellationToken.None);
         Assert.Equal("post-value", result);
     }
@@ -224,7 +267,7 @@ public class HttpRequestHandlerTests
     [Fact]
     public async Task Put_ShouldReturn_Response()
     {
-        var handler = BuildHandler<PutCommand, string>(MethodType.Put, "\"put-value\"");
+        var handler = BuildHandler<PutCommand, string>(MethodType.Put, "put-value");
         var result = await handler.HandleAsync(new PutCommand(), CancellationToken.None);
         Assert.Equal("put-value", result);
     }
@@ -235,7 +278,7 @@ public class HttpRequestHandlerTests
         string? body = null;
         var handler = BuildHandler<PostSingleKeyCommand, string>(
             MethodType.Post,
-            "\"created\"",
+            "created",
             capture: async request => body = await request.Content!.ReadAsStringAsync());
 
         await handler.HandleAsync(
@@ -253,7 +296,7 @@ public class HttpRequestHandlerTests
         string? body = null;
         var handler = BuildHandler<PutMultipleKeyCommand, string>(
             MethodType.Put,
-            "\"updated\"",
+            "updated",
             capture: async request => body = await request.Content!.ReadAsStringAsync());
 
         await handler.HandleAsync(
@@ -269,7 +312,7 @@ public class HttpRequestHandlerTests
     [Fact]
     public async Task Delete_ShouldReturn_Response()
     {
-        var handler = BuildHandler<DeleteCommand, string>(MethodType.Delete, "\"delete-value\"");
+        var handler = BuildHandler<DeleteCommand, string>(MethodType.Delete, "delete-value");
         var result = await handler.HandleAsync(new DeleteCommand(), CancellationToken.None);
         Assert.Equal("delete-value", result);
     }
@@ -277,7 +320,7 @@ public class HttpRequestHandlerTests
     [Fact]
     public async Task PostCreate_ShouldReturn_Response()
     {
-        var handler = BuildHandler<PostCreateCommand, string>(MethodType.PostCreate, "\"create-value\"");
+        var handler = BuildHandler<PostCreateCommand, string>(MethodType.PostCreate, "create-value");
         var result = await handler.HandleAsync(new PostCreateCommand(), CancellationToken.None);
         Assert.Equal("create-value", result);
     }
@@ -316,7 +359,7 @@ public class HttpRequestHandlerTests
     [Fact]
     public async Task GetFileQuery_ShouldReturn_Response()
     {
-        var handler = BuildHandler<GetFileQuery, byte[]>(MethodType.PostCreate, "test"u8.ToArray());
+        var handler = BuildHandler<GetFileQuery, byte[]>(MethodType.Get, "test"u8.ToArray());
         var result = await handler.HandleAsync(new GetFileQuery(), CancellationToken.None);
         Assert.Equal("test", Encoding.UTF8.GetString(result));
     }
@@ -325,7 +368,7 @@ public class HttpRequestHandlerTests
     public async Task GetFileWithNameQuery_ShouldReturn_Response()
     {
         var handler = BuildHandler<GetFileWithNameQuery,
-            FileResponse>(MethodType.PostCreate,
+            FileResponse>(MethodType.Get,
             new FileResponse("test"u8.ToArray(), "testfile.txt"));
         var result = await handler.HandleAsync(new GetFileWithNameQuery(), CancellationToken.None);
         Assert.Equal("test", Encoding.UTF8.GetString(result.File));
@@ -338,7 +381,7 @@ public class HttpRequestHandlerTests
        using var memoryStream = new MemoryStream("test"u8.ToArray());
 
         var handler = BuildHandler<GetFileStreamWithNameQuery,
-            FileStreamResponse>(MethodType.PostCreate,
+            FileStreamResponse>(MethodType.Get,
             new FileStreamResponse(memoryStream, "testfile.txt"));
         var result = await handler.HandleAsync(new GetFileStreamWithNameQuery(), CancellationToken.None);
         memoryStream.Seek(0, SeekOrigin.Begin);
@@ -351,7 +394,7 @@ public class HttpRequestHandlerTests
     {
         using var memoryStream = new MemoryStream("test"u8.ToArray());
 
-        var handler = BuildHandler<GetFileStreamQuery, Stream>(MethodType.PostCreate, memoryStream);
+        var handler = BuildHandler<GetFileStreamQuery, Stream>(MethodType.Get, memoryStream);
         var result = await handler.HandleAsync(new GetFileStreamQuery(), CancellationToken.None);
         memoryStream.Seek(0, SeekOrigin.Begin);
         using var reader = new StreamReader(result, Encoding.UTF8, leaveOpen: true);
@@ -411,7 +454,7 @@ public class HttpRequestHandlerTests
                 values.Add(request.Headers.GetValues("X-Correlation").Single()))
             .ReturnsAsync(() => new HttpResponseMessage(HttpStatusCode.OK)
             {
-                Content = new StringContent("\"value\"")
+                Content = JsonContent.Create("value")
             });
         var httpClient = new HttpClient(messageHandler.Object)
         {
@@ -452,7 +495,7 @@ public class HttpRequestHandlerTests
         return new HttpRequestHandler<TRequest, TResponse>(services, "https://base", httpClient);
     }
 
-    private sealed class TrackingContent(string value) : StringContent(value)
+    private sealed class TrackingContent(string value) : StringContent(value, Encoding.UTF8, "application/json")
     {
         public bool IsDisposed { get; private set; }
 

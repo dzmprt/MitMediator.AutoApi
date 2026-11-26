@@ -26,7 +26,7 @@ public class CreatedLocationTests
             request, 1, 2, 3, 4, 5, 6, context, CancellationToken.None)!;
 
         var created = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Created<ResourceKeyResponse>>(result);
-        Assert.Equal("v1/resources/1/2/3/4/5/6/created", created.Location);
+        Assert.Equal("/v1/resources/1/2/3/4/5/6/created", created.Location);
     }
 
     [Fact]
@@ -42,7 +42,7 @@ public class CreatedLocationTests
             request, 1, 2, 3, 4, 5, 6, 7, context, CancellationToken.None)!;
 
         var created = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Created<ResourceKeyResponse>>(result);
-        Assert.Equal("v1/resources/1/2/3/4/5/6/7/created", created.Location);
+        Assert.Equal("/v1/resources/1/2/3/4/5/6/7/created", created.Location);
     }
 
     [Fact]
@@ -58,7 +58,7 @@ public class CreatedLocationTests
             request, 1, 2, 3, 4, 5, 6, context, CancellationToken.None)!;
 
         var created = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Created<ResourceKeyResponse>>(result);
-        Assert.Equal("v1/resources/1/2/3/4/5/6/created", created.Location);
+        Assert.Equal("/v1/resources/1/2/3/4/5/6/created", created.Location);
     }
 
     [Fact]
@@ -74,7 +74,7 @@ public class CreatedLocationTests
             request, 1, 2, 3, 4, 5, 6, 7, context, CancellationToken.None)!;
 
         var created = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Created<ResourceKeyResponse>>(result);
-        Assert.Equal("v1/resources/1/2/3/4/5/6/7/created", created.Location);
+        Assert.Equal("/v1/resources/1/2/3/4/5/6/7/created", created.Location);
     }
 
     [Fact]
@@ -90,7 +90,7 @@ public class CreatedLocationTests
             request, "folder/item?draft=true", context, CancellationToken.None)!;
 
         var created = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Created<ResourceKeyResponse>>(result);
-        Assert.Equal("v1/resources/folder%2Fitem%3Fdraft%3Dtrue/created%2Fitem%3Fdraft%3Dtrue", created.Location);
+        Assert.Equal("/v1/resources/folder%2Fitem%3Fdraft%3Dtrue/created%2Fitem%3Fdraft%3Dtrue", created.Location);
     }
 
     [Fact]
@@ -106,7 +106,7 @@ public class CreatedLocationTests
             request, "folder/item?draft=true", context, CancellationToken.None)!;
 
         var created = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Created<ResourceKeyResponse>>(result);
-        Assert.Equal("v1/resources/folder%2Fitem%3Fdraft%3Dtrue/created%2Fitem%3Fdraft%3Dtrue", created.Location);
+        Assert.Equal("/v1/resources/folder%2Fitem%3Fdraft%3Dtrue/created%2Fitem%3Fdraft%3Dtrue", created.Location);
     }
 
     [Fact]
@@ -119,7 +119,7 @@ public class CreatedLocationTests
         var location = await GetCreatedLocation(endpoint, CreateContextForValueTask(new ResourceKeyResponse()));
 
         Assert.Equal(
-            "v1/resources/folder%2Fitem%3Fdraft%3Dtrue/created",
+            "/catalog/v1/resources/folder%2Fitem%3Fdraft%3Dtrue/created",
             location);
     }
 
@@ -133,8 +133,35 @@ public class CreatedLocationTests
         var location = await GetCreatedLocation(endpoint, CreateContextForTask(new ResourceKeyResponse()));
 
         Assert.Equal(
-            "v1/resources/folder%2Fitem%3Fdraft%3Dtrue/created",
+            "/catalog/v1/resources/folder%2Fitem%3Fdraft%3Dtrue/created",
             location);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CreatedWithoutResourceKey_ShouldOmitLocation(bool taskHandler)
+    {
+        var mediator = new Mock<IMediator>();
+        mediator.Setup(m => m.Send<CreateWithoutResourceKey, string>(
+                It.IsAny<CreateWithoutResourceKey>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync("created");
+        mediator.Setup(m => m.SendAsync<CreateWithoutResourceKey, string>(
+                It.IsAny<CreateWithoutResourceKey>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync("created");
+        var context = CreateContext(mediator.Object);
+        context.Response.Body = new MemoryStream();
+        var info = new RequestInfo(typeof(CreateWithoutResourceKey));
+        var endpoint = taskHandler
+            ? EndpointsMethodsForTaskHandlers.WithBody<CreateWithoutResourceKey, string>(info)
+            : EndpointsMethods.WithBody<CreateWithoutResourceKey, string>(info);
+
+        var result = await (ValueTask<IResult>)endpoint.DynamicInvoke(
+            new CreateWithoutResourceKey(), context, CancellationToken.None)!;
+        await result.ExecuteAsync(context);
+
+        Assert.Equal(StatusCodes.Status201Created, context.Response.StatusCode);
+        Assert.False(context.Response.Headers.ContainsKey("Location"));
     }
 
     [Theory]
@@ -160,7 +187,7 @@ public class CreatedLocationTests
             formFile, request, 42, context, CancellationToken.None)!;
         var created = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Created<ResourceKeyResponse>>(result);
 
-        Assert.Equal("v1/files/42/created", created.Location);
+        Assert.Equal("/v1/files/42/created", created.Location);
     }
 
     private static async Task<string?> GetCreatedLocation(Delegate endpoint, DefaultHttpContext dependencyContext)
@@ -169,7 +196,10 @@ public class CreatedLocationTests
         builder.WebHost.UseKestrel();
         builder.Services.AddSingleton(dependencyContext.RequestServices.GetRequiredService<IMediator>());
         await using var app = builder.Build();
+        app.UsePathBase("/catalog");
+        app.UseRouting();
         app.MapPost("v1/resources/{key}", endpoint);
+        app.MapGet("v1/resources/{key}/created", () => Results.Ok());
         app.Urls.Add("http://127.0.0.1:0");
         await app.StartAsync();
 
@@ -181,11 +211,14 @@ public class CreatedLocationTests
             .Single();
         using var client = new HttpClient();
         using var response = await client.PostAsync(
-            $"{address}/v1/resources/folder%2Fitem%3Fdraft%3Dtrue",
+            $"{address}/catalog/v1/resources/folder%2Fitem%3Fdraft%3Dtrue",
             JsonContent.Create(new { }));
 
         Assert.Equal(StatusCodes.Status201Created, (int)response.StatusCode);
-        return response.Headers.Location?.OriginalString;
+        var location = Assert.IsAssignableFrom<Uri>(response.Headers.Location);
+        using var createdResource = await client.GetAsync(new Uri(response.RequestMessage!.RequestUri!, location));
+        Assert.Equal(StatusCodes.Status200OK, (int)createdResource.StatusCode);
+        return location.OriginalString;
     }
 
     private static DefaultHttpContext CreateContextForValueTask(ResourceKeyResponse response)
@@ -241,6 +274,7 @@ public class CreatedLocationTests
         return new DefaultHttpContext
         {
             RequestServices = new ServiceCollection()
+                .AddLogging()
                 .AddSingleton(mediator)
                 .BuildServiceProvider()
         };
@@ -286,6 +320,8 @@ public class CreatedLocationTests
     {
         public int Key { get; init; }
     }
+
+    private sealed class CreateWithoutResourceKey : IRequest<string>;
 
     private sealed class ResourceKeyResponse(string resourceKey = "created") : IResourceKey
     {

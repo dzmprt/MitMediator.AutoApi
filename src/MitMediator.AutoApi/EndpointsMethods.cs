@@ -516,13 +516,7 @@ internal static class EndpointsMethods
         HttpContext ctx,
         string? resourceUrl = null)
     {
-        if (!string.IsNullOrWhiteSpace(resourceUrl))
-        {
-            if (result is IResourceKey resourceKey)
-            {
-                resourceUrl = resourceUrl.Replace("{key}", RouteValueEncoder.Encode(resourceKey.GetResourceKey()));
-            }
-        }
+        var location = RouteValueEncoder.GetCreatedLocation(ctx, resourceUrl, result);
 
         if (result is ITotalCount totalCount)
         {
@@ -532,11 +526,11 @@ internal static class EndpointsMethods
         switch (result)
         {
             case Unit:
-                return resourceUrl is null ? Results.Ok() : Results.Created(resourceUrl, null);
+                return resourceUrl is null ? Results.Ok() : Results.Created(location, null);
             case string text when requestInfo.ContentType is not null:
                 return resourceUrl is null
                     ? Results.Text(text, requestInfo.ContentType)
-                    : Results.Created(resourceUrl, text);
+                    : Results.Created(location, text);
             case byte[] bytes:
                 return Results.File(bytes, requestInfo.ContentType ?? "application/octet-stream");
             case FileResponse fileResponse:
@@ -555,6 +549,6 @@ internal static class EndpointsMethods
                 return Results.File(fileStreamResponse.File, requestInfo.ContentType ?? "application/octet-stream", fileStreamResponse.FileName);
         }
 
-        return resourceUrl is null ? Results.Ok(result) : Results.Created(resourceUrl, result);
+        return resourceUrl is null ? Results.Ok(result) : Results.Created(location, result);
     }
 }

@@ -56,9 +56,7 @@ internal static class HttpRequestsHelper
 
     private static PropertyInfo[] CreateKeyProperties(Type type)
     {
-        var keyInterface = type.GetInterfaces()
-            .First(interfaceType => interfaceType.IsGenericType &&
-                interfaceType.GetGenericTypeDefinition().Name.StartsWith("IKeyRequest"));
+        var keyInterface = RequestInfo.GetKeyRequestInterface(type)!;
         var keysCount = keyInterface.GetGenericArguments().Length;
         var properties = new PropertyInfo[keysCount];
         for (var index = 0; index < keysCount; index++)

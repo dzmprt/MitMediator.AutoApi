@@ -12,17 +12,23 @@
         <PackageIcon>logo.png</PackageIcon>
         <RepositoryUrl>https://github.com/dzmprt/MitMediator.AutoApi</RepositoryUrl>
         <PackageTags>mediator;request;response;queries;commands;mitmediator;minimalapi;autoapi;cqrs;httpmediator;httpclient</PackageTags>
-        <PackageReleaseNotes>v10.1.0-rc
+        <PackageReleaseNotes>v10.1.0-rc-1
 - Breaking: endpoint attribute types are now sealed
 - Excluded route keys from JSON request serialization
 - Added support for reading non-seekable file and response streams
 - Added string route key encoding and decoding
 - Fixed parent route key handling in Location for multipart POST-create requests
-- Improved request metadata and route property lookup performance</PackageReleaseNotes>
+- Improved request metadata and route property lookup performance
+- Fixed 201 Created Location paths to honor PathBase and omit the header when the resource key is unavailable
+- Fixed query binding for decimal values and case-insensitive nested parameters
+- Preserved explicitly supplied nullable defaults and regular Key properties in query strings
+- Included request fields alongside the file in multipart uploads
+- Preserved quotes and whitespace in plain-text responses
+- Removed route keys from OpenAPI JSON request schemas while preserving response schemas</PackageReleaseNotes>
         <TrimMode>full</TrimMode>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
-        <Version>10.1.0-rc</Version>
+        <Version>10.1.0-rc-1</Version>
         <LangVersion>14</LangVersion>
     </PropertyGroup>
 
@@ -45,7 +51,7 @@
     <ItemGroup>
         <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
     </ItemGroup>
-    <ItemGroup>
-        <PackageReference Include="MitMediator.AutoApi.Abstractions" />
-    </ItemGroup>
+        <ItemGroup>
+    <PackageReference Include="MitMediator.AutoApi.Abstractions" />
+  </ItemGroup>
 </Project>

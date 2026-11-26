@@ -1,6 +1,6 @@
 @SmokeTeskWebApiScalar_HostAddress = http://localhost:5079
 
-GET {{SmokeTeskWebApiScalar_HostAddress}}/weatherforecast/
+GET {{SmokeTeskWebApiScalar_HostAddress}}/api/v1/tests?TestData=hello
 Accept: application/json
 
 ###

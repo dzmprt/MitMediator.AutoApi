@@ -8,6 +8,7 @@
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
         <LangVersion>14</LangVersion>
+        <InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.AspNetCore.OpenApi.Generated</InterceptorsNamespaces>
     </PropertyGroup>
 
     <ItemGroup>
@@ -27,6 +28,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\MitMediator.AutoApi\MitMediator.AutoApi.csproj" />
+      <ProjectReference Include="..\..\src\MitMediator.AutoApi.HttpMediator\MitMediator.AutoApi.HttpMediator.csproj" />
     </ItemGroup>
 
 </Project>

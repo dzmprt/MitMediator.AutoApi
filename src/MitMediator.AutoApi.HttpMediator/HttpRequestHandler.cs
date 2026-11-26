@@ -86,8 +86,20 @@ internal sealed class HttpRequestHandler<TRequest, TResponse> : IClientRequestHa
             if (request is IFileRequest fileRequest)
             {
                 var form = new MultipartFormDataContent();
-                form.Add(new StreamContent(fileRequest.GetFileStream()), "formFile", fileRequest.GetFileName());
                 httpRequest.Content = form;
+                try
+                {
+                    form.Add(new StreamContent(fileRequest.GetFileStream()), "formFile", fileRequest.GetFileName());
+                    foreach (var field in request.GetFormFields())
+                    {
+                        form.Add(new StringContent(field.Value), field.Key);
+                    }
+                }
+                catch
+                {
+                    httpRequest.Dispose();
+                    throw;
+                }
             }
             else
             {
@@ -138,15 +150,14 @@ internal sealed class HttpRequestHandler<TRequest, TResponse> : IClientRequestHa
             return ((TResponse)(object)result, response.Headers);
         }
         var content = await response.Content.ReadAsStringAsync(cancellationToken);
+        if (typeof(TResponse) == typeof(string) &&
+            response.Content.Headers.ContentType?.MediaType?.StartsWith("text/", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            return ((TResponse)(object)content, response.Headers);
+        }
         if (string.IsNullOrWhiteSpace(content))
         {
             return (default, response.Headers);
-        }
-        if (typeof(TResponse) == typeof(string) &&
-            response.Content.Headers.ContentType?.MediaType == "text/plain" &&
-            !content.TrimStart().StartsWith('"'))
-        {
-            return ((TResponse)(object)content, response.Headers);
         }
         var responseModel = JsonSerializer.Deserialize<TResponse>(content, SerializerOptions)!;
         return (responseModel, response.Headers);
@@ -168,19 +179,12 @@ internal sealed class HttpRequestHandler<TRequest, TResponse> : IClientRequestHa
         var resolver = new DefaultJsonTypeInfoResolver();
         resolver.Modifiers.Add(typeInfo =>
         {
-            if (typeInfo.Kind != JsonTypeInfoKind.Object || !RequestInfo.GetIsKeyRequest(typeInfo.Type))
+            if (typeInfo.Kind != JsonTypeInfoKind.Object)
             {
                 return;
             }
 
-            var keyPropertyNames = typeInfo.Type.GetInterfaces()
-                .Where(interfaceType => interfaceType.IsGenericType &&
-                    interfaceType.GetGenericTypeDefinition().FullName?.StartsWith(
-                        "MitMediator.AutoApi.Abstractions.IKeyRequest`",
-                        StringComparison.Ordinal) == true)
-                .SelectMany(interfaceType => interfaceType.GetProperties())
-                .Select(property => property.Name)
-                .ToHashSet(StringComparer.Ordinal);
+            var keyPropertyNames = KeyRequestProperties.GetNames(typeInfo.Type);
 
             foreach (var property in typeInfo.Properties)
             {

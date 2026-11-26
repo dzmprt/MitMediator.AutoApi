@@ -279,13 +279,13 @@ To insert the correct ID into the Location header of a 201 Created response, imp
 your response type:
 
 ```csharp
-// Api URL: POST /books
+// Api URL: POST /v1/books
 public class CreateBookCommand : IRequest<CreatedBookResponse>
 {
     public string Title { get; init; }
 }
 
-// Location Header: /books/{BookId}
+// Location Header: /v1/books/{BookId}
 public class CreatedBookResponse : IResourceKey
 {
     public int BookId { get; private set; }
@@ -296,8 +296,6 @@ public class CreatedBookResponse : IResourceKey
 }
 ```
 
-If you do not implement the `IResourceKey` interface, the Location header will default to the format `/books/{key}`,
-where `{key}` is a placeholder string
 
 # Auto client HttpMediator
 

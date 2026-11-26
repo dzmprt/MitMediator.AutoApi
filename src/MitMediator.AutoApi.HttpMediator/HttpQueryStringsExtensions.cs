@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using MitMediator.AutoApi.Abstractions;
 
 namespace MitMediator.AutoApi.HttpMediator;
 
@@ -13,50 +14,74 @@ public static class HttpQueryStringsExtensions
 
     public static string ToQueryString(this object obj)
     {
-        var sb = new StringBuilder();
-        BuildQuery(obj, "", sb);
-        return sb.Length == 0 ? string.Empty : $"?{sb.ToString().TrimStart('&')}";
+        var query = new StringBuilder();
+        foreach (var field in GetFields(obj, "", asForm: false, keepDefault: false))
+        {
+            query.Append(query.Length == 0 ? '?' : '&')
+                .Append(WebUtility.UrlEncode(field.Key))
+                .Append('=')
+                .Append(WebUtility.UrlEncode(field.Value));
+        }
+
+        return query.ToString();
     }
 
-    private static void BuildQuery(object? obj, string prefix, StringBuilder sb)
+    internal static IEnumerable<KeyValuePair<string, string>> GetFormFields(this object obj) =>
+        GetFields(obj, "", asForm: true, keepDefault: true);
+
+    private static IEnumerable<KeyValuePair<string, string>> GetFields(
+        object? obj, string prefix, bool asForm, bool keepDefault)
     {
-        if (obj == null) return;
+        if (obj is null)
+        {
+            yield break;
+        }
 
         var type = obj.GetType();
-
         if (IsSimple(type))
         {
-            if (IsDefault(obj)) return;
-            var value = ConvertToString(obj);
-            if (value != null)
-                sb.Append('&').Append(WebUtility.UrlEncode(prefix)).Append('=').Append(WebUtility.UrlEncode(value));
-            return;
-        }
-
-        if (obj is IEnumerable enumerable && !(obj is string))
-        {
-            foreach (var item in enumerable)
+            if ((keepDefault || !IsDefault(obj)) && ConvertToString(obj) is { } value)
             {
-                var itemPrefix = $"{prefix}";
-                BuildQuery(item, itemPrefix, sb);
+                yield return new(prefix, value);
             }
-            return;
+
+            yield break;
         }
 
-        if (IsDefault(obj)) return;
-
-        var properties = Properties.GetOrAdd(
-            type,
-            currentType => currentType.GetProperties(BindingFlags.Public | BindingFlags.Instance));
-        foreach (var prop in properties)
+        if (obj is IEnumerable items)
         {
-            if (!prop.CanRead) continue;
-            if (prop.Name == "Key" || (prop.Name.StartsWith("Key") &&
-                int.TryParse(prop.Name[3..], out _))) continue;
+            var index = 0;
+            foreach (var item in items)
+            {
+                var name = asForm ? $"{prefix}[{index}]" : prefix;
+                foreach (var field in GetFields(item, name, asForm, keepDefault: true))
+                {
+                    yield return field;
+                }
 
-            var value = prop.GetValue(obj);
-            var name = string.IsNullOrEmpty(prefix) ? prop.Name : $"{prefix}.{prop.Name}";
-            BuildQuery(value, name, sb);
+                index++;
+            }
+
+            yield break;
+        }
+
+        var properties = Properties.GetOrAdd(type, static currentType =>
+        {
+            var keys = KeyRequestProperties.GetNames(currentType);
+            return currentType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Where(property => property.GetMethod?.IsPublic == true &&
+                    property.GetIndexParameters().Length == 0 && !keys.Contains(property.Name))
+                .ToArray();
+        });
+
+        foreach (var property in properties)
+        {
+            var name = string.IsNullOrEmpty(prefix) ? property.Name : $"{prefix}.{property.Name}";
+            var keepPropertyDefault = asForm || Nullable.GetUnderlyingType(property.PropertyType) is not null;
+            foreach (var field in GetFields(property.GetValue(obj), name, asForm, keepPropertyDefault))
+            {
+                yield return field;
+            }
         }
     }
 

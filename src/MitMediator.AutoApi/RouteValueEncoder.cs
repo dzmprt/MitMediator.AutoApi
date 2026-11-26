@@ -1,9 +1,25 @@
 using System.Globalization;
+using MitMediator.AutoApi.Abstractions;
 
 namespace MitMediator.AutoApi;
 
 internal static class RouteValueEncoder
 {
+    public static string? GetCreatedLocation(HttpContext context, string? pattern, object? result)
+    {
+        if (pattern is null || result is not IResourceKey resourceKey ||
+            resourceKey.GetResourceKey() is not { Length: > 0 } key)
+        {
+            return null;
+        }
+
+        const string keySuffix = "/{key}";
+        var route = pattern[..^keySuffix.Length].Trim('/');
+        var pathBase = context.Request.PathBase.ToUriComponent().TrimEnd('/');
+        var resourcePath = route.Length == 0 ? Encode(key) : route + "/" + Encode(key);
+        return pathBase + "/" + resourcePath;
+    }
+
     public static string EncodeRequestKey<TRequest>(
         TRequest request,
         string propertyName)

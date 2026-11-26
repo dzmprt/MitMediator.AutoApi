@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http.Json;
+using System.Text.Json.Serialization;
 using Microsoft.OpenApi;
 using MitMediator.AutoApi.Abstractions;
 
@@ -12,7 +14,7 @@ public class OpenApiParameterGeneratorTests
 
         Assert.Equal(
             [
-                "Text", "Int32", "Int64", "Int16", "Single", "Double", "Boolean", "DateTime", "DateTimeOffset",
+                "Text", "Int32", "Int64", "Int16", "Single", "Double", "Decimal", "Boolean", "DateTime", "DateTimeOffset",
                 "Guid", "Byte", "OptionalInt", "Status", "Statuses", "Numbers", "DecimalNumbers", "ChildList",
                 "ChildList[].Name", "ChildList[].Rank", "IntList", "Children.Name", "Children.Rank"
             ],
@@ -24,6 +26,7 @@ public class OpenApiParameterGeneratorTests
         AssertParameter(parameters, "Int16", JsonSchemaType.Integer, null, required: true);
         AssertParameter(parameters, "Single", JsonSchemaType.Number, "float", required: true);
         AssertParameter(parameters, "Double", JsonSchemaType.Number, "double", required: true);
+        AssertParameter(parameters, "Decimal", JsonSchemaType.Number, "decimal", required: true);
         AssertParameter(parameters, "Boolean", JsonSchemaType.Boolean, null, required: true);
         AssertParameter(parameters, "DateTime", JsonSchemaType.String, "date-time", required: true);
         AssertParameter(parameters, "DateTimeOffset", JsonSchemaType.String, "date-time", required: true);
@@ -78,10 +81,10 @@ public class OpenApiParameterGeneratorTests
         {
             Properties = new Dictionary<string, IOpenApiSchema>
             {
-                ["Key"] = new OpenApiSchema { Type = JsonSchemaType.Integer },
-                ["Text"] = new OpenApiSchema { Type = JsonSchemaType.String }
+                ["resource_id"] = new OpenApiSchema { Type = JsonSchemaType.Integer },
+                ["text"] = new OpenApiSchema { Type = JsonSchemaType.String }
             },
-            Required = new HashSet<string>(["Key", "Text"])
+            Required = new HashSet<string>(["resource_id", "text"])
         };
         var operation = new OpenApiOperation
         {
@@ -94,12 +97,15 @@ public class OpenApiParameterGeneratorTests
             }
         };
 
-        OpenApiParameterGenerator.RemoveKeyPropertiesFromRequestBody(operation, typeof(KeyOpenApiRequest));
+        OpenApiParameterGenerator.RemoveKeyPropertiesFromRequestBody(
+            operation, typeof(KeyOpenApiRequest), new JsonOptions().SerializerOptions);
 
-        Assert.DoesNotContain("Key", schema.Properties.Keys);
-        Assert.DoesNotContain("Key", schema.Required);
-        Assert.Contains("Text", schema.Properties.Keys);
-        Assert.Contains("Text", schema.Required);
+        var bodySchema = operation.RequestBody.Content["application/json"].Schema!;
+        Assert.DoesNotContain("resource_id", bodySchema.Properties!.Keys);
+        Assert.DoesNotContain("resource_id", bodySchema.Required!);
+        Assert.Contains("text", bodySchema.Properties.Keys);
+        Assert.Contains("text", bodySchema.Required!);
+        Assert.Contains("resource_id", schema.Properties.Keys);
     }
 
     private static OpenApiParameter AssertParameter(
@@ -136,6 +142,7 @@ public class OpenApiParameterGeneratorTests
         public short Int16 { get; set; }
         public float Single { get; set; }
         public double Double { get; set; }
+        public decimal Decimal { get; set; }
         public bool Boolean { get; set; }
         public DateTime DateTime { get; set; }
         public DateTimeOffset DateTimeOffset { get; set; }
@@ -159,6 +166,7 @@ public class OpenApiParameterGeneratorTests
 
     private sealed class KeyOpenApiRequest : IKeyRequest<int>
     {
+        [JsonPropertyName("resource_id")]
         public int Key { get; init; }
         public string Text { get; init; } = string.Empty;
     }
