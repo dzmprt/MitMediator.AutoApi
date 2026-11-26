@@ -102,6 +102,7 @@ public class QueryBinderTests
                     ["DateTimeOffsetValue"] = "2024-01-02T03:04:05Z",
                     ["EnumValue"] = "Second",
                     ["DoubleValue"] = "12.5",
+                    ["DecimalValue"] = "12.34",
                     ["OptionalInt"] = StringValues.Empty,
                     ["Numbers"] = new StringValues(["1", "2"]),
                     ["Tags"] = new StringValues(["one", "two"])
@@ -120,6 +121,7 @@ public class QueryBinderTests
         Assert.Equal(DateTimeOffset.Parse("2024-01-02T03:04:05Z"), result.DateTimeOffsetValue);
         Assert.Equal(TestEnum.Second, result.EnumValue);
         Assert.Equal(12.5, result.DoubleValue);
+        Assert.Equal(12.34m, result.DecimalValue);
         Assert.Null(result.OptionalInt);
         Assert.Equal([1, 2], result.Numbers);
         Assert.Equal(["one", "two"], result.Tags);
@@ -311,6 +313,7 @@ public class QueryBinderTests
         public DateTimeOffset DateTimeOffsetValue { get; set; }
         public TestEnum EnumValue { get; set; }
         public double DoubleValue { get; set; }
+        public decimal DecimalValue { get; set; }
         public int? OptionalInt { get; set; }
         public int[] Numbers { get; set; } = [];
         public List<string> Tags { get; set; } = [];

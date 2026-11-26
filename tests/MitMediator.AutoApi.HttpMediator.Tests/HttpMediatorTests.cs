@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Json;
 using Moq;
 using Moq.Protected;
 
@@ -29,7 +30,7 @@ public class HttpMediatorTests
             .ReturnsAsync(new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new StringContent("\"test-response\"")
+                Content = JsonContent.Create(expectedResponse)
             });
 
         var httpClient = new HttpClient(httpMessageHandlerMock.Object);

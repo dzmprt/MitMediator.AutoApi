@@ -295,60 +295,30 @@ public class RequestInfo
         return null;
     }
 
-    public static bool GetIsKeyRequest(Type requestType)
+    private static readonly FrozenSet<Type> KeyRequestInterfaces = new HashSet<Type>
     {
-        return requestType.GetInterfaces()
-            .FirstOrDefault(i =>
-                i.IsGenericType &&
-                new[]
-                {
-                    typeof(IKeyRequest<>),
-                    typeof(IKeyRequest<,>),
-                    typeof(IKeyRequest<,,>),
-                    typeof(IKeyRequest<,,,>),
-                    typeof(IKeyRequest<,,,,>),
-                    typeof(IKeyRequest<,,,,,>),
-                    typeof(IKeyRequest<,,,,,,>),
-                }.Contains(i.GetGenericTypeDefinition())) != null;
-    }
+        typeof(IKeyRequest<>),
+        typeof(IKeyRequest<,>),
+        typeof(IKeyRequest<,,>),
+        typeof(IKeyRequest<,,,>),
+        typeof(IKeyRequest<,,,,>),
+        typeof(IKeyRequest<,,,,,>),
+        typeof(IKeyRequest<,,,,,,>)
+    }.ToFrozenSet();
 
-    public static int GetKeysCount(Type requestType)
-    {
-        var keyInterface = requestType.GetInterfaces()
-            .FirstOrDefault(i =>
-                i.IsGenericType &&
-                new[]
-                {
-                    typeof(IKeyRequest<>),
-                    typeof(IKeyRequest<,>),
-                    typeof(IKeyRequest<,,>),
-                    typeof(IKeyRequest<,,,>),
-                    typeof(IKeyRequest<,,,,>),
-                    typeof(IKeyRequest<,,,,,>),
-                    typeof(IKeyRequest<,,,,,,>),
-                }.Contains(i.GetGenericTypeDefinition()));
+    internal static Type? GetKeyRequestInterface(Type requestType) =>
+        requestType.GetInterfaces().FirstOrDefault(i =>
+            i.IsGenericType && KeyRequestInterfaces.Contains(i.GetGenericTypeDefinition()));
 
-        return keyInterface?.GenericTypeArguments.Length ?? throw new Exception(
+    public static bool GetIsKeyRequest(Type requestType) => GetKeyRequestInterface(requestType) is not null;
+
+    public static int GetKeysCount(Type requestType) =>
+        GetKeyRequestInterface(requestType)?.GenericTypeArguments.Length ?? throw new Exception(
             $"Invalid number of generic arguments for type {requestType.Name}. Type must implement IKeyRequest<> interface.");
-    }
 
     public static Type[] GetKeysTypes(Type requestType)
     {
-        var keyInterface = requestType.GetInterfaces()
-            .FirstOrDefault(i =>
-                i.IsGenericType &&
-                new[]
-                {
-                    typeof(IKeyRequest<>),
-                    typeof(IKeyRequest<,>),
-                    typeof(IKeyRequest<,,>),
-                    typeof(IKeyRequest<,,,>),
-                    typeof(IKeyRequest<,,,,>),
-                    typeof(IKeyRequest<,,,,,>),
-                    typeof(IKeyRequest<,,,,,,>),
-                }.Contains(i.GetGenericTypeDefinition()));
-
-        return keyInterface?.GenericTypeArguments ?? throw new Exception(
+        return GetKeyRequestInterface(requestType)?.GenericTypeArguments ?? throw new Exception(
             $"Invalid generic arguments for type {requestType.Name}. Type must implement IKeyRequest<> interface.");
     }
 

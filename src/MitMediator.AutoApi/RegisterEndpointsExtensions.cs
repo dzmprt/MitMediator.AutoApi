@@ -1,4 +1,6 @@
 using System.Reflection;
+using Microsoft.AspNetCore.Http.Json;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using MitMediator.AutoApi.Abstractions;
 
@@ -143,11 +145,12 @@ public static class RegisterEndpointsExtensions
 
         if (requestInfo.IsKeyRequest && requestInfo.MethodType is MethodType.Post or MethodType.PostCreate or MethodType.Put)
         {
-            routeHandlerBuilder.AddOpenApiOperationTransformer((operation, _, _) =>
+            routeHandlerBuilder.AddOpenApiOperationTransformer((operation, context, _) =>
             {
+                var serializerOptions = context.ApplicationServices.GetRequiredService<IOptions<JsonOptions>>()
+                    .Value.SerializerOptions;
                 OpenApiParameterGenerator.RemoveKeyPropertiesFromRequestBody(
-                    operation,
-                    requestInfo.RequestType);
+                    operation, requestInfo.RequestType, serializerOptions, context.Document);
                 return Task.CompletedTask;
             });
         }

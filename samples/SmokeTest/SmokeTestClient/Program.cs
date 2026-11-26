@@ -268,7 +268,7 @@ Console.WriteLine($"GetFilePng: file size {filePngResponse.Length}");
 var fileWithCustomNameQuery =
     await httpMediator.SendAsync<GetFileWithCustomNameQuery, FileResponse>(new GetFileWithCustomNameQuery(),
         CancellationToken.None);
-Console.WriteLine($"GetFilePng: file size {filePngResponse.Length}, file name {fileWithCustomNameQuery.FileName}");
+Console.WriteLine($"GetFileWithCustomName: file size {fileWithCustomNameQuery.File.Length}, file name {fileWithCustomNameQuery.FileName}");
 
 var getListQuery = new GetListQuery();
 var response = await httpMediator.SendAsync<GetListQuery, GetListResponse>(getListQuery, CancellationToken.None);

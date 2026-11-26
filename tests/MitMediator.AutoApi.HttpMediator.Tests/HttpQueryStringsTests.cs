@@ -1,3 +1,5 @@
+using MitMediator.AutoApi.Abstractions;
+
 namespace MitMediator.AutoApi.HttpMediator.Tests;
 
 public class HttpQueryStringsExtensionsTests
@@ -36,7 +38,7 @@ public class HttpQueryStringsExtensionsTests
         public Status Status { get; set; }
     }
 
-    private class ModelWithRouteKeys
+    private class ModelWithRouteKeys : IKeyRequest<int, int>
     {
         public int Key { get; init; }
         public int Key1 { get; init; }
@@ -177,11 +179,27 @@ public class HttpQueryStringsExtensionsTests
 
         var result = obj.ToQueryString();
 
-        Assert.DoesNotContain("Key=", result);
+        Assert.Contains("Key=1", result);
         Assert.DoesNotContain("Key1=", result);
         Assert.DoesNotContain("Key2=", result);
         Assert.Contains("KeyName=name", result);
         Assert.Contains("Value=value", result);
+    }
+
+    [Fact]
+    public void OrdinaryKeyNames_AreSerialized()
+    {
+        var model = new { Key = "first", Key1 = 7 };
+
+        Assert.Equal("?Key=first&Key1=7", model.ToQueryString());
+    }
+
+    [Fact]
+    public void ExplicitNullableDefaults_AndCollectionDefaults_AreSerialized()
+    {
+        var model = new { Enabled = (bool?)false, Count = (int?)0, Missing = (int?)null, Numbers = new[] { 0, 1 } };
+
+        Assert.Equal("?Enabled=false&Count=0&Numbers=0&Numbers=1", model.ToQueryString());
     }
 
     private sealed class OneShotEnumerable(string[] values) : System.Collections.IEnumerable

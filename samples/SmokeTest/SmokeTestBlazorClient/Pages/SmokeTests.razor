@@ -349,7 +349,9 @@ IRequest<TResponse>
             }
             if (response is FileStreamResponse fileStreamResponse)
             {
-                return new(typeof(TRequest).Name, "File stream", $"File with name {fileStreamResponse.FileName} and size {fileStreamResponse.File.Length}");
+                await using var fileStream = fileStreamResponse.File;
+                var size = await ReadStreamLengthAsync(fileStream);
+                return new(typeof(TRequest).Name, "File stream", $"File with name {fileStreamResponse.FileName} and size {size}");
             }
             if (response is byte[] file)
             {
@@ -357,7 +359,9 @@ IRequest<TResponse>
             }
             if (response is Stream stream)
             {
-                return new(typeof(TRequest).Name, "File stream", $"File with size {stream.Length}");
+                await using var responseStream = stream;
+                var size = await ReadStreamLengthAsync(responseStream);
+                return new(typeof(TRequest).Name, "File stream", $"File with size {size}");
             }
 
             if (response is ITotalCount totalCount)
@@ -372,4 +376,16 @@ IRequest<TResponse>
         }
     }
 
+    private static async Task<long> ReadStreamLengthAsync(Stream stream)
+    {
+        var buffer = new byte[8192];
+        long length = 0;
+        int bytesRead;
+        while ((bytesRead = await stream.ReadAsync(buffer.AsMemory())) > 0)
+        {
+            length += bytesRead;
+        }
+
+        return length;
+    }
 }

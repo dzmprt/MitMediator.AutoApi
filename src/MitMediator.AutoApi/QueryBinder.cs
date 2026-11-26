@@ -85,7 +85,7 @@ internal static class QueryBinder
     public static T BindFromQuery<T>(HttpContext context)
     {
         var query = context.Request.Query;
-        var queryKeys = query.Keys.ToHashSet(StringComparer.Ordinal);
+        var queryKeys = query.Keys.ToHashSet(StringComparer.OrdinalIgnoreCase);
         var obj = (T)BindObject(typeof(T), "", query, queryKeys)!;
         return obj;
     }
@@ -96,7 +96,7 @@ internal static class QueryBinder
         IQueryCollection query,
         HashSet<string> queryKeys)
     {
-        if (type == typeof(string) || type.IsPrimitive || type == typeof(DateTime) || type == typeof(DateTimeOffset) || type == typeof(Guid))
+        if (type == typeof(string) || type.IsPrimitive || type == typeof(decimal) || type == typeof(DateTime) || type == typeof(DateTimeOffset) || type == typeof(Guid))
             return ConvertSimple(query[prefix], type);
 
         if ((Nullable.GetUnderlyingType(type) ?? type).IsEnum)
@@ -134,7 +134,7 @@ internal static class QueryBinder
             var key = string.IsNullOrEmpty(prefix) ? prop.Name : $"{prefix}.{prop.Name}";
             var propType = prop.PropertyType;
 
-            if (query.ContainsKey(key) || queryKeys.Any(k => k.StartsWith(key + ".")))
+            if (query.ContainsKey(key) || queryKeys.Any(k => k.StartsWith(key + ".", StringComparison.OrdinalIgnoreCase)))
             {
                 var value = BindObject(propType, key, query, queryKeys);
                 prop.SetValue(obj, value);
